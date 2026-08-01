@@ -1,21 +1,41 @@
-# Adopt A Run — Project Context
+# Adopt A Run
 
-## Project Overview
+An international GPS-art community movement debuting in Hong Kong. It brings people together through long-distance running, jogging, or walking and community art to champion a kinder city and support charitable causes.
 
-**Adopt A Run** is a community website where runners can browse local runs, adopt a run to complete, and automatically generate a digital/printable certificate of completion via Strava or GPX file upload.
+## Mission
+> *"By bringing people together through long-distance running and community art, our project aims to help champion a kinder city where our shared compassion moves us forward."*
 
-## Technical Architecture
+## Essence
+> *"Creating large-scale pieces of digital art through GPS tracking by running, jogging or walking an artwork to adopt and take care of it!"*
 
-The tech stack decisions are documented in [docs/adr/0001-tech-stack-architecture.md](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/docs/adr/0001-tech-stack-architecture.md).
+## Language
 
-- **Frontend**: Astro + React
-- **Hosting**: Cloudflare Pages & Pages Functions
-- **CMS**: Sanity.io
-- **Database**: Cloudflare D1 (SQLite)
-- **Auth Model**: Zero-password / Ephemeral OAuth
-- **Cost**: 100% Free tier hosted
+### Core Concepts
 
-## Issue Tracking & Wayfinder
+**Adopt A Run (The Movement)**:
+An international GPS-art community initiative debuting in Hong Kong, centered on modern running trends, community, and fitness culture while maintaining a warm, welcoming, and playful energy.
+_Avoid_: Run club, race organizer, event platform
 
-- **Wayfinder Map**: [.scratch/adopt-a-run/map.md](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/.scratch/adopt-a-run/map.md)
-- **Tickets**: [.scratch/adopt-a-run/issues/](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/.scratch/adopt-a-run/issues/)
+**Runner / Adopter**:
+An urban explorer, creative mind, athlete, or casual runner/walker who selects an Artwork, commits to completing it, and takes ownership of caretaking for the route and its associated charity cause.
+_Avoid_: User, member, account holder, participant
+
+**Artwork / Strava Art Route**:
+A pre-designed GPS route shaped like an animal, nature guardian, or symbol, designed to be brought to life on a map through GPS tracking by running, jogging, or walking.
+_Avoid_: Track, course, trail, map route
+
+**Adoption / Caretaking**:
+The act of selecting a specific Artwork and its paired Charity Cause, committing to execute the route, and taking active ownership of supporting and championing that charity's mission.
+_Avoid_: Booking, registration, sign-up, pledge
+
+**Charity Cause**:
+The non-profit organization or charitable mission paired with an Artwork that the Runner supports through their run and fundraising efforts.
+_Avoid_: Partner, beneficiary, recipient
+
+**Digital Certificate**:
+An interactive web-based view displaying a Runner's completed Strava art map trace, performance metrics, and charity caretaking badge, accessible via a unique permanent URL link.
+_Avoid_: Receipt, diploma, ticket
+
+**Physical Certificate**:
+A downloadable, print-ready PDF or image file generated from the Digital Certificate containing official artwork metrics and Strava attribution.
+_Avoid_: Printout, badge

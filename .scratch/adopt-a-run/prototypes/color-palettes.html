@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adopt A Run — Color Palette Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem 6rem 1rem;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    /* Container */
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.8;
+    }
+
+    /* Palette Badges */
+    .swatches {
+      display: flex;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      background: rgba(128, 128, 128, 0.15);
+      border: 1px solid rgba(128, 128, 128, 0.2);
+    }
+
+    .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+
+    /* Preview Cards Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card-tag {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--tag-bg);
+      color: var(--tag-color);
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: var(--btn-color);
+      transition: opacity 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+
+    /* Strava Polyline Map Preview */
+    .map-preview {
+      width: 100%;
+      height: 160px;
+      border-radius: 0.75rem;
+      background: var(--map-bg);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--map-border);
+    }
+
+    .map-svg {
+      width: 80%;
+      height: 80%;
+    }
+
+    /* Floating Prototype Switcher Bar */
+    .switcher {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #18181B;
+      color: #FFFFFF;
+      padding: 0.75rem 1.25rem;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .switcher-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .switcher-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .switcher-label {
+      font-weight: 700;
+      font-size: 0.9rem;
+      min-width: 220px;
+      text-align: center;
+    }
+
+    /* VARIANT STYLES */
+
+    /* Variant 1: Electric Neon & Slate */
+    body.variant-1 {
+      background-color: #0F172A;
+      color: #F8FAFC;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(51, 65, 85, 0.8);
+      --tag-bg: rgba(34, 197, 94, 0.15);
+      --tag-color: #4ADE80;
+      --btn-bg: #22C55E;
+      --btn-color: #052E16;
+      --map-bg: #020617;
+      --map-border: #1E293B;
+      --polyline-color: #38BDF8;
+      --polyline-glow: #22C55E;
+    }
+
+    /* Variant 2: Warm Sunset & Amber */
+    body.variant-2 {
+      background-color: #FDFBF7;
+      color: #1C1917;
+      --card-bg: #FFFFFF;
+      --card-border: #E7E5E4;
+      --tag-bg: #FFEDD5;
+      --tag-color: #C2410C;
+      --btn-bg: #F97316;
+      --btn-color: #FFFFFF;
+      --map-bg: #FFF7ED;
+      --map-border: #FED7AA;
+      --polyline-color: #EA580C;
+      --polyline-glow: #FBBF24;
+    }
+
+    /* Variant 3: Cyberpunk Emerald & Magenta */
+    body.variant-3 {
+      background-color: #0B0F19;
+      color: #F9FAFB;
+      --card-bg: rgba(17, 24, 39, 0.8);
+      --card-border: rgba(55, 65, 81, 0.8);
+      --tag-bg: rgba(236, 72, 153, 0.2);
+      --tag-color: #F472B6;
+      --btn-bg: #EC4899;
+      --btn-color: #FFFFFF;
+      --map-bg: #030712;
+      --map-border: #1F2937;
+      --polyline-color: #10B981;
+      --polyline-glow: #EC4899;
+    }
+
+    /* Variant 4: Ocean Harbor & Coral */
+    body.variant-4 {
+      background-color: #0A192F;
+      color: #E2E8F0;
+      --card-bg: rgba(23, 42, 69, 0.7);
+      --card-border: rgba(100, 116, 139, 0.3);
+      --tag-bg: rgba(255, 107, 107, 0.2);
+      --tag-color: #FF6B6B;
+      --btn-bg: #FF6B6B;
+      --btn-color: #FFFFFF;
+      --map-bg: #020C1B;
+      --map-border: #1E293B;
+      --polyline-color: #4D96FF;
+      --polyline-glow: #FF6B6B;
+    }
+
+    /* Variant 5: Monochrome Street & Volt Yellow */
+    body.variant-5 {
+      background-color: #050505;
+      color: #FFFFFF;
+      --card-bg: #121212;
+      --card-border: #27272A;
+      --tag-bg: rgba(204, 255, 0, 0.15);
+      --tag-color: #CCFF00;
+      --btn-bg: #CCFF00;
+      --btn-color: #000000;
+      --map-bg: #000000;
+      --map-border: #27272A;
+      --polyline-color: #CCFF00;
+      --polyline-glow: #FFFFFF;
+    }
+
+    /* Variant 6: The Athletic Edge Palette (Research Recommendation) */
+    body.variant-6 {
+      background-color: #0F0C1B;
+      color: #F8FAFC;
+      --card-bg: rgba(26, 21, 40, 0.8);
+      --card-border: rgba(60, 50, 90, 0.5);
+      --tag-bg: rgba(163, 230, 53, 0.15);
+      --tag-color: #A3E635;
+      --btn-bg: #FF6B52;
+      --btn-color: #FFFFFF;
+      --map-bg: #07050E;
+      --map-border: #261F3B;
+      --polyline-color: #A3E635;
+      --polyline-glow: #06B6D4;
+    }
+
+    /* Variant 7: Obsidian, Lime, Hot Pink & Cyan Splash */
+    body.variant-7 {
+      background-color: #0C0A14;
+      color: #F8FAFC;
+      --card-bg: rgba(22, 17, 36, 0.85);
+      --card-border: rgba(65, 50, 95, 0.5);
+      --tag-bg: rgba(163, 230, 53, 0.18);
+      --tag-color: #A3E635;
+      --btn-bg: #EC4899;
+      --btn-color: #FFFFFF;
+      --map-bg: #06040A;
+      --map-border: #231B36;
+      --polyline-color: #A3E635;
+      --polyline-glow: #38BDF8;
+    }
+  </style>
+</head>
+
+<body class="variant-1">
+
+  <div class="container">
+    <div class="header">
+      <h1 id="variant-title">1. Electric Neon & Slate</h1>
+      <p id="variant-desc">Dark mode tech-art aesthetic. Vibrant neon polylines pop over slate backgrounds.</p>
+
+      <div class="swatches" id="swatches">
+        <!-- Swatches rendered via JS -->
+      </div>
+    </div>
+
+    <!-- Live UI Components Demo -->
+    <div class="grid">
+      <!-- Run Card 1 -->
+      <div class="card">
+        <div class="map-preview">
+          <svg class="map-svg" viewBox="0 0 200 120">
+            <!-- Simulated Animal Strava Art Polyline (Dolphin/Dog shape) -->
+            <path d="M 30,80 Q 50,20 90,40 T 140,30 T 170,70 T 130,100 T 80,90 Z" fill="none"
+              stroke="var(--polyline-color)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+              style="filter: drop-shadow(0 0 6px var(--polyline-glow));" />
+          </svg>
+        </div>
+        <span class="card-tag">Hong Kong Island • 8.5 KM</span>
+        <h3 class="card-title">Victoria Dolphin Route</h3>
+        <p class="card-desc">Adopt this iconic dolphin-shaped harbor route and run to support local marine conservation.
+        </p>
+        <button class="btn">Adopt This Run →</button>
+      </div>
+
+      <!-- Run Card 2 -->
+      <div class="card">
+        <div class="map-preview">
+          <svg class="map-svg" viewBox="0 0 200 120">
+            <!-- Simulated Animal Strava Art Polyline (Panda shape) -->
+            <path d="M 40,60 C 40,30 80,20 100,50 C 120,20 160,30 160,60 C 160,90 120,110 100,90 C 80,110 40,90 40,60 Z"
+              fill="none" stroke="var(--polyline-color)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+              style="filter: drop-shadow(0 0 6px var(--polyline-glow));" />
+          </svg>
+        </div>
+        <span class="card-tag">Kowloon • 12.0 KM</span>
+        <h3 class="card-title">Kowloon Panda Loop</h3>
+        <p class="card-desc">Traverse urban streets to trace a giant panda artwork, raising funds for wildlife
+          protection.</p>
+        <button class="btn">Adopt This Run →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Prototype Switcher Bar -->
+  <div class="switcher">
+    <button class="switcher-btn" id="prev-btn">←</button>
+    <span class="switcher-label" id="switcher-label">Variant 1 / 5</span>
+    <button class="switcher-btn" id="next-btn">→</button>
+  </div>
+
+  <script>
+    const variants = [
+      {
+        id: 'variant-1',
+        key: '1',
+        title: '1. Electric Neon & Slate',
+        desc: 'Dark mode tech-art aesthetic. Vibrant neon polylines pop against sleek slate charcoal.',
+        colors: ['#0F172A', '#22C55E', '#38BDF8', '#F8FAFC']
+      },
+      {
+        id: 'variant-2',
+        key: '2',
+        title: '2. Warm Sunset & Amber',
+        desc: 'Optimistic & warm ivory light theme. Emphasizes community warmth, coral orange & amber compassion.',
+        colors: ['#FDFBF7', '#F97316', '#FBBF24', '#1C1917']
+      },
+      {
+        id: 'variant-3',
+        key: '3',
+        title: '3. Cyberpunk Emerald & Magenta',
+        desc: 'Bold street-art graffiti vibe. Electric magenta & emerald mint over midnight obsidian.',
+        colors: ['#0B0F19', '#EC4899', '#10B981', '#F9FAFB']
+      },
+      {
+        id: 'variant-4',
+        key: '4',
+        title: '4. Ocean Harbor & Coral',
+        desc: 'Victoria harbor coastal aesthetic. Deep navy blue paired with radiant coral and sea cyan.',
+        colors: ['#0A192F', '#FF6B6B', '#4D96FF', '#E2E8F0']
+      },
+      {
+        id: 'variant-5',
+        key: '5',
+        title: '5. Monochrome Street & Volt Accent',
+        desc: 'High-fashion athletic minimalism. Pure pitch black with high-visibility Volt Yellow highlights.',
+        colors: ['#000000', '#CCFF00', '#27272A', '#FFFFFF']
+      },
+      {
+        id: 'variant-6',
+        key: '6',
+        title: '6. The Athletic Edge (Research-Backed)',
+        desc: 'Obsidian Violet canvas (#0F0C1B) + Acid Lime routes (#A3E635) + Coral Heart CTA (#FF6B52). Unmistakably sports, distinctively artistic.',
+        colors: ['#0F0C1B', '#A3E635', '#06B6D4', '#FF6B52']
+      },
+      {
+        id: 'variant-7',
+        key: '7',
+        title: '7. Obsidian, Lime, Hot Pink & Cyan Splash',
+        desc: 'Deep Obsidian Violet background (#0C0A14) + Electric Acid Lime badges (#A3E635) + Hot Electric Pink buttons (#F43F5E) + Horizon Cyan map glow (#38BDF8). Ultra-dynamic, artistic & high energy!',
+        colors: ['#0C0A14', '#A3E635', '#EC4899', '#38BDF8']
+      }
+    ];
+
+    let currentIndex = 0;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const variantParam = urlParams.get('variant');
+    if (variantParam) {
+      const idx = variants.findIndex(v => v.key === variantParam || v.id === `variant-${variantParam}`);
+      if (idx !== -1) currentIndex = idx;
+    }
+
+    function renderVariant(index) {
+      const v = variants[index];
+      document.body.className = v.id;
+      document.getElementById('variant-title').innerText = v.title;
+      document.getElementById('variant-desc').innerText = v.desc;
+      document.getElementById('switcher-label').innerText = `Variant ${index + 1} of 5 — ${v.title.split('. ')[1]}`;
+
+      // Swatches
+      const swatchesEl = document.getElementById('swatches');
+      swatchesEl.innerHTML = v.colors.map(c => `
+        <div class="swatch"><div class="dot" style="background: ${c}"></div> ${c}</div>
+      `).join('');
+
+      // Update URL
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('variant', v.key);
+      window.history.replaceState({}, '', newUrl);
+    }
+
+    document.getElementById('prev-btn').addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + variants.length) % variants.length;
+      renderVariant(currentIndex);
+    });
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % variants.length;
+      renderVariant(currentIndex);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        currentIndex = (currentIndex - 1 + variants.length) % variants.length;
+        renderVariant(currentIndex);
+      } else if (e.key === 'ArrowRight') {
+        currentIndex = (currentIndex + 1) % variants.length;
+        renderVariant(currentIndex);
+      }
+    });
+
+    renderVariant(currentIndex);
+  </script>
+</body>
+
+</html>

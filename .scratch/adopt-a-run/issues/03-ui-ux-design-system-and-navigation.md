@@ -1,6 +1,6 @@
 # UI/UX Design System & Novel Navigation
 
-Status: open  
+Status: claimed  
 Type: prototype  
 
 ## Question

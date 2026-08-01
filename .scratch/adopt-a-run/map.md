@@ -19,6 +19,8 @@ A launched, high-quality, modern MVP website for **Adopt A Run** built with **As
 
 - [Stack & Hosting Choice](issues/00-initial-architecture-decisions.md) — Astro + React frontend hosted on Cloudflare Pages, Sanity.io for CMS, Cloudflare D1 for database.
 - [Zero-Login Auth & Ephemeral Strava OAuth](issues/00-initial-architecture-decisions.md) — Eliminating user passwords; using ephemeral Strava OAuth + client-side GPX parser and persistent unique URL links (`/certificate/:cert_id`).
+- [Brand Identity & Visual System](issues/01-brand-identity-and-visual-language.md) — Primary Volt `oklch(0.9 0.275 128)`, Secondary Orange `oklch(0.66 0.215 21)`, Splash Blue `oklch(0.66 0.138 234)`, Off Black `oklch(0.16 0.0075 128)`, Dark Green Cards `oklch(0.21 0.01 128)`. Fonts: Scale VF (Display) + Runda (Body). Logo: Glowing Volt Roadrunner vector + Scale VF wordmark. Map: Glowing Volt polyline over dark OpenStreetMap.
+- [Marketing Language & Site Copy](issues/02-marketing-language-and-site-copy.md) — Hero: "RUN" with animated vector dog hover release. Slogans: "Run for your cause. Leave your mark." & "Adopt the run. Complete the route. Own the impact." 3-Step Journey: Match & Commit -> Nurture & Grow -> Forever Guardian. CTAs: "Adopt Your Run", "Log Your Run", "Claim Adoption Certificate", "Pass the Torch". Metrics: Runs Adopted, Kilometers Trekked, Causes Championed.
 
 ## Not yet specified
 
