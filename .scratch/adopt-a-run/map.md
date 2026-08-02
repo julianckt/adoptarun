@@ -10,17 +10,18 @@ A launched, high-quality, modern MVP website for **Adopt A Run** built with **As
 
 ## Notes
 
-- **Tech Stack**: Astro, React, Tailwind CSS / Vanilla CSS, Framer Motion, Sanity.io, Cloudflare Pages, Cloudflare D1.
+- **Tech Stack**: Astro, React, Vanilla CSS, GSAP + ScrollTrigger, Sanity.io, Cloudflare Pages, Cloudflare D1.
 - **Hosting & Infrastructure**: 100% Free Tier compliant on Cloudflare Pages and Sanity.io.
 - **Auth Model**: Zero-password, zero-login architecture. Signups and certificate links use unique lightweight persistent codes (`cert_id`).
-- **Aesthetics**: Premium, modern, rich micro-animations, custom Google Fonts, curated palette, dynamic map polylines.
+- **Aesthetics & Design System**: Tech-Brutalism (Tactical / Editorial Brutalism), Adobe Typekit (`Scale VF` + `OCR A` + `Runda`), strict color token allocation (Volt for top CTA only; Orange for actions; Wireframe & HUD tokens), dual-row race control navigation header.
 
 ## Decisions so far
 
 - [Stack & Hosting Choice](issues/00-initial-architecture-decisions.md) — Astro + React frontend hosted on Cloudflare Pages, Sanity.io for CMS, Cloudflare D1 for database.
 - [Zero-Login Auth & Ephemeral Strava OAuth](issues/00-initial-architecture-decisions.md) — Eliminating user passwords; using ephemeral Strava OAuth + client-side GPX parser and persistent unique URL links (`/certificate/:cert_id`).
-- [Brand Identity & Visual System](issues/01-brand-identity-and-visual-language.md) — Primary Volt `oklch(0.9 0.275 128)`, Secondary Orange `oklch(0.66 0.215 21)`, Splash Blue `oklch(0.66 0.138 234)`, Off Black `oklch(0.16 0.0075 128)`, Dark Green Cards `oklch(0.21 0.01 128)`. Fonts: Scale VF (Display) + Runda (Body). Logo: Glowing Volt Roadrunner vector + Scale VF wordmark. Map: Glowing Volt polyline over dark OpenStreetMap.
+- [Brand Identity & Visual System](issues/01-brand-identity-and-visual-language.md) — Primary Volt `oklch(0.9 0.275 128)`, Secondary Orange `oklch(0.66 0.215 21)`, Splash Blue `oklch(0.66 0.138 234)`, Off Black `oklch(0.16 0.0075 128)`, Dark Green Cards `oklch(0.21 0.01 128)`, Wireframe Grid `oklch(0.35 0.01 128)`, Muted HUD `oklch(0.55 0.01 128)`. Fonts: Scale VF (Display) + OCR A (Telemetry) + Runda (Body). Logo: Glowing Volt Roadrunner vector + Scale VF wordmark.
 - [Marketing Language & Site Copy](issues/02-marketing-language-and-site-copy.md) — Hero: "RUN" with animated vector dog hover release. Slogans: "Run for your cause. Leave your mark." & "Adopt the run. Complete the route. Own the impact." 3-Step Journey: Match & Commit -> Nurture & Grow -> Forever Guardian. CTAs: "Adopt Your Run", "Log Your Run", "Claim Adoption Certificate", "Pass the Torch". Metrics: Runs Adopted, Kilometers Trekked, Causes Championed.
+- [UI/UX Design System & Novel Navigation](issues/03-ui-ux-design-system-and-navigation.md) — Tech-Brutalism framework; Dual-Row Race Control Header (Top `OCR A` micro-row: `HKG` city selector, countdown banner, `ENG` lang selector; Main `Scale VF` row: `Routes`/`Charities`/`About`, centered logo, `Donate`/`Log`/`Run With Us`); GSAP + ScrollTrigger engine for `Scale VF` weight morphs, 1px clip-path scroll reveals, corner `+` lock-on spins, digit matrix flickering.
 
 ## Not yet specified
 

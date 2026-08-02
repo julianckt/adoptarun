@@ -23,7 +23,7 @@ Type: grilling
   > *"Own your success in running and in impact! Hand off your run to its next caretaker."*
 
 ### 4. Primary Call-to-Action (CTA) Labels
-- **Primary Adoption CTA**: `"Adopt Your Run"`
+- **Primary Adoption CTA**: `"Run with us"`
 - **Run Completion CTA**: `"Log Your Run"` *(Sub-options: `"Sync with Strava"` & `"Upload GPX File"`)*
 - **Certificate CTA**: `"Claim Adoption Certificate"`
 - **Hand-Off / Share CTA**: `"Pass the Torch"`

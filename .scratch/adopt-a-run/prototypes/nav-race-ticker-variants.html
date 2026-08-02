@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adopt A Run — Dual-Row Telemetry Nav Bar Prototype (OCR A + Scale VF)</title>
+  <!-- Adobe Typekit Kit -->
+  <link rel="stylesheet" href="https://use.typekit.net/snp5gkf.css">
+  
+  <style>
+    :root {
+      /* OKLCH Color Tokens */
+      --color-volt: oklch(0.9 0.275 128);          /* Primary Volt */
+      --color-orange: oklch(0.66 0.215 21);        /* Secondary Orange */
+      --color-blue: oklch(0.66 0.138 234);         /* Splash Blue */
+      --bg-dark: oklch(0.16 0.0075 128);            /* Off Black */
+      --bg-card: oklch(0.21 0.01 128);              /* Dark Green Card Surface */
+      --text-main: oklch(0.973 0.006 128);          /* White Text */
+      --text-muted: rgba(248, 250, 252, 0.60);
+      
+      /* Typography Hierarchy */
+      --font-display: 'scale-variable', sans-serif; /* Scale VF */
+      --font-telemetry: 'ocr-a-std', 'ocr-a', monospace; /* OCR A for Top Row */
+      --font-body: 'runda', sans-serif;            /* Runda for Body Copy */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Fixed Dual-Row Navigation Header */
+    .dual-row-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: var(--bg-dark);
+    }
+
+    /* -------------------------------------------------------------
+       TOP ROW: Telemetry Micro-Bar (Font: OCR A)
+    ------------------------------------------------------------- */
+    .top-telemetry-bar {
+      background: oklch(0.21 0.01 128);
+      border-bottom: 1px solid oklch(0.9 0.275 128 / 0.2);
+      padding: 6px 32px;
+      font-family: var(--font-telemetry);
+      font-size: 0.78rem;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      letter-spacing: 0.08em;
+    }
+
+    .top-bar-left, .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 2px;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+    }
+
+    .top-bar-left:hover, .top-bar-right:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--color-volt);
+    }
+
+    .top-bar-center {
+      text-decoration: none;
+      color: var(--color-volt);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 2px 12px;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .top-bar-center:hover {
+      background: oklch(0.9 0.275 128 / 0.12);
+      text-shadow: 0 0 8px oklch(0.9 0.275 128 / 0.5);
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--color-volt);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--color-volt);
+      animation: pulseLive 1.4s infinite ease-in-out;
+    }
+
+    @keyframes pulseLive {
+      0%, 100% { opacity: 0.3; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    .chevron-icon {
+      font-size: 0.65rem;
+      opacity: 0.7;
+    }
+
+    /* -------------------------------------------------------------
+       MAIN NAV ROW (Font: Scale VF)
+    ------------------------------------------------------------- */
+    .main-nav-row {
+      padding: 16px 32px;
+      border-bottom: 1px solid oklch(0.9 0.275 128 / 0.25);
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+    }
+
+    /* Left Group */
+    .nav-group-left {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      justify-self: start;
+    }
+
+    /* Center Group (Logo) */
+    .nav-group-center {
+      justify-self: center;
+    }
+
+    /* Right Group */
+    .nav-group-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-self: end;
+    }
+
+    /* Scale VF Nav Links */
+    .main-nav-link {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-main);
+      text-decoration: none;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .main-nav-link:hover {
+      color: var(--color-volt);
+    }
+
+    /* Logo Styling */
+    .brand-logo-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-logo-svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .brand-logo-wordmark {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--color-volt);
+      letter-spacing: -0.02em;
+    }
+
+    /* Primary CTA Button (Scale VF) */
+    .btn-run-cta {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--bg-dark);
+      background: var(--color-volt);
+      border: 1px solid var(--color-volt);
+      padding: 10px 24px;
+      border-radius: 2px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 0 16px oklch(0.9 0.275 128 / 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-run-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 26px oklch(0.9 0.275 128 / 0.6);
+    }
+
+    /* Page Content Backdrop */
+    .hero-mockup {
+      padding: 180px 24px 80px;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+      flex: 1;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(4.5rem, 14vw, 10rem);
+      font-weight: 800;
+      color: var(--color-volt);
+      letter-spacing: -0.04em;
+      line-height: 0.85;
+      margin-bottom: 24px;
+      text-shadow: 0 0 40px oklch(0.9 0.275 128 / 0.25);
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-telemetry);
+      font-size: 0.9rem;
+      color: var(--color-orange);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+
+    .spec-card-grid {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .spec-card {
+      background: var(--bg-card);
+      border: 1px solid oklch(0.9 0.275 128 / 0.2);
+      padding: 24px;
+      border-radius: 4px;
+      text-align: left;
+      width: 300px;
+    }
+
+    .spec-card-num {
+      font-family: var(--font-telemetry);
+      color: var(--color-volt);
+      font-size: 0.8rem;
+    }
+
+    .spec-card-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.1rem;
+      margin-top: 8px;
+      text-transform: uppercase;
+    }
+
+    .spec-card-body {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- DUAL-ROW RACE CONTROL NAVIGATION -->
+  <header class="dual-row-header">
+    
+    <!-- TOP ROW (Font: OCR A) -->
+    <div class="top-telemetry-bar">
+      <!-- Left: City Selector -->
+      <div class="top-bar-left" title="Select City (Current: Hong Kong)">
+        <span>HKG</span>
+        <span class="chevron-icon">▼</span>
+      </div>
+
+      <!-- Center: Next Run Countdown Banner -->
+      <a href="#signup" class="top-bar-center">
+        <span class="live-dot"></span>
+        <span>NEXT RUN: VICTORIA PEAK IN 10 DAYS</span>
+      </a>
+
+      <!-- Right: Language Selector -->
+      <div class="top-bar-right" title="Select Language (Current: English)">
+        <span>ENG</span>
+        <span class="chevron-icon">▼</span>
+      </div>
+    </div>
+
+    <!-- MAIN NAV ROW (Font: Scale VF) -->
+    <div class="main-nav-row">
+      <!-- Left Group -->
+      <nav class="nav-group-left">
+        <a href="#routes" class="main-nav-link">Routes</a>
+        <a href="#charities" class="main-nav-link">Charities</a>
+        <a href="#about" class="main-nav-link">About</a>
+      </nav>
+
+      <!-- Center Group: Logo -->
+      <div class="nav-group-center">
+        <a href="#" class="brand-logo-box">
+          <svg class="brand-logo-svg" viewBox="0 0 100 100" fill="none">
+            <path d="M10 70 L35 25 L60 70 L85 40" stroke="oklch(0.9 0.275 128)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="85" cy="40" r="6" fill="oklch(0.9 0.275 128)" />
+          </svg>
+          <span class="brand-logo-wordmark">ADOPT A RUN</span>
+        </a>
+      </div>
+
+      <!-- Right Group -->
+      <div class="nav-group-right">
+        <a href="#donate" class="main-nav-link">Donate</a>
+        <a href="#log" class="main-nav-link">Log a Run</a>
+        <a href="#adopt" class="btn-run-cta">Run With Us</a>
+      </div>
+    </div>
+
+  </header>
+
+
+  <!-- DEMO BACKDROP CONTENT -->
+  <main class="hero-mockup">
+    <h1 class="hero-title">RUN</h1>
+    <p class="hero-subtitle">RUN FOR YOUR CAUSE. LEAVE YOUR MARK.</p>
+
+    <div class="spec-card-grid">
+      <div class="spec-card">
+        <div class="spec-card-num">[TOP ROW] OCR A MONO</div>
+        <div class="spec-card-title">Telemetry & Controls</div>
+        <div class="spec-card-body">Left: City Switcher (HKG)<br>Center: Next Run Banner & Countdown<br>Right: Lang Switcher (ENG)</div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-card-num">[MAIN ROW] SCALE VF</div>
+        <div class="spec-card-title">Tri-Cluster Header</div>
+        <div class="spec-card-body">Left: Routes / Charities / About<br>Center: Roadrunner Wordmark Logo<br>Right: Donate / Log / Run With Us</div>
+      </div>
+    </div>
+  </main>
+
+</body>
+
+</html>
