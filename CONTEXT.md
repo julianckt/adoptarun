@@ -28,6 +28,14 @@ _Avoid_: Track, course, trail, map route
 The act of selecting a specific Artwork and its paired Charity Cause, committing to execute the route, and taking active ownership of supporting and championing that charity's mission.
 _Avoid_: Booking, registration, sign-up, pledge
 
+**Adoption Portal**:
+The dedicated 4-step interactive flow (`/signup`) where an Adopter selects/verifies an Artwork, pairs a Charity Cause, configures commitment and fundraising sliders, and names their route animal companion.
+_Avoid_: Checkout, form, sign-up page
+
+**Adopter ID**:
+A 4-digit unique identifier (e.g., `#4829`) generated upon completing the Adoption Portal commitment, used to identify the runner's active adoption before logging their run.
+_Avoid_: User ID, account number, ticket number
+
 **Charity Cause**:
 The non-profit organization or charitable mission paired with an Artwork that the Runner supports through their run and fundraising efforts.
 _Avoid_: Partner, beneficiary, recipient
