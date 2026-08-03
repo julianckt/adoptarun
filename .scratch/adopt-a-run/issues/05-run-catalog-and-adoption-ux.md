@@ -45,7 +45,7 @@ What is the optimal UX for exploring, filtering, viewing details, and adopting a
 - **Card Expansion Animation**: Volt SVG route path animates and draws itself live on card expand using GSAP `stroke-dashoffset` path-drawing.
 - **Full Map View**: Rendered using **Leaflet** with free **CARTO Dark Matter** vector raster tiles (`CartoDB.DarkMatter`).
 - **Elevation Profile**: Custom SVG area chart with Volt gradient fill at the bottom of the map view.
-- **Additional Telemetry**: Suggested start point (e.g. `MTR Exit A`), Route photo thumbnail in corner, Water/Refill stations telemetry, Group run meetup point (for group runs), "View Strava Route" light text link, and short editorial route description.
+- **Additional Telemetry**: Suggested start point (e.g. `MTR Exit A`), Route photo thumbnail in corner, Group run meetup point (for group runs), "View Strava Route" light text link, and short editorial route description.
 
 ---
 
@@ -92,10 +92,10 @@ What is the optimal UX for exploring, filtering, viewing details, and adopting a
 
 - **Header**: `"You've committed! [Animal Name] is waiting for your adoption"`.
 - **Left Column**: Timeline displaying the 3-Step Runner Journey (`1. Match & Commit` [COMPLETED] ── `2. Nurture & Grow` ── `3. Forever Guardian`).
-- **Adopter ID**: Short 4-digit ID generated and displayed prominently (e.g., `Adopter ID: #4829`).
+- **Adopter ID**: 6-character ID generated and displayed prominently (e.g., `Adopter ID: 0124-JC`, where `0124` is pseudo-sequential from seed `0120` and `JC` are runner initials).
 - **Route Display**: Complete route details from the expanded card layout (Leaflet map, elevation profile, start point, route photo, Strava text link, GPX download text link). Group runs include date, time, and meetup point + `"Add to Calendar"` text link.
 - **Action CTAs**: `"Share My Commitment"` text link / social copy snippet + instructions directing the runner to visit `/log` ("Log A Run") after completing their run.
-- **Transactional Email**: Triggers transactional email via **Resend** to the runner's email containing their 4-digit Adopter ID and link back to their adoption commitment.
+- **Transactional Email**: Triggers transactional email via **Resend** to the runner's email containing their Adopter ID (`0124-JC`) and link back to their adoption commitment.
 
 
 ### Focus Areas

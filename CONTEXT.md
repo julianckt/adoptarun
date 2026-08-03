@@ -33,8 +33,8 @@ The dedicated 4-step interactive flow (`/signup`) where an Adopter selects/verif
 _Avoid_: Checkout, form, sign-up page
 
 **Adopter ID**:
-A 4-digit unique identifier (e.g., `#4829`) generated upon completing the Adoption Portal commitment, used to identify the runner's active adoption before logging their run.
-_Avoid_: User ID, account number, ticket number
+A persistent 6-character identifier formatted as `NNNN-CC` (e.g., `0124-JC`), generated upon completing the Adoption Portal commitment. The 4 numeric digits (`NNNN`) start at seed `0120` and increment pseudo-sequentially (jumping randomly by +1, +2, +3, or +4 per adoption) to maintain a live community sequence. The 2 trailing characters (`CC`) are the runner's uppercase initials, acting as a personal check value known only to the runner.
+_Avoid_: User ID, account number, ticket number, random UUID
 
 **Charity Cause**:
 The non-profit organization or charitable mission paired with an Artwork that the Runner supports through their run and fundraising efforts.
