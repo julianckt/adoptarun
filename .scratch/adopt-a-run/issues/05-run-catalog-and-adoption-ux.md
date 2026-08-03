@@ -76,7 +76,7 @@ What is the optimal UX for exploring, filtering, viewing details, and adopting a
 #### **Step 03 // Enter Details**
 - **Form Inputs**: First Name, Last Name, Email.
 - **Slider 1 (Commitment Date)**: `"Commit to running within [X] days"` (Range: 1 to 20 days, Default: 5 days). Dynamic top-right readout: `"by [actual date calculated dynamically, e.g. Fri, Aug 8]"`. *(Hidden for Group Runs)*.
-- **Slider 2 (Fundraising Target)**: `"Targeting fundraising [amount] HKD"` (Range: HK$100 to HK$2,000, Recommended/Default: HK$500). Dynamic top-right readout showing charity equivalated impact (e.g. `"Feeding 5 families"`).
+- **Slider 2 (Fundraising Target)**: `"Targeting fundraising [amount] HKD"` (Range: HK$100 to HK$2,000, Recommended/Default: HK$500). Dynamic top-right readout showing charity equivalated impact (e.g. `"Providing 50 meals for shelter animals"`).
 - **Group Run Extra (Step 3)**: Underneath Slider 2, displays text link: `"Share this run & invite a friend"`.
 - **Bottom Action**: `"Review →"` button advances to Step 04.
 

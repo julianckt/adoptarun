@@ -12,7 +12,7 @@ How should the digital web certificate ("Adoption Run Log") and downloadable phy
 ### 1. Route & Identity Architecture
 - **Route**: `/log` (default/preview) & `/log/:adopter_id` (persistent public view).
 - **Title**: **Adoption Run Log**.
-- **ID Schema**: `adopter_id` and `cert_id` are identical (unified 4-digit / 10-character lightweight unique identifier).
+- **ID Schema**: `adopter_id` and `cert_id` are identical 
 
 ### 2. Digital Web View (`/log/:adopter_id`) Aesthetics & Layout
 - **Design Style**: Tech / Editorial Brutalism with strong typographic hierarchy (`Scale VF` display + `OCR A` telemetry + `Runda` body).

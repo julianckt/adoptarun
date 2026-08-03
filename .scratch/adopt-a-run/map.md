@@ -28,12 +28,12 @@ A launched, high-quality, modern MVP website for **Adopt A Run** built with **As
 - [Sanity CMS Content Schema](issues/07-sanity-cms-content-schema.md) — Exactly 3 schemas (`route`, `charity`, `siteCopy`), admin GPX auto-processing (mini-map SVG, telemetry, elevation profile array), dual charity/cause descriptions, and 7-day Strava KV caching.
 - [Cloudflare D1 Database Schema](issues/08-cloudflare-d1-database-schema.md) — Clean 2-table edge database (`adoptions` + `run_logs`), unified `adopter_id` keying (`NNNN-CC`), automatic `seq_num` autoincrement seed starting at 120, walk-in support, multi-attempt run logging (`-2`), and SQL performance indexing.
 - [Strava OAuth & GPX Parser Technical Spec](issues/09-strava-oauth-and-gpx-parser-technical-spec.md) — Ephemeral Strava OAuth redirect flow with `scope=read,activity:read_all`; 3-layer spatial activity filter (type, 20-day window, ±40% distance, 40% start radius, 10-point trajectory sample); single/multi/fallback filter results UI with dark editorial loading screen; client-side GPX parser (`@tmcw/togeojson`) with Cloudflare R2 storage; `html-to-image` social cards and `@media print` physical certificates.
-
+- [Donation & Fundraising System Blueprint](issues/10-donation-fundraising-system-blueprint.md) — Peer-to-peer fundraising architecture using Raisely REST API v3 (0% platform fee, direct charity Stripe payout), custom domain (`donate.adoptarun.hk`), and decoupled D1 `donations` table leaving `adoptions` 100% untouched.
+- [Map Engine & Tile Provider](issues/05-run-catalog-and-adoption-ux.md) — Leaflet with CARTO Dark Matter vector raster tiles (`CartoDB.DarkMatter`) and custom SVG area chart for elevation profiles.
 
 ## Not yet specified
 
 - Advanced Strava API webhook caching & rate limit optimization.
-- Interactive map tile provider choice (Mapbox GL vs Leaflet vs Static SVG polylines).
 
 ## Out of scope
 

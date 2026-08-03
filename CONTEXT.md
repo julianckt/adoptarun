@@ -47,3 +47,12 @@ _Avoid_: Receipt, diploma, ticket
 **Physical Certificate**:
 A downloadable, print-ready PDF or image file generated from the Digital Certificate containing official artwork metrics and Strava attribution.
 _Avoid_: Printout, badge
+
+**Fundraising Campaign**:
+A peer-to-peer donor campaign hosted via Raisely under custom domain `donate.adoptarun.hk/profiles/:adopter_id`, created automatically upon adoption, where supporters back an Adopter's run.
+_Avoid_: Crowdfunder, product page, sales campaign
+
+**Donor / Backer**:
+A supporter who contributes funds directly to the Charity Cause via an Adopter's Fundraising Campaign.
+_Avoid_: Customer, buyer, subscriber
+

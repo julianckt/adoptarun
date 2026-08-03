@@ -13,7 +13,7 @@ What SQL tables and column definitions do we need in Cloudflare D1 for storing r
 - **D1 Database**: Edge SQLite database managed via Cloudflare D1 and Wrangler migrations.
 - **Terminology**: Certificate records are stored as **Adoption Run Logs** in the `run_logs` table (accessible at `/log/:adopter_id`).
 - **Unified Identifier**: `cert_id` is eliminated in favor of a single unified identifier `adopter_id` (formatted `NNNN-CC`, starting at seed `120`).
-- **Sequence Generator**: Eliminates helper sequence tables by using SQLite `seq_num INTEGER PRIMARY KEY AUTOINCREMENT` starting from `120` in `adoptions`, formatting `adopter_id` deterministically in code.
+- **Sequence Generator**: Uses SQLite `seq_num INTEGER PRIMARY KEY AUTOINCREMENT` starting from `120` in `adoptions`. The 4-digit `NNNN` portion of `adopter_id` is formatted in Worker code via deterministic pseudo-sequential offset starting from seed `0120` (e.g., `adopter_id` = `printf('%04d', 120 + offset) + '-' + runner_initials`).
 - **Walk-Ins**: Walk-in runners who log a run without prior adoption sign-up get a fresh `adopter_id` generated on the fly and an auto-created `adoptions` record with `status = 'walk_in'`.
 - **Multiple Runs**: Subsequent runs logged under the same `adopter_id` append sequential suffixes (`'0124-JC-2'`, `'0124-JC-3'`).
 
