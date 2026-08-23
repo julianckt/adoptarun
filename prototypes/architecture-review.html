@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Architecture Review — Adopt A Run (adoptarun.hk)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam { stroke-dasharray: 4 4; }
+      .leak { stroke: #dc2626; stroke-width: 2px; }
+      .deep-card { background: linear-gradient(135deg, #0f172a, #1e293b); }
+      .volt-accent { color: #ccff00; }
+      .wireframe-border { border-color: #384038; }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans antialiased">
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-12">
+      
+      <!-- Header -->
+      <header class="border-b border-stone-200 pb-8 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div>
+            <div class="text-xs font-mono tracking-widest text-emerald-700 uppercase font-semibold">Adopt A Run Architecture Audit</div>
+            <h1 class="text-3xl font-serif font-bold text-slate-900 mt-1">Deepening Candidates & Pre-Build Structure</h1>
+          </div>
+          <div class="text-xs font-mono text-slate-500">2026-08-23 &bull; adoptarun.hk</div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap gap-4 pt-2 text-xs font-mono text-slate-600 bg-stone-100 p-3 rounded border border-stone-200">
+          <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 border border-slate-700 bg-white inline-block"></span> Solid Box = Module</div>
+          <div class="flex items-center gap-1.5"><span class="w-3.5 h-0 border-t-2 border-dashed border-slate-500 inline-block"></span> Dashed Line = Seam</div>
+          <div class="flex items-center gap-1.5"><span class="w-3.5 h-0 border-t-2 border-red-600 inline-block"></span> Red Line = Leakage</div>
+          <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 bg-slate-900 inline-block"></span> Dark Box = Deep Module</div>
+        </div>
+      </header>
+
+      <!-- Candidates Section -->
+      <section id="candidates" class="space-y-12">
+        
+        <!-- Candidate 1 -->
+        <article id="candidate-1" class="border border-stone-200 bg-white rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+            <div>
+              <div class="text-xs font-mono text-slate-400 uppercase tracking-wider">Candidate 01</div>
+              <h2 class="text-xl font-bold font-serif text-slate-900">Collapse the Run Verification Pipeline</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 text-xs font-semibold rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Strong</span>
+              <span class="px-2 py-0.5 text-xs font-mono rounded bg-slate-100 text-slate-700">ports &amp; adapters</span>
+            </div>
+          </div>
+
+          <div class="text-xs font-mono text-slate-500 bg-stone-50 p-2.5 rounded border border-stone-200">
+            Files: src/lib/verification/ &bull; prototype/scripts/modals.js &bull; docs/spec/master-spec-sheet.md (§6)
+          </div>
+
+          <!-- Side-by-Side Diagram -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Before -->
+            <div class="rounded-lg border border-red-200 bg-red-50/20 p-4 space-y-2">
+              <div class="text-xs font-mono uppercase tracking-wider text-red-700 font-bold">Before: Shallow Verification Across Callers</div>
+              <pre class="mermaid text-xs">
+                flowchart TD
+                  classDef leak stroke:#dc2626,stroke-width:2px;
+                  classDef shallow fill:#ffffff,stroke:#94a3b8;
+                  
+                  H1[StravaCallbackAPI]:::shallow
+                  H2[GpxUploadAPI]:::shallow
+                  
+                  H1 -.leak.-> F1[DateWindowCheck]:::leak
+                  H1 -.leak.-> F2[HaversineRadius]:::leak
+                  H1 -.leak.-> F3[10PtSampling]:::leak
+                  H1 -.leak.-> F4[PacePwrCalc]:::leak
+                  
+                  H2 -.leak.-> F2
+                  H2 -.leak.-> F3
+                  H2 -.leak.-> F4
+                  
+                  F4 --> DB[(D1 run_logs)]
+              </pre>
+              <div class="text-xs text-slate-500">Callers orchestrate 5 spatial rules; verification logic leaks across API handlers and test suites.</div>
+            </div>
+
+            <!-- After -->
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50/20 p-4 space-y-2">
+              <div class="text-xs font-mono uppercase tracking-wider text-emerald-800 font-bold">After: Deep Run Verification Module</div>
+              <pre class="mermaid text-xs">
+                flowchart TD
+                  classDef deep fill:#0f172a,stroke:#0f172a,color:#ffffff;
+                  classDef adapter fill:#f1f5f9,stroke:#64748b;
+                  
+                  subgraph Inbound Adapters
+                    A1[Strava Activity Adapter]:::adapter
+                    A2[GPX XML Adapter]:::adapter
+                  end
+                  
+                  subgraph Deep Verification Module
+                    VM["verifyRun(catalogRoute, incomingRunData)"]:::deep
+                  end
+                  
+                  A1 -->|Normalized RunData| VM
+                  A2 -->|Normalized RunData| VM
+                  VM -->|VerificationResult| DB[(D1 run_logs)]
+              </pre>
+              <div class="text-xs text-slate-500">One interface; spatial tolerance, point projection, and telemetry math hide behind the seam.</div>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-sm text-slate-700">
+            <p><strong>Problem:</strong> Spatial verification logic is shallow and scattered across Strava OAuth callbacks, GPX file parsing, and client modals.</p>
+            <p><strong>Solution:</strong> Collapse spatial tolerances, date windowing, Haversine checks, and trajectory sampling behind one deep verification module.</p>
+          </div>
+
+          <div>
+            <div class="text-xs font-mono text-slate-500 uppercase tracking-wider mb-2">Wins</div>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800 font-medium">
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Locality: spatial tolerances isolate in one place</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Leverage: one engine verifies Strava and GPX</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Pure in-process tests without mock DB</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Interface shrinks; implementation absorbs 4 helpers</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Candidate 2 -->
+        <article id="candidate-2" class="border border-stone-200 bg-white rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+            <div>
+              <div class="text-xs font-mono text-slate-400 uppercase tracking-wider">Candidate 02</div>
+              <h2 class="text-xl font-bold font-serif text-slate-900">Consolidate the Adopter Identity &amp; Lifecycle Engine</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 text-xs font-semibold rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Strong</span>
+              <span class="px-2 py-0.5 text-xs font-mono rounded bg-slate-100 text-slate-700">ports &amp; adapters</span>
+            </div>
+          </div>
+
+          <div class="text-xs font-mono text-slate-500 bg-stone-50 p-2.5 rounded border border-stone-200">
+            Files: src/lib/adoptions/ &bull; prototype/scripts/adoption-wizard.js &bull; docs/spec/master-spec-sheet.md (§3, §7)
+          </div>
+
+          <!-- Side-by-Side Diagram -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Before -->
+            <div class="rounded-lg border border-red-200 bg-red-50/20 p-4 space-y-2">
+              <div class="text-xs font-mono uppercase tracking-wider text-red-700 font-bold">Before: Leaking Identity Calculations</div>
+              <div class="space-y-2 py-3">
+                <div class="p-2 border border-slate-300 rounded text-xs bg-white">
+                  <span class="font-mono text-slate-700 font-bold">Client Wizard (JS):</span>
+                  <div class="text-red-600 font-mono text-[11px] mt-1">adopterId = "0124-" + initials; targetDate = now + days</div>
+                </div>
+                <div class="p-2 border border-slate-300 rounded text-xs bg-white">
+                  <span class="font-mono text-slate-700 font-bold">API Route (/signup):</span>
+                  <div class="text-red-600 font-mono text-[11px] mt-1">queries autoincrement seed + random jumps + email dispatch</div>
+                </div>
+                <div class="p-2 border border-slate-300 rounded text-xs bg-white">
+                  <span class="font-mono text-slate-700 font-bold">Walk-In Handler (/log):</span>
+                  <div class="text-red-600 font-mono text-[11px] mt-1">duplicates seed math &amp; status='walk_in' assignment</div>
+                </div>
+              </div>
+              <div class="text-xs text-slate-500">Identity rules and status invariants leak across frontend scripts and backend endpoints.</div>
+            </div>
+
+            <!-- After -->
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50/20 p-4 space-y-2">
+              <div class="text-xs font-mono uppercase tracking-wider text-emerald-800 font-bold">After: Deep Adoption Lifecycle Module</div>
+              <div class="space-y-2 py-3">
+                <div class="p-3 bg-slate-900 text-white rounded text-xs font-mono">
+                  <div class="text-emerald-400 font-bold">// Small, leveraged interface:</div>
+                  <div>commitAdoption(input, store): Promise&lt;Adoption&gt;</div>
+                  <div>registerWalkIn(input, store): Promise&lt;Adoption&gt;</div>
+                  <div>resolveAdopterId(input): string</div>
+                  <div class="mt-2 text-slate-400 text-[10px] border-t border-slate-700 pt-1">
+                    Hidden: Seed 120 math &bull; Pseudo jumps (+1..+4) &bull; Initials check &bull; Target dates &bull; Multi-run suffixes (-2)
+                  </div>
+                </div>
+              </div>
+              <div class="text-xs text-slate-500">Storage seam with 2 adapters: in-memory mock for unit tests, Cloudflare D1 in production.</div>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-sm text-slate-700">
+            <p><strong>Problem:</strong> Adopter ID generation, sequence seed arithmetic, and lifecycle state rules leak across client forms and edge handlers.</p>
+            <p><strong>Solution:</strong> Encapsulate sequence seeds, initials hashing, target date calculations, and status transitions inside an Adoption Lifecycle module.</p>
+          </div>
+
+          <div>
+            <div class="text-xs font-mono text-slate-500 uppercase tracking-wider mb-2">Wins</div>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800 font-medium">
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Locality: sequence jumping rules never leak</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Leverage: one module serves signup, walk-ins, logs</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Storage seam allows zero-DB fast testing</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Lifecycle invariants strictly enforced</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Candidate 3 -->
+        <article id="candidate-3" class="border border-stone-200 bg-white rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+            <div>
+              <div class="text-xs font-mono text-slate-400 uppercase tracking-wider">Candidate 03</div>
+              <h2 class="text-xl font-bold font-serif text-slate-900">Unify Route Telemetry &amp; Map Synchronization</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 text-xs font-semibold rounded bg-amber-100 text-amber-800 border border-amber-300">Worth exploring</span>
+              <span class="px-2 py-0.5 text-xs font-mono rounded bg-slate-100 text-slate-700">in-process</span>
+            </div>
+          </div>
+
+          <div class="text-xs font-mono text-slate-500 bg-stone-50 p-2.5 rounded border border-stone-200">
+            Files: src/components/map/ &bull; prototype/scripts/map-scrub.js &bull; prototype/log.html &bull; prototype/routes.html
+          </div>
+
+          <!-- Side-by-Side Diagram -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Before -->
+            <div class="rounded-lg border border-red-200 bg-red-50/20 p-4 space-y-2">
+              <div class="text-xs font-mono uppercase tracking-wider text-red-700 font-bold">Before: Ad-Hoc DOM Map Scrubbing</div>
+              <div class="p-3 border border-slate-300 rounded text-xs bg-white space-y-1 font-mono text-slate-700">
+                <div class="text-red-600">window.initMapScrubber(...)</div>
+                <div class="text-slate-400 text-[11px]">&bull; Global Leaflet 'L' dependency</div>
+                <div class="text-slate-400 text-[11px]">&bull; Manual SVG clientX bounding box math</div>
+                <div class="text-slate-400 text-[11px]">&bull; Manual DOM marker creation &amp; removal</div>
+              </div>
+              <div class="text-xs text-slate-500">Every consuming page must manually bind SVG scrub events to Leaflet coordinate arrays.</div>
+            </div>
+
+            <!-- After -->
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50/20 p-4 space-y-2">
+              <div class="text-xs font-mono uppercase tracking-wider text-emerald-800 font-bold">After: Deep Route Telemetry Module</div>
+              <div class="p-3 bg-slate-900 text-white rounded text-xs font-mono space-y-1">
+                <div class="text-emerald-400">&lt;RouteTelemetryViewer /&gt;</div>
+                <div class="text-slate-300 text-[11px]">props: { route, runTrace?, interactive? }</div>
+                <div class="text-slate-400 text-[10px] border-t border-slate-700 pt-1 mt-1">
+                  Hidden: Tile layer init &bull; Bounding box fit &bull; SVG scrub interpolator &bull; Pulse tracer &bull; Dark matter theme
+                </div>
+              </div>
+              <div class="text-xs text-slate-500">One encapsulated React island; page authors never touch Leaflet instances or coordinate indexes.</div>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-sm text-slate-700">
+            <p><strong>Problem:</strong> Leaflet map initialization, CartoDB tile loading, SVG scrubber interpolation, and pulse markers are wired via fragile global DOM hooks.</p>
+            <p><strong>Solution:</strong> Deepen into an encapsulated Route Telemetry Visualizer module that manages map lifecycle and bidirectional SVG scrub syncing.</p>
+          </div>
+
+          <div>
+            <div class="text-xs font-mono text-slate-500 uppercase tracking-wider mb-2">Wins</div>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800 font-medium">
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Locality: scrub math and map lifecycle contained</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Leverage: reused in Catalog, Log, and Modals</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Parent Astro pages stay purely declarative</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Deletes 3 disparate script listeners</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Candidate 4 -->
+        <article id="candidate-4" class="border border-stone-200 bg-white rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+            <div>
+              <div class="text-xs font-mono text-slate-400 uppercase tracking-wider">Candidate 04</div>
+              <h2 class="text-xl font-bold font-serif text-slate-900">Consolidate Certificate &amp; Social Artifact Rendering</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-800 border border-slate-300">Speculative</span>
+              <span class="px-2 py-0.5 text-xs font-mono rounded bg-slate-100 text-slate-700">in-process</span>
+            </div>
+          </div>
+
+          <div class="text-xs font-mono text-slate-500 bg-stone-50 p-2.5 rounded border border-stone-200">
+            Files: src/lib/certificate/ &bull; prototype/scripts/modals.js &bull; prototype/log.html
+          </div>
+
+          <div class="space-y-2 text-sm text-slate-700">
+            <p><strong>Problem:</strong> Canvas 2D pixel plotting (1:1 and 9:16) and @media print CSS maintain duplicate typography, tokens, and telemetry layouts.</p>
+            <p><strong>Solution:</strong> Deepen into a unified Certificate Engine that renders digital certificates, print-ready layouts, and social cards from one normalized telemetry schema.</p>
+          </div>
+
+          <div>
+            <div class="text-xs font-mono text-slate-500 uppercase tracking-wider mb-2">Wins</div>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800 font-medium">
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Locality: layout rules &amp; brand tokens centralized</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Leverage: one telemetry contract feeds print and canvas</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">&check;</span> Eliminates manual canvas coordinate math</li>
+            </ul>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Top Recommendation Section -->
+      <section id="top-recommendation" class="border-2 border-slate-900 bg-slate-900 text-white rounded-xl p-8 space-y-4 shadow-lg">
+        <div class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold">Top Recommendation</div>
+        <h3 class="text-2xl font-serif font-bold">Tackle Candidate 01: Collapse the Run Verification Pipeline</h3>
+        <p class="text-slate-300 text-sm leading-relaxed">
+          Run verification is the critical algorithmic engine of Adopt A Run. Deepening this module first establishes a pure, fast in-process test surface that decouples third-party data shapes (Strava OAuth payloads and GPX files) from core spatial matching rules before any edge database or web UI code is written.
+        </p>
+        <div class="pt-2">
+          <a href="#candidate-1" class="inline-flex items-center text-xs font-mono uppercase font-bold text-emerald-400 hover:text-emerald-300 underline">
+            Jump to Candidate 01 &rarr;
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </body>
+</html>

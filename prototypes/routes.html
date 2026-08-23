@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STRAVA ART ROUTE CATALOGUE — ADOPT A RUN</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <!-- Dual-Row Header -->
+  <header class="header-sticky">
+    <div class="race-control-top">
+      <div>HKG ▼ | STRAVA ART CATALOGUE</div>
+      <div class="ticker-banner">NEXT RUN: SAT AUG 8 @ 07:30 HKT | 12 RUNNERS JOINED</div>
+      <div>ENG ▼</div>
+    </div>
+    <div class="race-control-main">
+      <a href="index.html" class="brand-logo">
+        <svg class="brand-roadrunner" viewBox="0 0 24 24">
+          <path d="M2 18L7 12L12 16L18 8L22 12" stroke-width="2" stroke-linecap="square"/>
+        </svg>
+        <span>ADOPT A RUN</span>
+      </a>
+      <nav class="nav-links">
+        <a href="routes.html" class="active">Routes</a>
+        <a href="index.html#charities">Charities</a>
+        <a href="index.html#about">About</a>
+      </nav>
+      <div class="header-actions">
+        <a href="log.html" class="btn btn-hud">Log a Run</a>
+        <a href="signup.html" class="btn btn-volt">[RUN WITH US]</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container section-padding">
+    <div class="section-header">
+      <div>
+        <div class="hud-text">CATALOGUE // 01</div>
+        <h1 class="section-title">STRAVA ART ROUTES</h1>
+      </div>
+    </div>
+
+    <!-- Filter & Sort Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-fill); border:1px solid var(--wireframe); padding:16px 24px; margin-bottom:32px;">
+      <div style="display:flex; gap:16px; align-items:center;">
+        <span class="hud-text">FILTER BY:</span>
+        <select class="btn-hud" style="background:#111;">
+          <option>All Difficulties</option>
+          <option>Beginner</option>
+          <option>Easy</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+        </select>
+        <select class="btn-hud" style="background:#111;">
+          <option>All Regions</option>
+          <option>HK Island</option>
+          <option>Kowloon</option>
+          <option>New Territories</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <span class="hud-text">SORT:</span>
+        <select class="btn-hud" style="background:#111;">
+          <option>Latest</option>
+          <option>Longest</option>
+          <option>Shortest</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Routes Bento Grid -->
+    <div class="grid-bento">
+      
+      <!-- Card 1 (Pinned Group Run) -->
+      <div class="bento-card pinned-volt" id="card-1">
+        <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+        <div class="crosshair bl">+</div><div class="crosshair br">+</div>
+        <div class="hud-text volt-text" style="margin-bottom:8px;">★ PINNED GROUP RUN: SAT AUG 8 @ 07:30 HKT</div>
+        <h3>Hong Kong Dog Run</h3>
+        <p class="hud-text" style="margin-top:4px; margin-bottom:16px;">8.4 KM &bull; +320M ELEVATION &bull; EASY</p>
+        
+        <!-- SVG Mini Map Trace Preview -->
+        <svg viewBox="0 0 300 120" style="width:100%; height:120px; background:#111; border:1px solid var(--wireframe); margin-bottom:16px;">
+          <path d="M 20 60 Q 80 10 140 70 T 260 40" fill="none" stroke="#ccff00" stroke-width="3"/>
+          <circle cx="260" cy="40" r="5" fill="#ff4500"/>
+        </svg>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="strikethrough-tag">MTR Central Exit A</span>
+          <a href="signup.html?route=hong-kong-dog-run" class="btn btn-volt">Adopt This Route →</a>
+        </div>
+
+        <button class="btn btn-outline" style="width:100%; margin-top:12px;" onclick="toggleExpand('expand-1', 'map-1')">
+          [ Expand Route Details ]
+        </button>
+
+        <!-- Inline Expanded Panel -->
+        <div id="expand-1" style="display:none; margin-top:20px; border-top:1px solid var(--wireframe); padding-top:16px;">
+          <div class="map-container" id="map-1"></div>
+          <div class="hud-text" style="margin-top:12px;">START POINT: MTR Central Exit A &bull; STRAVA ID: 894102</div>
+          <p style="font-size:0.9rem; margin-top:8px;">A cheerful dog silhouette navigating past Hong Kong Park, Bowen Road, and Mid-Levels.</p>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bento-card" id="card-2">
+        <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+        <div class="crosshair bl">+</div><div class="crosshair br">+</div>
+        <h3>Kowloon Cat Circuit</h3>
+        <p class="hud-text" style="margin-top:4px; margin-bottom:16px;">12.1 KM &bull; +450M ELEVATION &bull; INTERMEDIATE</p>
+        
+        <svg viewBox="0 0 300 120" style="width:100%; height:120px; background:#111; border:1px solid var(--wireframe); margin-bottom:16px;">
+          <path d="M 30 80 Q 90 20 180 90 T 270 30" fill="none" stroke="#ccff00" stroke-width="3"/>
+        </svg>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="strikethrough-tag">MTR Jordan</span>
+          <a href="signup.html?route=kowloon-cat-circuit" class="volt-text" style="font-family:var(--font-hud); font-weight:bold;">Adopt This Route →</a>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bento-card" id="card-3">
+        <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+        <div class="crosshair bl">+</div><div class="crosshair br">+</div>
+        <h3>Lantau Boar Trail</h3>
+        <p class="hud-text" style="margin-top:4px; margin-bottom:16px;">15.6 KM &bull; +780M ELEVATION &bull; ADVANCED</p>
+
+        <svg viewBox="0 0 300 120" style="width:100%; height:120px; background:#111; border:1px solid var(--wireframe); margin-bottom:16px;">
+          <path d="M 20 40 Q 100 100 190 30 T 280 80" fill="none" stroke="#ccff00" stroke-width="3"/>
+        </svg>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="strikethrough-tag">Tung Chung</span>
+          <a href="signup.html?route=lantau-boar-trail" class="volt-text" style="font-family:var(--font-hud); font-weight:bold;">Adopt This Route →</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="scripts/main.js"></script>
+  <script src="scripts/map-scrub.js"></script>
+  <script>
+    function toggleExpand(expandId, mapId) {
+      const panel = document.getElementById(expandId);
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        setTimeout(() => {
+          window.initMapScrubber(mapId, null, [
+            [22.28, 114.15], [22.27, 114.16], [22.26, 114.17], [22.28, 114.18]
+          ]);
+        }, 100);
+      } else {
+        panel.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

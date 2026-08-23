@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADOPTION RUN LOG & DIGITAL CERTIFICATE — ADOPT A RUN</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <header class="header-sticky">
+    <div class="race-control-top">
+      <div>HKG ▼ | ADOPTION RUN LOG & DIGITAL CERTIFICATE</div>
+      <div class="ticker-banner">ADOPTER ID: 0124-JC &bull; POWERED BY STRAVA</div>
+      <div>ENG ▼</div>
+    </div>
+    <div class="race-control-main">
+      <a href="index.html" class="brand-logo">
+        <svg class="brand-roadrunner" viewBox="0 0 24 24">
+          <path d="M2 18L7 12L12 16L18 8L22 12" stroke-width="2" stroke-linecap="square"/>
+        </svg>
+        <span>ADOPT A RUN</span>
+      </a>
+      <nav class="nav-links">
+        <a href="routes.html">Routes</a>
+        <a href="signup.html">Adopt Portal</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-orange" onclick="openModal('modal-strava')">[LOG A RUN / STRAVA]</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container section-padding">
+    
+    <!-- Dashboard Header -->
+    <div class="section-header">
+      <div>
+        <div class="hud-text volt-text">★ CARETAKER GUARDIAN CERTIFICATE &bull; ADOPTER ID: 0124-JC</div>
+        <h1 class="section-title">HONG KONG DOG RUN: ADOPTED BY SPARKY</h1>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-volt" onclick="openModal('modal-share')">[SHARE DIGITAL CERT]</button>
+        <button class="btn btn-outline" onclick="openModal('modal-print')">[CLAIM PHYSICAL CERT]</button>
+      </div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="log-dashboard-grid">
+      
+      <!-- Left Column: Map & Elevation Scrub Sync -->
+      <div>
+        <div class="bento-card" style="padding:16px;">
+          <div class="hud-text" style="margin-bottom:8px;">INTERACTIVE ROUTE TRACE (SCRUB ELEVATION TO INSPECT POSITION)</div>
+          <div class="map-container" id="log-map"></div>
+
+          <!-- Elevation Chart Scrubber Box -->
+          <div class="elevation-chart-box">
+            <div class="hud-text" style="margin-bottom:6px;">ELEVATION PROFILE (+320M)</div>
+            <div style="position:relative;">
+              <svg class="elevation-svg" id="elevation-svg" viewBox="0 0 500 100" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="elevGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ccff00" stop-opacity="0.6"/>
+                    <stop offset="100%" stop-color="#ccff00" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M 0 80 Q 100 20 200 60 T 400 30 L 500 70 L 500 100 L 0 100 Z" fill="url(#elevGrad)" stroke="#ccff00" stroke-width="2"/>
+              </svg>
+              <div id="scrubber-line" class="scrubber-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Telemetry & Donation HUD -->
+      <div>
+        <!-- Telemetry Box -->
+        <div class="bento-card" style="margin-bottom:24px;">
+          <div class="hud-text orange-text" style="margin-bottom:16px;">VERIFIED TELEMETRY HUD</div>
+          
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div>
+              <div class="hud-text">DISTANCE</div>
+              <div class="blue-text" style="font-family:var(--font-hud); font-size:1.8rem; font-weight:bold;">8.4 KM</div>
+            </div>
+            <div>
+              <div class="hud-text">AVG PACE</div>
+              <div class="blue-text" style="font-family:var(--font-hud); font-size:1.8rem; font-weight:bold;">5:24 /KM</div>
+            </div>
+            <div>
+              <div class="hud-text">MOVING TIME</div>
+              <div class="blue-text" style="font-family:var(--font-hud); font-size:1.8rem; font-weight:bold;">45:22</div>
+            </div>
+            <div>
+              <div class="hud-text">ELEVATION</div>
+              <div class="blue-text" style="font-family:var(--font-hud); font-size:1.8rem; font-weight:bold;">+320M</div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--wireframe); padding-top:12px; margin-top:12px;">
+            <div class="hud-text">CHARITY CAUSE: HK RESCUE PUPPIES</div>
+            <div class="hud-text volt-text" style="margin-top:4px;">IMPACT EQUIVALENCY: 50 MEALS PROVIDED</div>
+          </div>
+        </div>
+
+        <!-- Donation HUD Widget (`donate.adoptarun.hk`) -->
+        <div class="bento-card">
+          <div class="hud-text" style="margin-bottom:8px;">P2P DONATION CAMPAIGN (donate.adoptarun.hk)</div>
+          <div style="font-size:1.2rem; font-weight:bold; margin-bottom:8px;">HK$ 500 / HK$ 500 RAISED</div>
+          
+          <div style="width:100%; height:10px; background:var(--wireframe); margin-bottom:16px;">
+            <div style="width:100%; height:100%; background:var(--volt);"></div>
+          </div>
+
+          <a href="#" class="btn btn-orange" style="width:100%; margin-bottom:16px;">[BACK THIS RUNNER]</a>
+
+          <div class="hud-text" style="margin-bottom:8px;">BACKER CHEER WALL</div>
+          <div style="background:#111; padding:8px; border:1px solid var(--wireframe); font-size:0.8rem; margin-bottom:6px;">
+            <span style="color:var(--volt);">Sarah M. (HK$100):</span> "Awesome run for the pups! 🐶"
+          </div>
+          <div style="background:#111; padding:8px; border:1px solid var(--wireframe); font-size:0.8rem;">
+            <span style="color:var(--volt);">Alex K. (HK$200):</span> "Great pace on Bowen Road!"
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL 1: Strava OAuth & GPX Log Modal (4 States) -->
+  <div class="modal-overlay" id="modal-strava">
+    <div class="modal-box">
+      <div class="modal-close" onclick="closeModal('modal-strava')">✕</div>
+      
+      <!-- State A: ID Prompt & Walk-in -->
+      <div id="strava-state-a">
+        <h2 style="margin-bottom:12px;">LOG A RUN // STRAVA & GPX</h2>
+        <p class="hud-text" style="margin-bottom:20px;">ENTER YOUR 6-CHARACTER ADOPTER ID (NNNN-CC)</p>
+        
+        <input type="text" id="strava-adopter-input" value="0124-JC" style="width:100%; padding:12px; background:#111; border:1px solid var(--wireframe); color:#fff; font-family:var(--font-hud); font-size:1.2rem; margin-bottom:16px;">
+
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+          <a href="#" class="hud-text orange-text" id="toggle-walkin-fields">+ I DO NOT HAVE AN ID (WALK-IN RUNNER)</a>
+          <a href="#" class="hud-text">FORGOT MY ID?</a>
+        </div>
+
+        <!-- Inline Walk-in Form -->
+        <div id="walkin-fields" style="display:none; background:#111; padding:16px; border:1px solid var(--wireframe); margin-bottom:20px;">
+          <div class="hud-text volt-text" style="margin-bottom:8px;">WALK-IN REGISTRATION (GENERATES ID ON THE FLY)</div>
+          <input type="text" placeholder="First & Last Name" style="width:100%; padding:8px; background:#222; border:1px solid var(--wireframe); color:#fff; margin-bottom:8px;">
+          <select style="width:100%; padding:8px; background:#222; border:1px solid var(--wireframe); color:#fff;">
+            <option>Hong Kong Dog Run</option>
+            <option>Kowloon Cat Circuit</option>
+          </select>
+        </div>
+
+        <button class="btn btn-volt" id="btn-start-strava-sync" style="width:100%;">[SYNC WITH STRAVA] →</button>
+      </div>
+
+      <!-- State B: 1.2s Sync Pulsing Loader -->
+      <div id="strava-state-b" style="display:none; text-align:center; padding:40px 0;">
+        <h2 class="volt-text" style="margin-bottom:16px;">LOADING YOUR STRAVA ACTIVITIES...</h2>
+        <div class="hud-text" style="font-size:1rem; animation: pulse 0.6s infinite alternate;">SYNCING SPATIAL TRAJECTORY DATA [::]</div>
+      </div>
+
+      <!-- State C: Spatial Match Results -->
+      <div id="strava-state-c" style="display:none;">
+        <h2 class="volt-text" style="margin-bottom:12px;">✓ MATCH FOUND!</h2>
+        <p class="hud-text" style="margin-bottom:16px;">STRAVA ACTIVITY MATCHED SPATIALLY WITH HONG KONG DOG RUN</p>
+
+        <div class="bento-card" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between;">
+            <div>
+              <div style="font-weight:bold;">Morning Strava Run - Central Loop</div>
+              <div class="hud-text">AUG 4, 2026 &bull; 8.42 KM &bull; 45:22</div>
+            </div>
+            <span class="hud-text volt-text">98% SPATIAL MATCH</span>
+          </div>
+        </div>
+
+        <button class="btn btn-orange" onclick="closeModal('modal-strava')" style="width:100%;">[CONFIRM & LOG THIS RUN]</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: Social Share Card Generator Modal (1:1 & 9:16) -->
+  <div class="modal-overlay" id="modal-share">
+    <div class="modal-box" style="text-align:center;">
+      <div class="modal-close" onclick="closeModal('modal-share')">✕</div>
+      <h2 style="margin-bottom:16px;">GENERATE SOCIAL SHARE CARD</h2>
+
+      <div style="display:flex; justify-content:center; gap:12px; margin-bottom:20px;">
+        <button class="btn btn-hud" id="btn-ratio-1-1">1:1 Square (Strava / Twitter)</button>
+        <button class="btn btn-hud" id="btn-ratio-9-16">9:16 Vertical (IG Stories)</button>
+      </div>
+
+      <canvas id="share-card-canvas" style="border:1px solid var(--wireframe); max-width:100%; margin-bottom:20px;"></canvas>
+
+      <div style="display:flex; justify-content:center; gap:16px;">
+        <button class="btn btn-volt" onclick="alert('Share card image copied to clipboard!')">[COPY IMAGE]</button>
+        <button class="btn btn-outline" onclick="alert('Downloading PNG share card...')">[DOWNLOAD PNG]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Printable Physical Certificate Modal (Light Theme Print Layout) -->
+  <div class="modal-overlay" id="modal-print">
+    <div class="modal-box print-cert-area" style="background:#fff; color:#000; max-width:750px;">
+      <div class="modal-close" onclick="closeModal('modal-print')">✕</div>
+      
+      <div style="border:4px double #000; padding:40px; text-align:center;">
+        <div style="font-family:var(--font-hud); font-size:12px; letter-spacing:0.2em; color:#444;">OFFICIAL CARETAKER GUARDIAN CERTIFICATE</div>
+        <h1 style="font-size:2.8rem; margin:16px 0; color:#000;">ADOPT A RUN</h1>
+        
+        <p style="font-size:1.1rem; margin-bottom:24px;">This certifies that</p>
+        <h2 style="font-size:2rem; text-decoration:underline; margin-bottom:16px;">JULIAN CHUNG</h2>
+        
+        <p style="font-size:1rem; max-width:500px; margin:0 auto 24px auto;">
+          Has successfully executed and adopted the <strong>Hong Kong Dog Run (8.4 KM)</strong> artwork as a Forever Guardian, providing 50 meals for shelter animals via <strong>HK Rescue Puppies</strong>.
+        </p>
+
+        <div style="display:flex; justify-content:space-around; border-top:1px solid #ccc; border-bottom:1px solid #ccc; padding:16px 0; margin-bottom:24px; font-family:var(--font-hud); font-size:13px;">
+          <div>ADOPTER ID: <strong>0124-JC</strong></div>
+          <div>DATE: <strong>AUG 4, 2026</strong></div>
+          <div>POWERED BY STRAVA</div>
+        </div>
+
+        <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
+          <div style="border:1px solid #000; padding:8px; font-family:monospace; font-size:10px;">
+            [ QR CODE SCANNABLE ]<br>adoptarun.hk/log/0124-JC
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px; text-align:center;">
+        <button class="btn btn-orange" id="btn-trigger-print">[PRINT PHYSICAL CERTIFICATE]</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/main.js"></script>
+  <script src="scripts/map-scrub.js"></script>
+  <script src="scripts/modals.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize map on log page
+      window.initMapScrubber('log-map', 'elevation-svg', [
+        [22.28, 114.15], [22.27, 114.16], [22.26, 114.17], [22.28, 114.18]
+      ]);
+      // Initialize share card canvas
+      if (window.renderShareCard) window.renderShareCard('1:1');
+    });
+  </script>
+</body>
+</html>

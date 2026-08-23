@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --volt: #ccff00;
+  --safety-orange: #ff5500;
+  --cyan: #00f0ff;
+  --wireframe: rgba(255, 255, 255, 0.15);
+  --bg-dark: #0a0a0c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  color: #f0f0f5;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom scrollbars for controls panel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(204, 255, 0, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(204, 255, 0, 0.7);
+}
+
+/* Utility fallbacks */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+.hud-panel {
+  background: rgba(10, 10, 14, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.hud-tag {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--volt);
+  border: 1px solid var(--volt);
+  padding: 2px 6px;
+}

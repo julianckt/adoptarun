@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADOPTION PORTAL — ADOPT A RUN</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <header class="header-sticky">
+    <div class="race-control-top">
+      <div>HKG ▼ | ADOPTION PORTAL</div>
+      <div class="ticker-banner">ZERO PASSWORD ADOPTION &bull; PERSISTENT ADOPTER ID</div>
+      <div>ENG ▼</div>
+    </div>
+    <div class="race-control-main">
+      <a href="index.html" class="brand-logo">
+        <svg class="brand-roadrunner" viewBox="0 0 24 24">
+          <path d="M2 18L7 12L12 16L18 8L22 12" stroke-width="2" stroke-linecap="square"/>
+        </svg>
+        <span>ADOPT A RUN</span>
+      </a>
+      <nav class="nav-links">
+        <a href="routes.html">Routes</a>
+        <a href="index.html#charities">Charities</a>
+        <a href="index.html#about">About</a>
+      </nav>
+      <div class="header-actions">
+        <a href="log.html" class="btn btn-hud">Log a Run</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container section-padding" style="position:relative;">
+    
+    <!-- Stepper Bar -->
+    <div class="stepper-bar">
+      <div class="step-item active" id="step-indicator-1"><span>01</span> SELECT ROUTE</div>
+      <div class="step-item" id="step-indicator-2"><span>02</span> SELECT CHARITY</div>
+      <div class="step-item" id="step-indicator-3"><span>03</span> ENTER DETAILS</div>
+      <div class="step-item" id="step-indicator-4"><span>04</span> COMMIT & ADOPT</div>
+    </div>
+
+    <!-- Wizard + Sticky Summary Layout -->
+    <div class="wizard-layout">
+      
+      <!-- Wizard Main Container -->
+      <div class="wizard-main">
+        
+        <!-- Step 1: Select Route -->
+        <div id="wizard-step-1">
+          <h2 style="margin-bottom:16px;">STEP 01 // SELECT YOUR ARTWORK</h2>
+          <p class="hud-text" style="margin-bottom:24px;">CHOOSE A STRAVA ART ROUTE TO ADOPT IN HONG KONG</p>
+
+          <div class="grid-bento">
+            <div class="bento-card route-select-card pinned-volt" data-name="Hong Kong Dog Run" data-slug="hong-kong-dog-run" data-km="8.4" data-m="320">
+              <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+              <div class="hud-text volt-text">FEATURED ROUTE</div>
+              <h3 style="margin-top:4px;">Hong Kong Dog Run</h3>
+              <p class="hud-text">8.4 KM &bull; +320M ELEVATION</p>
+            </div>
+
+            <div class="bento-card route-select-card" data-name="Kowloon Cat Circuit" data-slug="kowloon-cat-circuit" data-km="12.1" data-m="450">
+              <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+              <h3 style="margin-top:4px;">Kowloon Cat Circuit</h3>
+              <p class="hud-text">12.1 KM &bull; +450M ELEVATION</p>
+            </div>
+
+            <div class="bento-card route-select-card" data-name="Lantau Boar Trail" data-slug="lantau-boar-trail" data-km="15.6" data-m="780">
+              <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+              <h3 style="margin-top:4px;">Lantau Boar Trail</h3>
+              <p class="hud-text">15.6 KM &bull; +780M ELEVATION</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Select Charity -->
+        <div id="wizard-step-2" style="display:none;">
+          <h2 style="margin-bottom:16px;">STEP 02 // SELECT CHARITY CAUSE</h2>
+          <p class="hud-text" style="margin-bottom:24px;">CLICK A CHARITY TO SUPPORT WITH YOUR COMMITMENT</p>
+
+          <div class="grid-bento">
+            <div class="bento-card charity-select-card" data-name="HK Rescue Puppies" data-slug="hk-rescue-puppies">
+              <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+              <h3 class="volt-text">HK Rescue Puppies</h3>
+              <p style="font-size:0.9rem; margin-top:8px;">Supporting street animal medical care, feeding, and adoption shelters across HK.</p>
+              <button class="btn btn-orange charity-confirm-cta" style="display:none; width:100%; margin-top:16px;">SUPPORT HK RESCUE PUPPIES ↓</button>
+            </div>
+
+            <div class="bento-card charity-select-card" data-name="City Clean Ocean Initiative" data-slug="city-clean-ocean">
+              <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+              <h3 class="volt-text">City Clean Ocean Initiative</h3>
+              <p style="font-size:0.9rem; margin-top:8px;">Marine ecosystem cleanup and plastic waste prevention along Hong Kong coastlines.</p>
+              <button class="btn btn-orange charity-confirm-cta" style="display:none; width:100%; margin-top:16px;">SUPPORT CITY CLEAN OCEAN ↓</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Enter Details & Dynamic Sliders -->
+        <div id="wizard-step-3" style="display:none;">
+          <h2 style="margin-bottom:16px;">STEP 03 // COMMITMENT & FUNDRAISING GOALS</h2>
+          <p class="hud-text" style="margin-bottom:24px;">NO PASSWORD OR REGISTRATION REQUIRED</p>
+
+          <div style="background:var(--card-fill); border:1px solid var(--wireframe); padding:24px; margin-bottom:24px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+              <div>
+                <label class="hud-text">FIRST NAME</label>
+                <input type="text" id="input-first-name" value="Julian" style="width:100%; padding:10px; background:#111; border:1px solid var(--wireframe); color:#fff; margin-top:4px;">
+              </div>
+              <div>
+                <label class="hud-text">LAST NAME</label>
+                <input type="text" id="input-last-name" value="Chung" style="width:100%; padding:10px; background:#111; border:1px solid var(--wireframe); color:#fff; margin-top:4px;">
+              </div>
+            </div>
+            <div style="margin-bottom:24px;">
+              <label class="hud-text">EMAIL ADDRESS (For Adopter ID Confirmation Link)</label>
+              <input type="email" id="input-email" value="julian@example.com" style="width:100%; padding:10px; background:#111; border:1px solid var(--wireframe); color:#fff; margin-top:4px;">
+            </div>
+
+            <!-- Slider 1: Commitment Timeframe -->
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="hud-text">COMPLETION TIMEFRAME</span>
+                <span class="hud-text volt-text" id="readout-days">5 Days (by Sat, Aug 9)</span>
+              </div>
+              <input type="range" min="1" max="20" value="5" class="range-slider" id="slider-days">
+            </div>
+
+            <!-- Slider 2: Fundraising Target -->
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="hud-text">FUNDRAISING TARGET (HKD)</span>
+                <span class="hud-text volt-text" id="readout-hkd">HK$ 500</span>
+              </div>
+              <input type="range" min="100" max="2000" step="50" value="500" class="range-slider" id="slider-hkd">
+              <div class="hud-text blue-text" id="readout-impact" style="margin-top:8px;">Provides ~50 meals for shelter dogs</div>
+            </div>
+
+            <button class="btn btn-orange" id="btn-step-3-next" style="width:100%; margin-top:16px;">PROCEED TO ANIMAL NAMING →</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Animal Naming & Final Commit -->
+        <div id="wizard-step-4" style="display:none;">
+          <h2 style="margin-bottom:16px;">STEP 04 // NAME YOUR ROUTE ANIMAL</h2>
+          <p class="hud-text" style="margin-bottom:24px;">ESTABLISH YOUR CARETAKER BOND WITH THE ARTWORK</p>
+
+          <div style="background:var(--card-fill); border:1px solid var(--wireframe); padding:24px;">
+            <div style="text-align:center; padding:20px 0;">
+              <pre class="volt-text" style="font-family:monospace; font-size:12px; line-height:1.2;">
+  /\_/\  
+ ( o.o ) 
+  > ^ <   [ ROUTE COMPANION MATCH ]
+              </pre>
+            </div>
+
+            <div style="margin-bottom:24px;">
+              <label class="hud-text">GIVE YOUR ANIMAL COMPANION A NAME</label>
+              <input type="text" id="input-animal-name" placeholder="e.g. Sparky, Roadie, Buddy" style="width:100%; padding:14px; background:#111; border:1px solid var(--volt); color:#fff; font-size:1.1rem; margin-top:6px;">
+            </div>
+
+            <button class="btn btn-volt" id="btn-confirm-commit" style="width:100%; font-size:1.1rem; padding:16px;">[CONFIRM & COMMIT ADOPTION]</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sticky Summary Drawer -->
+      <aside class="sticky-summary">
+        <div class="hud-text" style="border-bottom:1px solid var(--wireframe); padding-bottom:8px; margin-bottom:16px;">ADOPTION SUMMARY</div>
+        
+        <div style="margin-bottom:12px;">
+          <div class="hud-text">SELECTED ROUTE</div>
+          <div style="font-weight:bold;" id="summary-route">Hong Kong Dog Run</div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <div class="hud-text">CHARITY CAUSE</div>
+          <div style="font-weight:bold; color:var(--volt);" id="summary-charity">HK Rescue Puppies</div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <div class="hud-text">COMMITMENT TARGET DATE</div>
+          <div id="summary-date">Sat, Aug 9 (5 days)</div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <div class="hud-text">FUNDRAISING GOAL</div>
+          <div id="summary-target">HK$ 500</div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <div class="hud-text">ANIMAL COMPANION</div>
+          <div id="summary-animal" style="color:var(--orange);">[ Unnamed ]</div>
+        </div>
+
+        <div class="hud-text" style="font-size:0.7rem; margin-top:20px; border-top:1px solid var(--wireframe); padding-top:12px;">
+          NO LOGIN REQUIRED &bull; GENERATES ADOPTER ID (NNNN-CC)
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <script src="scripts/main.js"></script>
+  <script src="scripts/adoption-wizard.js"></script>
+</body>
+</html>
