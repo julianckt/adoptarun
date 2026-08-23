@@ -20,10 +20,10 @@ Furthermore, non-profit charities struggle to engage modern urban demographics i
 **Adopt A Run** is an international GPS-art community movement debuting in Hong Kong that transforms urban running into caretaker ownership of digital artwork and non-profit causes. 
 
 The Adopt A Run web platform provides:
-1. **A Tech-Brutalist Visual Identity & Interactive Experience**: Built with Astro, React, and GSAP/ScrollTrigger, featuring 3D anamorphic typography ("RUN"), a live ASCII matrix generative dog engine, strict OKLCH color tokens, and a Dual-Row Race Control Header.
-2. **A 2-Page Discovery & Adoption Portal (`/routes` + `/signup`)**: A bento-grid catalog for filtering Strava Art Routes paired with a zero-login 4-step adoption wizard where runners match with an Artwork, select a Charity Cause, set dynamic commitment and fundraising goals, name their route animal companion, and receive a persistent 6-character **Adopter ID** (`NNNN-CC`).
+1. **A Dynamic Visual Identity & Interactive Experience**: Built with Astro, React, and GSAP/ScrollTrigger, featuring dynamic typography, interactive route polyline animations, and a centralized responsive navigation header.
+2. **A 2-Page Discovery & Adoption Portal (`/routes` + `/signup`)**: A catalog for discovering and filtering Strava Art Routes paired with a zero-login 4-step adoption wizard where runners match with an Artwork, select a Charity Cause, set dynamic commitment and fundraising goals, name their route animal companion, and receive a persistent 6-character **Adopter ID** (`NNNN-CC`).
 3. **An Ephemeral Strava OAuth & Client-Side GPX Verification Engine**: A zero-password run verification pipeline that matches completed runs using a 3-layer spatial algorithm (type, date window, ±40% distance, 40% start radius, 10-point trajectory sample) or accepts browser-parsed `.gpx` file uploads.
-4. **Interactive Digital & Printable Certificate System (`/log/:adopter_id`)**: Publicly accessible run log dashboards displaying Leaflet GPX route traces synchronized with interactive elevation scrubbers, HUD telemetry, Sanity CMS impact equivalencies, 1-click social share card generators (1:1 and 9:16 PNGs), and ink-friendly print-ready physical certificates with scannable QR codes.
+4. **Interactive Digital & Printable Certificate System (`/log/:adopter_id`)**: Publicly accessible run log dashboards displaying Leaflet GPX route traces synchronized with interactive elevation scrubbers, verified run telemetry metrics, Sanity CMS impact equivalencies, 1-click social share card generators (1:1 and 9:16 PNGs), and print-ready physical certificates with scannable QR codes.
 5. **Decoupled Edge Data Infrastructure**: Serverless execution on Cloudflare Pages & Functions, Sanity.io Headless CMS for client editing, Cloudflare D1 SQLite for adoptions and run logs, Cloudflare R2 for GPX storage, and a blueprint for Raisely P2P donations (`donate.adoptarun.hk`).
 
 ---
@@ -32,10 +32,10 @@ The Adopt A Run web platform provides:
 
 ### Runner / Adopter Experience
 
-1. As an urban runner, I want to view a visually captivating hero section with interactive 3D typography and generative ASCII matrix art, so that I immediately understand the sleek, athletic energy of the Adopt A Run movement.
-2. As an urban runner, I want to use a Dual-Row Race Control header, so that I can easily navigate between routes, charities, about pages, and key action flows while staying aware of upcoming community runs and city contexts.
-3. As an urban runner, I want to browse a bento wireframe catalog of Strava Art Routes (`/routes`), so that I can filter artwork by difficulty, region, distance, and features like kid-friendly or trail-running.
-4. As an urban runner, I want to expand a route card inline within the bento grid, so that I can view an interactive Leaflet map, animated GPS polyline path drawing, elevation profile SVG, and start point details without losing my place.
+1. As an urban runner, I want to view an engaging, interactive hero section with dynamic typography and artwork visuals, so that I immediately understand the athletic, community energy of the Adopt A Run movement.
+2. As an urban runner, I want to use a persistent header navigation bar with announcement ticker and city/language controls, so that I can easily navigate between routes, charities, about pages, and key action flows while staying aware of upcoming community runs and city contexts.
+3. As an urban runner, I want to browse a catalog of Strava Art Routes (`/routes`), so that I can filter artwork by difficulty, region, distance, and features like kid-friendly or trail-running.
+4. As an urban runner, I want to expand a route card inline within the catalog grid, so that I can view an interactive Leaflet map, animated GPS polyline path drawing, elevation profile SVG, and start point details without losing my place.
 5. As an urban runner, I want to click "Adopt This Route" on any card, so that I am seamlessly redirected to the Adoption Portal (`/signup?route=<slug>`) with my chosen route pre-loaded.
 6. As an urban runner, I want to complete a 4-step zero-login adoption wizard (`/signup`), so that I can commit to a route and pair it with a beneficiary Charity Cause without creating a password or registering an account.
 7. As an urban runner, I want to adjust dynamic commitment sliders for completion timeframe (1–20 days) and fundraising targets (HK$100–HK$2,000), so that I can set realistic goals aligned with real-world charity impact equivalencies.
@@ -46,7 +46,7 @@ The Adopt A Run web platform provides:
 12. As an urban runner, I want to log my run by uploading a `.gpx` file if I do not use Strava, so that any GPS device or running app can be used to prove route completion.
 13. As a walk-in runner who finished a route before adopting, I want to log a run directly (`/log`), so that an Adopter ID and adoption record are generated for me on the fly.
 14. As a runner logging multiple runs under one Adopter ID, I want subsequent logs to automatically append sequential suffixes (`0124-JC-2`), so that all my caretaking efforts are recorded under my single profile.
-15. As an urban runner, I want to access my permanent Adoption Run Log (`/log/:adopter_id`), so that I can view my map trace, scrub the elevation profile to see my position on the map, and review my performance HUD telemetry.
+15. As an urban runner, I want to access my permanent Adoption Run Log (`/log/:adopter_id`), so that I can view my map trace, scrub the elevation profile to see my position on the map, and review my performance telemetry and metrics.
 16. As an urban runner, I want to generate custom 1:1 and 9:16 social share cards, so that I can post my running achievement and charity impact on Instagram Stories, Strava, and Twitter.
 17. As an urban runner, I want to open a print-ready physical certificate modal with a scannable QR code, so that I can print or save an official paper certificate of my route caretaking.
 18. As an urban runner, I want to use a "Pass the Torch" action, so that I can invite friends or recruit the next caretaker to take over the route after I complete it.
@@ -69,23 +69,23 @@ The Adopt A Run web platform provides:
 
 ### 1. Architectural & Technology Stack Decisions
 
-- **Framework**: Astro (SSG/SSR) with React islands (`@astrojs/cloudflare`). Static pages rendered at build time for sub-50ms TTFB; React islands used exclusively for interactive components (hero 3D typography, Leaflet maps, adoption wizard, elevation scrubber, card generators).
-- **Styling & Design System**: Vanilla CSS with strict OKLCH color tokens and Adobe Typekit fonts (`Scale VF` display, `OCR A` telemetry, `Runda` body). No Tailwind CSS.
-- **Motion & Animation Engine**: GSAP + ScrollTrigger for scroll-driven theme crossfades, variable font weight/width morphing, 1px clip-path reveals, and path-drawing SVG polylines.
+- **Framework**: Astro (SSG/SSR) with React islands (`@astrojs/cloudflare`). Static pages rendered at build time for sub-50ms TTFB; React islands used exclusively for interactive components (hero interactive typography, Leaflet maps, adoption wizard, elevation scrubber, card generators).
+- **Styling & Design System**: Vanilla CSS structured with semantic design tokens for color palettes, typographic hierarchy, spacing scales, and component variants. No Tailwind CSS.
+- **Motion & Animation Engine**: GSAP + ScrollTrigger for responsive component transitions, scroll-driven triggers, and path-drawing SVG polylines.
 - **Headless CMS**: Sanity.io (`@sanity/astro`) with exactly 3 schemas (`route`, `charity`, `siteCopy`).
 - **Edge Database**: Cloudflare D1 (SQLite) executing via Cloudflare Pages Functions.
 - **Media & File Storage**: Cloudflare R2 bucket for direct `.gpx` file uploads.
 - **Authentication**: Zero-login architecture. Public identification handled via 6-character `adopter_id` (`NNNN-CC`).
 
-### 2. Design System & Token Allocation Rules
+### 2. Semantic Token & Component Contract
 
-- **Primary Volt (`oklch(0.9 0.275 128)`)**: Strictly reserved for top-tier primary call-to-action buttons (`[RUN WITH US]`, `[ADOPT YOUR RUN]`, `[CONFIRM & COMMIT]`) and glowing map route polylines.
-- **Secondary Orange (`oklch(0.66 0.215 21)`)**: Used for secondary CTAs, hover highlights, slider thumbs, progress indicators, and active selection state borders.
-- **Splash Blue (`oklch(0.66 0.138 234)`)**: Used for metric readouts and data highlights.
-- **Off-Black Base (`oklch(0.16 0.0075 128)`)**: Global dark canvas background.
-- **Dark Green Card Fill (`oklch(0.21 0.01 128)`)**: Background fill for bento grid cards and HUD containers.
-- **Wireframe Grid Token (`oklch(0.35 0.01 128)`)**: 1px exposed structural borders and divides.
-- **Muted HUD Token (`oklch(0.55 0.01 128)`)**: `OCR A` telemetry text, crosshair `+` icons, grid dots, and barcodes.
+The styling layer is implemented using Vanilla CSS structured around design-agnostic semantic CSS custom properties. The design system exposes semantic tokens rather than hardcoded palette values, allowing visual themes to evolve independently from the underlying UI architecture:
+
+- **Action Tokens (`--color-action-primary`, `--color-action-secondary`)**: High-contrast action tokens assigned to primary conversion points (`[RUN WITH US]`, `[ADOPT YOUR RUN]`, `[CONFIRM & COMMIT]`) and secondary interactive actions (`[LOG YOUR RUN]`, selection borders, slider thumbs).
+- **Feedback & Accent Tokens (`--color-accent`, `--color-highlight`)**: Used for metric telemetry readouts, status tags, and route polyline highlights.
+- **Surface Tokens (`--color-surface-canvas`, `--color-surface-card`, `--color-surface-overlay`)**: Hierarchical surface layers defining page background canvas, card containers, and modal dialogs.
+- **Boundary & Divider Tokens (`--color-border-subtle`, `--color-border-strong`)**: Structural dividers and component borders.
+- **Typography Tokens (`--font-display`, `--font-mono`, `--font-body`)**: Semantic font roles assigned across display headlines, technical telemetry data/identifiers, and narrative editorial copy.
 
 ### 3. Database Schema (Cloudflare D1 SQLite)
 
@@ -145,7 +145,7 @@ CREATE TABLE donations (
   donation_id TEXT PRIMARY KEY,          -- Internal unique key (e.g. don_9x8f2a)
   adopter_id TEXT NOT NULL,             -- Foreign Key referencing adoptions.adopter_id
   raisely_donation_id TEXT UNIQUE,      -- Webhook idempotency key from Raisely
-  donor_name TEXT DEFAULT 'Anonymous',   -- Donor display name on HUD
+  donor_name TEXT DEFAULT 'Anonymous',   -- Donor display name on certificate/donor wall
   amount_cents INTEGER NOT NULL,        -- Amount in HKD cents (10000 = HK$100.00)
   currency TEXT DEFAULT 'HKD',
   message TEXT,                          -- Cheer/encouragement note for runner
@@ -180,6 +180,141 @@ CREATE INDEX idx_donations_adopter_created ON donations(adopter_id, created_at D
 - `NNNN` derives from SQLite autoincrement `seq_num` initialized at seed `120` with deterministic pseudo-sequential jumping (+1 to +4) to portray an active community sequence. `CC` represents runner initials.
 - **Walk-Ins**: Runners logging without prior adoption automatically create an `adoptions` record (`status='walk_in'`) and receive a fresh `adopter_id`.
 - **Multi-Runs**: Subsequent runs logged under the same `adopter_id` create `run_logs` records with appended suffixes (`0124-JC-2`, `0124-JC-3`).
+
+### 8. Comprehensive UI/UX Interaction Flows, States & Edge Cases
+
+#### 1. Header Navigation Bar & Announcement Ticker UX
+- **Positioning**: Sticky persistent top navigation bar across all pages.
+- **Top Micro-Row**:
+  - Left: City selector trigger (`HKG ▼`) with dropdown interaction for future multi-city expansion.
+  - Center: Clickable announcement ticker banner linking directly to the adoption portal (`/signup`) (e.g. `NEXT RUN: SAT AUG 8 @ 07:30 HKT | 12 RUNNERS JOINED`), supporting dynamic text strings up to 120 characters from Sanity CMS.
+  - Right: Language selector trigger (`ENG ▼`).
+- **Main Navigation Row**:
+  - Left Group: Navigation links to `Routes` (`/routes`), `Charities` (`/#charities`), and `About` (`/#about`).
+  - Center Group: Centered **Adopt A Run** wordmark and vector brand mark.
+  - Right Group: Action links to `Donate` (`donate.adoptarun.hk`), `Log a Run` (opens run verification modal), and primary CTA button `[RUN WITH US]` (navigates to `/signup`).
+
+#### 2. Homepage Information Hierarchy & Live Counter UX (`/`)
+- **Hero Section**:
+  - Dynamic typography with interactive route polyline animations / visual artwork elements.
+  - Primary Hero CTAs: Primary action `[RUN WITH US]` and secondary action `[LOG YOUR RUN]`.
+- **Section Sequence (01 to 08)**:
+  - **01. Mission & Movement**: Monochromatic runner imagery paired with the official Adopt A Run mission statement.
+  - **02. Adoption Telemetry Live Data Grid**: 4-column live metrics grid featuring real-time counters: `Runs Adopted`, `Kilometers Trekked`, `Causes Championed`, `Dollars Raised`.
+  - **03. Featured GPS Art Routes**: Curated catalog grid highlighting featured Strava Art Routes with route polyline previews, distance and elevation metric tags, paired charity cause badges, and inline direct link `"Adopt This Route →"`.
+  - **04. 3-Step Caretaker Journey**: 3-stage visual progression cards:
+    - *Step 01: Match & Commit* — "Match with an animal route, and commit to a paired charity cause."
+    - *Step 02: Nurture & Grow* — "Bring your animal to life with your running steps and fundraise to nurture your cause."
+    - *Step 03: Forever Guardian* — "Own your success in running and in impact! Hand off your run to its next caretaker."
+  - **05. Partner Charities Grid**: Structured charity profile cards displaying partner logos, photography, dual description text (`charityDescription` for organization background vs `causeDescription` for specific campaign impact), and dynamic impact equivalency calculations.
+  - **06. Charitable Mission Story**: Editorial narrative detailing the vision of transforming GPS running into charitable caretaking.
+  - **07. Action Banner CTA**: Movement slogan ("Adopt the run. Complete the route. Own the impact.") paired with primary action `[RUN WITH US]` and `"Pass the Torch"` recruitment link.
+  - **08. Global Footer**: Geographic coordinates (`22.3193° N, 114.1694° E`), legal copyright, and community social links.
+
+#### 3. Route Catalog (`/routes`) Interaction & Filtering UX
+- **Filter & Sort Controls**:
+  - *Sort Options*: `Latest` (Default), `Longest`, `Shortest`, `Easiest`, `Hardest`.
+  - *Filter Categories*:
+    - Difficulty: `All`, `Beginner`, `Easy`, `Intermediate`, `Advanced`.
+    - Region: `All`, `HK Island`, `Kowloon`, `MTR Accessible`.
+    - Features: `Kid-friendly`, `Traffic-free`, `Trail-running`.
+- **Route Cards (Closed View)**:
+  - *Pinned Scheduled Group Runs*: Pinned at the top of the grid with schedule badge and runner count (e.g. `NEXT RUN: SAT AUG 8 @ 07:30 HKT | 12 RUNNERS JOINED`).
+  - *Regular Route Cards*: Mini-map polyline preview, distance (km), elevation gain (+m), estimated duration, feature tags, and bottom link `"Adopt This Route →"`.
+- **Expanded Route Card View (Inline Grid Expansion)**:
+  - Clicking any card expands it in place (spanning neighboring columns) without navigating away.
+  - *Interactive Leaflet Map*: Vector GPS polyline rendering with animated pulse tracer.
+  - *Elevation Profile*: Custom SVG area chart directly underneath the map.
+  - *Route Metadata Details*: Suggested start point description (e.g. `MTR Central Exit A`), group run meetup point, external Strava route link, direct `.gpx` file download link, and route narrative description.
+
+#### 4. Adoption Portal (`/signup`) 4-Step Wizard UX
+- **Stepper Navigation**: `SELECT ROUTE` ── `SELECT CHARITY` ── `ENTER DETAILS` ── `COMMIT & ADOPT`.
+- **Persistent Sticky Summary Panel**:
+  - Pins to the viewport throughout steps 2, 3, and 4.
+  - Displays selected artwork name, mini-map preview, distance/elevation metrics, paired charity name, calculated target date, target fundraising amount, and inline step-jump links (`[Change Route]`, `[Change Charity]`).
+- **Step 01 // Select Route**:
+  - Interactive grid of available Strava Art Routes.
+  - *Pre-selection Bypass*: Arriving via `/signup?route=<slug>` automatically pre-selects the route and skips Step 1, landing directly on Step 2.
+- **Step 02 // Select Charity**:
+  - Grid of partner charities.
+  - *Two-Step Confirmation Interaction*: Clicking a charity highlights the card and displays a confirmation CTA `SUPPORT [CHARITY NAME] ↓`; clicking the confirmation CTA commits the selection and advances to Step 3.
+- **Step 03 // Enter Details**:
+  - Input fields: First Name, Last Name, Email.
+  - *Slider 1 (Commitment Timeframe)*: Range 1 to 20 days (Default: 5 days) with dynamic top-right readout showing calculated completion date (e.g. `by Fri, Aug 8`). *Conditional Rule: Hidden for Group Runs (`isGroupRun: true`) where the date/time is predetermined.*
+  - *Slider 2 (Fundraising Target)*: Range HK$100 to HK$2,000 (Default: HK$500) with dynamic top-right readout calculating real-time charity impact equivalencies (e.g. `Providing 50 meals for shelter animals`).
+  - *Group Run Extra*: Includes `"Share this run & invite a friend"` action link.
+- **Step 04 // Review & Naming**:
+  - Displays runner name and contact details.
+  - Route animal companion visual graphic.
+  - Companion naming text input (*"It's a match between you and your route! Give it a name, and commit to the adoption!"*).
+  - Primary CTA: Full-width `[CONFIRM & COMMIT]` button.
+
+#### 5. Adoption Confirmation (`/signup/confirmed`) UX
+- **Header**: `"You've committed! [Animal Name] is waiting for your adoption"`.
+- **Adopter ID Banner**: Prominent visual container presenting the 6-character identifier (`Adopter ID: 0124-JC`).
+- **Caretaker Journey Timeline**: Step 01 Match & Commit [COMPLETED] ── Step 02 Nurture & Grow [ACTIVE] ── Step 03 Forever Guardian.
+- **Route & Meetup Card**: Map trace, elevation profile, start point description, group run schedule, and meetup point.
+- **"Add to Calendar" Action**: Generates downloadable `.ics` and Google Calendar links for scheduled group runs.
+- **Transactional Notice**: *"Confirmation sent to [email]. Keep your Adopter ID (0124-JC) safe to log your run!"*.
+- **Primary Actions**: Secondary action `[LOG YOUR RUN NOW]` and `"Share My Commitment"` social sharing trigger.
+
+#### 6. "Log a Run" Modal System States, Edge Cases & Verification Engine
+- **Zero-Password Authentication Model**:
+  - The platform contains zero password fields, login sessions, or account registration screens.
+  - Identification and access are strictly URL-driven (`/log/:adopter_id`) and Adopter ID-driven.
+- **Modal System States**:
+  - **State A // ID Prompt & Helper Flows**:
+    - Input field for 6-character `adopter_id` (`NNNN-CC`).
+    - *"Forgot my ID"* Email Helper: Prompts runner for email and triggers a Resend transactional email listing all Adopter IDs registered under that email.
+    - *"I do not have an ID"* (Walk-In Flow): Expands inline inputs for First Name, Last Name, Route selection, and Charity selection. Automatically creates a new D1 adoption record (`status='walk_in'`) and generates an `adopter_id` *before* redirecting to Strava OAuth.
+  - **State B // Sync Loading Feedback State**:
+    - Visual loading state displaying feedback during Strava OAuth token exchange and spatial filter evaluation.
+  - **State C // Spatial Match Results Screen**:
+    - *Single Match*: Displays verified route preview card (map trace, distance, pace, moving time, date) with `[Confirm & Log This Run]` action.
+    - *Multiple Matches*: Displays top 3 matching runs as selectable cards for the user to choose the correct activity.
+    - *Fallback Link*: `"Cannot find my run"` link reveals an unfiltered list of the user's past 30 days of activities without spatial previews.
+    - *Catchall Warning Banner*: Diagnostic notification displayed when no activities match (*"No recent run/walk activities detected on your Strava account. Check your Strava activity viewing permissions, or [Upload GPX File Instead]"*).
+    - *Walk-In Bypass*: Walk-in runners bypass spatial filtering and are directly presented with their 3 most recent activities to select from.
+  - **State D // GPX Helper Guide Modal**:
+    - Step-by-step visual export guide for exporting `.gpx` files from Garmin Connect, Apple Health/Fitness, Coros, Suunto, and Strava Web.
+
+#### 7. Adoption Run Log & Digital Certificate (`/log/:adopter_id`)
+- **Main Web Dashboard**:
+  - Celebration Header: `"Congratulations! You have successfully adopted [Animal Name]!"`.
+  - *Interactive Leaflet Map & Elevation Scrubbing Sync*: Leaflet map displaying runner's GPS polyline trace synchronized with the SVG elevation profile chart below. Scrubbing/hovering over the elevation chart dynamically synchronizes and moves a marker along the map polyline in real time.
+  - *Performance Telemetry Grid*: Distance (km), Average Pace (min/km), Moving Time (hrs:mins), Amount Fundraised (HKD).
+  - *Metadata Block*: Adopter ID (`0124-JC`), Completion Date, Beneficiary Charity, and dynamic Impact Equivalency readout (`IMPACT EQUIVALENCY: 40 MEALS PROVIDED FOR SHELTER DOGS`).
+  - *Multi-Run Suffix Display*: When a runner logs multiple runs under one Adopter ID, subsequent runs render with appended suffixes (`0124-JC-2`, `0124-JC-3`).
+- **Overlay Modals & Export Views**:
+  - *Social Share Card Generator Modal*:
+    - Generates 1:1 Square (1080x1080px for Strava/Twitter) and 9:16 Vertical (1080x1920px for Instagram Stories) PNGs containing route artwork trace, run metrics, Adopter ID, and charity logo.
+    - CTAs: `[Copy Image to Clipboard]` and `[Download PNG]`.
+  - *Printable Physical Certificate Modal*:
+    - High-contrast, print-ready layout containing official typography, Strava art polyline, performance metrics, and scannable QR Code linking back to `/log/:adopter_id`.
+    - CTAs: `[Print Certificate]` and `[Download PDF]`.
+  - *Embedded Peer-to-Peer Donation Widget (`donate.adoptarun.hk`)*:
+    - Target vs raised HKD progress bar.
+    - `"Back this Run"` CTA button redirecting to `donate.adoptarun.hk/profiles/:adopter_id`.
+    - Live donor wall displaying donor names, contribution amounts, and cheer messages.
+  - *"Pass the Torch" Recruitment Action*: Direct action link enabling the runner to recruit or invite the next caretaker for the route.
+
+#### 8. Standardized Call-to-Action (CTA) Semantic Registry
+Standardized action intents and labels used across all application pages:
+
+| Action Intent | Primary Label String | Semantic Role | Secondary / Sub-Options |
+| :--- | :--- | :--- | :--- |
+| **Primary Adoption** | `[RUN WITH US]` or `[ADOPT YOUR RUN]` | Primary Action Token | `Adopt This Route →` (inline catalog link) |
+| **Run Completion** | `[LOG YOUR RUN]` | Secondary Action Token | Sub-options: `[Sync with Strava]` & `[Upload GPX File]` |
+| **Certificate Claim** | `[CLAIM ADOPTION CERTIFICATE]` | Secondary Action Token | Sub-options: `[Share Digital Cert]`, `[Share Achievement]`, `[Claim Physical Cert]` |
+| **Caretaker Recruitment** | `[PASS THE TORCH]` | Secondary Action Link | Hand-off link to invite the next runner |
+| **Final Adoption Commit** | `[CONFIRM & COMMIT]` | Primary Action Token | Step 4 wizard final commitment action |
+
+#### 9. Dynamic CMS Text Container Elasticity & Fallbacks
+All UI components and card containers must gracefully handle variable-length content from Sanity CMS without clipping or visual breakage:
+- **Route Descriptions**: Flexible containers accommodating 1 to 3 paragraphs.
+- **Dual Charity Text**: Distinct containers accommodating `charityDescription` (organization overview) and `causeDescription` (specific impact campaign).
+- **Impact Equivalency Strings**: Dynamic interpolation templates (e.g. `Funds {count} meals for shelter animals`).
+- **Announcement Ticker Banner**: Text containers supporting strings up to 120 characters.
 
 ---
 
