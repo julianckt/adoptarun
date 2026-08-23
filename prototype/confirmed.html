@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADOPTION CONFIRMED — ADOPT A RUN</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <header class="header-sticky">
+    <div class="race-control-top">
+      <div>HKG ▼ | COMMITMENT CONFIRMED</div>
+      <div class="ticker-banner">ADOPTER ID GENERATED &bull; KEEP YOUR LINK SAFE</div>
+      <div>ENG ▼</div>
+    </div>
+    <div class="race-control-main">
+      <a href="index.html" class="brand-logo">
+        <svg class="brand-roadrunner" viewBox="0 0 24 24">
+          <path d="M2 18L7 12L12 16L18 8L22 12" stroke-width="2" stroke-linecap="square"/>
+        </svg>
+        <span>ADOPT A RUN</span>
+      </a>
+      <nav class="nav-links">
+        <a href="routes.html">Routes</a>
+        <a href="log.html">Log a Run</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section-padding" style="max-width:800px; text-align:center;">
+    
+    <div class="bento-card pinned-volt" style="padding:40px; margin-bottom:32px;">
+      <div class="hud-text volt-text" style="font-size:1rem; margin-bottom:8px;">★ ADOPTION COMMITMENT CONFIRMED</div>
+      <h1 style="font-size:2.5rem; margin-bottom:16px;">SPARKY IS WAITING FOR YOUR RUN!</h1>
+
+      <!-- Prominent Adopter ID Banner -->
+      <div style="background:#111; border:1px solid var(--wireframe); padding:20px; display:inline-block; margin:16px 0;">
+        <div class="hud-text">YOUR PERSISTENT ADOPTER ID</div>
+        <div class="hud-text volt-text" style="font-size:2.5rem; font-weight:bold; letter-spacing:0.1em; margin-top:4px;" id="adopter-id-display">0124-JC</div>
+      </div>
+
+      <p class="hud-text" style="color:var(--muted-hud); margin-top:12px;">
+        A transactional confirmation email has been sent to your inbox with your direct management link.
+      </p>
+    </div>
+
+    <!-- Caretaker Timeline -->
+    <div class="bento-card" style="margin-bottom:32px; text-align:left;">
+      <div class="hud-text orange-text" style="margin-bottom:16px;">CARETAKER JOURNEY STATUS</div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="color:var(--volt); font-family:var(--font-hud);">✓ STEP 01: MATCH & COMMIT [COMPLETED]</div>
+        <div style="color:var(--orange); font-family:var(--font-hud); font-weight:bold;">▶ STEP 02: NURTURE & GROW [ACTIVE]</div>
+        <div style="color:var(--muted-hud); font-family:var(--font-hud);">STEP 03: FOREVER GUARDIAN</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex; justify-content:center; gap:20px; align-items:center;">
+      <a href="log.html" class="btn btn-orange" style="font-size:1.1rem; padding:16px 32px;">[LOG YOUR RUN NOW]</a>
+      <a href="#" class="btn btn-outline">[SHARE MY COMMITMENT]</a>
+    </div>
+
+  </main>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('adopter_id') || '0124-JC';
+    document.getElementById('adopter-id-display').innerText = id;
+  </script>
+</body>
+</html>

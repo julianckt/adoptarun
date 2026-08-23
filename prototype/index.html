@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADOPT A RUN — Hong Kong GPS-Art Community Movement</title>
+  <meta name="description" content="An international GPS-art community movement debuting in Hong Kong. Transform urban running into caretaker ownership of digital artwork and non-profit causes.">
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- GSAP Libraries CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+  <!-- 1. Sticky Dual-Row Race Control Header -->
+  <header class="header-sticky">
+    <div class="race-control-top">
+      <div>HKG ▼ <span style="color:var(--wireframe);margin:0 8px;">|</span> GPS-ART MOVEMENT</div>
+      <div class="ticker-banner">NEXT RUN: SAT AUG 8 @ 07:30 HKT | 12 RUNNERS JOINED [CLICK TO JOIN]</div>
+      <div>ENG ▼</div>
+    </div>
+    <div class="race-control-main">
+      <a href="index.html" class="brand-logo">
+        <svg class="brand-roadrunner" viewBox="0 0 24 24">
+          <path d="M2 18L7 12L12 16L18 8L22 12" stroke-width="2" stroke-linecap="square"/>
+        </svg>
+        <span>ADOPT A RUN</span>
+      </a>
+      <nav class="nav-links">
+        <a href="routes.html">Routes</a>
+        <a href="#charities">Charities</a>
+        <a href="#about">About</a>
+      </nav>
+      <div class="header-actions">
+        <a href="#donate" class="hud-text" style="color:var(--white-text);">Donate</a>
+        <a href="log.html" class="btn btn-hud">Log a Run</a>
+        <a href="signup.html" class="btn btn-volt">[RUN WITH US]</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. Hero Section (100vh Viewport) -->
+  <section class="hero-wrapper">
+    <canvas id="ascii-canvas"></canvas>
+    
+    <div class="hero-3d-perspective">
+      <h1 class="hero-title-3d">RUN</h1>
+    </div>
+
+    <p class="hero-subhead">
+      Transform your athletic movement into caretaker ownership of digital artwork and non-profit causes across Hong Kong.
+    </p>
+
+    <div class="hero-cta-group">
+      <a href="signup.html" class="btn btn-volt">[RUN WITH US]</a>
+      <a href="log.html" class="btn btn-orange">[LOG YOUR RUN]</a>
+    </div>
+  </section>
+
+  <!-- Section 01: Mission & Movement -->
+  <section id="about" class="section-padding container">
+    <div class="section-header">
+      <div>
+        <div class="hud-text">01 // MISSION STATEMENT</div>
+        <h2 class="section-title">CHAMPION A KINDER CITY</h2>
+      </div>
+    </div>
+    <div class="bento-card">
+      <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+      <div class="crosshair bl">+</div><div class="crosshair br">+</div>
+      <p style="font-size: 1.35rem; line-height: 1.6; max-width: 900px;">
+        "By bringing people together through long-distance running, jogging, or walking and community art, our project aims to help champion a kinder city where our shared compassion moves us forward."
+      </p>
+    </div>
+  </section>
+
+  <!-- Section 02: Telemetry Data Grid -->
+  <section class="section-padding container">
+    <div class="hud-text" style="margin-bottom: 16px;">02 // MOVEMENT TELEMETRY HUD</div>
+    <div class="telemetry-grid">
+      <div class="telemetry-cell">
+        <div class="telemetry-num" data-target="124">124</div>
+        <div class="hud-text">Runs Adopted</div>
+      </div>
+      <div class="telemetry-cell">
+        <div class="telemetry-num" data-target="1480">1,480</div>
+        <div class="hud-text">Kilometers Trekked</div>
+      </div>
+      <div class="telemetry-cell">
+        <div class="telemetry-num" data-target="18">18</div>
+        <div class="hud-text">Causes Championed</div>
+      </div>
+      <div class="telemetry-cell">
+        <div class="telemetry-num" data-target="64500">HK$ 64.5K</div>
+        <div class="hud-text">Dollars Raised</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 03: Featured GPS Art Routes -->
+  <section class="section-padding container">
+    <div class="section-header">
+      <div>
+        <div class="hud-text">03 // FEATURED STRAVA ART ROUTES</div>
+        <h2 class="section-title">EXPLORE THE ARTWORK</h2>
+      </div>
+      <a href="routes.html" class="btn btn-outline">View All Routes →</a>
+    </div>
+
+    <div class="grid-bento">
+      <!-- Card 1: Pinned Group Run -->
+      <div class="bento-card pinned-volt">
+        <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+        <div class="crosshair bl">+</div><div class="crosshair br">+</div>
+        <div class="hud-text volt-text" style="margin-bottom:8px;">NEXT GROUP RUN: SAT AUG 8 @ 07:30 HKT</div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Hong Kong Dog Run</h3>
+        <p class="hud-text" style="margin-bottom: 16px;">8.4 KM &bull; +320M ELEVATION &bull; EASY</p>
+        <div style="display:flex; gap:8px; margin-bottom: 20px;">
+          <span class="strikethrough-tag">Kid-Friendly</span>
+          <span class="strikethrough-tag">MTR Central Exit A</span>
+        </div>
+        <a href="signup.html?route=hong-kong-dog-run" class="btn btn-volt" style="width:100%;">Adopt This Route →</a>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bento-card">
+        <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+        <div class="crosshair bl">+</div><div class="crosshair br">+</div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Kowloon Cat Circuit</h3>
+        <p class="hud-text" style="margin-bottom: 16px;">12.1 KM &bull; +450M ELEVATION &bull; INTERMEDIATE</p>
+        <div style="display:flex; gap:8px; margin-bottom: 20px;">
+          <span class="strikethrough-tag">Urban Trail</span>
+          <span class="strikethrough-tag">MTR Jordan</span>
+        </div>
+        <a href="signup.html?route=kowloon-cat-circuit" class="volt-text" style="font-family:var(--font-hud); font-weight:bold;">Adopt This Route →</a>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bento-card">
+        <div class="crosshair tl">+</div><div class="crosshair tr">+</div>
+        <div class="crosshair bl">+</div><div class="crosshair br">+</div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Lantau Boar Trail</h3>
+        <p class="hud-text" style="margin-bottom: 16px;">15.6 KM &bull; +780M ELEVATION &bull; ADVANCED</p>
+        <div style="display:flex; gap:8px; margin-bottom: 20px;">
+          <span class="strikethrough-tag">Trail-Running</span>
+          <span class="strikethrough-tag">Tung Chung</span>
+        </div>
+        <a href="signup.html?route=lantau-boar-trail" class="volt-text" style="font-family:var(--font-hud); font-weight:bold;">Adopt This Route →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 04: 3-Step Caretaker Journey -->
+  <section class="section-padding container">
+    <div class="section-header">
+      <div>
+        <div class="hud-text">04 // THE CARETAKER JOURNEY</div>
+        <h2 class="section-title">HOW IT WORKS</h2>
+      </div>
+    </div>
+    <div class="grid-bento">
+      <div class="bento-card">
+        <div class="hud-text orange-text" style="font-size:1.5rem; margin-bottom:8px;">STEP 01</div>
+        <h3>MATCH & COMMIT</h3>
+        <p style="margin-top:12px; color:#c0cac0;">Match with an animal artwork route and commit to a paired charity cause without password login.</p>
+      </div>
+      <div class="bento-card">
+        <div class="hud-text orange-text" style="font-size:1.5rem; margin-bottom:8px;">STEP 02</div>
+        <h3>NURTURE & GROW</h3>
+        <p style="margin-top:12px; color:#c0cac0;">Bring your animal to life with your running steps and fundraise to nurture your cause.</p>
+      </div>
+      <div class="bento-card">
+        <div class="hud-text orange-text" style="font-size:1.5rem; margin-bottom:8px;">STEP 03</div>
+        <h3>FOREVER GUARDIAN</h3>
+        <p style="margin-top:12px; color:#c0cac0;">Own your success in running and impact! Hand off your run to its next caretaker.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 05: Partner Charities Grid -->
+  <section id="charities" class="section-padding container">
+    <div class="section-header">
+      <div>
+        <div class="hud-text">05 // TAX-EXEMPT CHARITY PARTNERS</div>
+        <h2 class="section-title">BENEFICIARY CAUSES</h2>
+      </div>
+    </div>
+    <div class="grid-bento">
+      <div class="bento-card">
+        <h3 style="color:var(--volt); margin-bottom:8px;">HK Rescue Puppies</h3>
+        <p style="font-size:0.9rem; color:#b0bbb0;">Providing medical care, food, and shelter for abandoned street animals in Hong Kong.</p>
+        <div class="hud-text blue-text" style="margin-top:16px;">EQUIVALENCY: HK$100 = 10 MEALS PROVIDED</div>
+      </div>
+      <div class="bento-card">
+        <h3 style="color:var(--volt); margin-bottom:8px;">City Clean Ocean Initiative</h3>
+        <p style="font-size:0.9rem; color:#b0bbb0;">Organizing community beach sweeps and marine conservation along HK coastline.</p>
+        <div class="hud-text blue-text" style="margin-top:16px;">EQUIVALENCY: HK$100 = 5KG PLASTIC REMOVED</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 07: Action Banner CTA -->
+  <section class="section-padding container" style="text-align:center;">
+    <h2 style="font-size: clamp(2rem, 5vw, 4rem); margin-bottom: 24px;">
+      ADOPT THE RUN. COMPLETE THE ROUTE. OWN THE IMPACT.
+    </h2>
+    <div style="display:flex; justify-content:center; gap:20px; align-items:center;">
+      <a href="signup.html" class="btn btn-volt">[RUN WITH US]</a>
+      <a href="signup.html" class="hud-text orange-text" style="text-decoration:underline;">[PASS THE TORCH →]</a>
+    </div>
+  </section>
+
+  <!-- Section 08: Race Control Footer -->
+  <footer class="section-padding" style="background:#090a09; border-top: 1px solid var(--wireframe); padding:40px 0;">
+    <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div class="hud-text">ADOPT A RUN &bull; HKG DEBUT 2026</div>
+        <div class="hud-text" style="margin-top:4px;">COORDINATES: 22.3193° N, 114.1694° E</div>
+      </div>
+      <div class="hud-text">POWERED BY STRAVA &bull; ALL RIGHTS RESERVED</div>
+    </div>
+  </footer>
+
+  <script src="scripts/main.js"></script>
+  <script src="scripts/ascii-dog.js"></script>
+  <script src="scripts/gsap-animations.js"></script>
+</body>
+</html>
