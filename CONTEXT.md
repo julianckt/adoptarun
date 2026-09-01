@@ -33,7 +33,7 @@ The dedicated 4-step interactive flow (`/signup`) where an Adopter selects/verif
 _Avoid_: Checkout, form, sign-up page
 
 **Adopter ID**:
-A persistent 6-character identifier formatted as `NNNN-CC` (e.g., `0124-JC`), generated upon completing the Adoption Portal commitment. The 4 numeric digits (`NNNN`) start at seed `0120` and increment pseudo-sequentially (jumping randomly by +1, +2, +3, or +4 per adoption) to maintain a live community sequence. The 2 trailing characters (`CC`) are the runner's uppercase initials, acting as a personal check value known only to the runner.
+A persistent 6-character identifier formatted as `NNNN-CC` (e.g., `1204-JC`), generated upon completing the Adoption Portal commitment. The 4 numeric digits (`NNNN`) start at seed `1200` and increment pseudo-sequentially (jumping randomly by +1, +2, +3, or +4 per adoption via atomic mutation) to maintain a live community sequence. The 2 trailing characters (`CC`) are the runner's uppercase ASCII initials, acting as a personal check value known only to the runner.
 _Avoid_: User ID, account number, ticket number, random UUID
 
 **Charity Cause**:
@@ -41,18 +41,18 @@ The non-profit organization or charitable mission paired with an Artwork that th
 _Avoid_: Partner, beneficiary, recipient
 
 **Digital Certificate**:
-An interactive web-based view displaying a Runner's completed Strava art map trace, performance metrics, and charity caretaking badge, accessible via a unique permanent URL link.
+An interactive web-based view displaying a Runner's completed Strava art map trace, performance metrics, and charity caretaking badge, accessible via a unique permanent URL link (`/log/:run_id`).
 _Avoid_: Receipt, diploma, ticket
 
 **Physical Certificate**:
 A downloadable, print-ready PDF or image file generated from the Digital Certificate containing official artwork metrics and Strava attribution.
 _Avoid_: Printout, badge
 
-**Fundraising Campaign**:
+**Fundraising Campaign (Future Deployment)**:
 A peer-to-peer donor campaign hosted via Raisely under custom domain `donate.adoptarun.hk/profiles/:adopter_id`, created automatically upon adoption, where supporters back an Adopter's run.
 _Avoid_: Crowdfunder, product page, sales campaign
 
-**Donor / Backer**:
+**Donor / Backer (Future Deployment)**:
 A supporter who contributes funds directly to the Charity Cause via an Adopter's Fundraising Campaign.
 _Avoid_: Customer, buyer, subscriber
 

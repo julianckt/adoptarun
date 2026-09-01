@@ -1,0 +1,20 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import IslandVerification from '@/components/IslandVerification';
+---
+
+<BaseLayout title="Adopt A Run — GPS Art Community Movement">
+  <main style="max-width: 800px; margin: 3rem auto; padding: 0 1.5rem; font-family: system-ui, sans-serif;">
+    <header style="margin-bottom: 2rem;">
+      <h1 style="font-size: 2.25rem; line-height: 1.2; margin: 0 0 1rem 0;">Adopt A Run</h1>
+      <p style="font-size: 1.125rem; color: #666; line-height: 1.6; margin: 0;">
+        An international GPS-art community movement debuting in Hong Kong. Bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.
+      </p>
+    </header>
+
+    <section style="margin-top: 2.5rem;">
+      <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Interactive React Island Verification</h2>
+      <IslandVerification client:load title="Interactive Island Smoke Test" initialCount={1200} />
+    </section>
+  </main>
+</BaseLayout>
