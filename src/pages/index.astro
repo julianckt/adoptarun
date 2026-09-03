@@ -3,18 +3,60 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import IslandVerification from '@/components/IslandVerification';
 ---
 
-<BaseLayout title="Adopt A Run — GPS Art Community Movement">
-  <main style="max-width: 800px; margin: 3rem auto; padding: 0 1.5rem; font-family: system-ui, sans-serif;">
-    <header style="margin-bottom: 2rem;">
-      <h1 style="font-size: 2.25rem; line-height: 1.2; margin: 0 0 1rem 0;">Adopt A Run</h1>
-      <p style="font-size: 1.125rem; color: #666; line-height: 1.6; margin: 0;">
-        An international GPS-art community movement debuting in Hong Kong. Bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.
+<BaseLayout title="adopt a run — GPS Art Community Movement">
+  <main class="u-container" style="max-width: 1100px; margin: var(--space-09) auto; padding: 0 var(--space-06);">
+    <header style="margin-bottom: var(--space-08);">
+      <div style="display: flex; align-items: center; gap: var(--space-04); margin-bottom: var(--space-04);">
+        <span class="badge-group-run">system verified</span>
+        <span class="u-text-mono" style="font-size: var(--font-fluid-label); color: var(--color-text-secondary);">
+          ticket #14 · lumos design system
+        </span>
+      </div>
+      <h1 class="u-text-display" style="font-size: var(--font-fluid-headline); margin-bottom: var(--space-04);">
+        adopt a run
+      </h1>
+      <p class="u-text-body" style="font-size: var(--font-fluid-body); color: var(--color-text-secondary); max-width: 680px;">
+        an international gps-art community movement debuting in hong kong. bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.
       </p>
+      <div style="display: flex; gap: var(--space-04); margin-top: var(--space-06); flex-wrap: wrap;">
+        <a href="#demo" class="btn btn-primary">run with us</a>
+        <a href="#routes" class="btn btn-secondary">explore routes</a>
+      </div>
     </header>
 
-    <section style="margin-top: 2.5rem;">
-      <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Interactive React Island Verification</h2>
-      <IslandVerification client:load title="Interactive Island Smoke Test" initialCount={1200} />
+    <section id="demo" style="margin-bottom: var(--space-10);">
+      <h2 class="u-text-display" style="font-size: var(--font-fluid-title); margin-bottom: var(--space-06);">
+        lumos component showcase
+      </h2>
+      <div class="u-grid-autofit" style="--grid-min: 300px; --grid-gap: var(--space-06);">
+        <!-- Route Card Sample -->
+        <article class="card-route p-micro-frame">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-04);">
+            <span class="badge-group-run">group run</span>
+            <span class="u-text-mono" style="font-size: 14px; font-weight: 600;">14km</span>
+          </div>
+          <h3 style="font-family: var(--font-body); font-size: 24px; font-weight: 700; margin-bottom: var(--space-02);">
+            happy valley boar
+          </h3>
+          <p style="font-family: var(--font-body); font-size: 16px; line-height: 1.3; margin-bottom: var(--space-06);">
+            winding ridgeline loop tracing the northern contours through wanchai gap and bowen road.
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto;">
+            <span style="font-family: var(--font-body); font-size: 14px; font-weight: 500;">est. 85 min</span>
+            <span style="font-family: var(--font-body); font-size: 14px; font-weight: 500;">elev. +320m</span>
+          </div>
+        </article>
+
+        <!-- Island Verification Panel -->
+        <div class="p-panel-floating" style="padding: var(--space-06);">
+          <div style="margin-bottom: var(--space-04);">
+            <span class="u-text-mono" style="font-size: var(--font-fluid-label); color: var(--color-text-muted);">
+              interactive island
+            </span>
+          </div>
+          <IslandVerification client:load title="Interactive Island Smoke Test" initialCount={1200} />
+        </div>
+      </div>
     </section>
   </main>
 </BaseLayout>

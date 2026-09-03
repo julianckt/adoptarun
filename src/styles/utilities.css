@@ -1,0 +1,49 @@
+@layer utilities {
+  /* Container Query Layout Utilities */
+  .u-container {
+    container-type: inline-size;
+    width: 100%;
+  }
+
+  .u-grid-autofit {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--grid-min, 320px)), 1fr));
+    gap: var(--grid-gap, var(--space-06));
+  }
+
+  /* Text & Typography Utilities */
+  .u-text-lowercase {
+    text-transform: lowercase !important;
+  }
+
+  .u-text-display {
+    font-family: var(--font-display);
+    line-height: var(--leading-compressed);
+  }
+
+  .u-text-body {
+    font-family: var(--font-body);
+    line-height: var(--leading-body);
+  }
+
+  .u-text-mono {
+    font-family: var(--font-mono);
+  }
+
+  .u-text-wordmark {
+    font-family: var(--font-wordmark);
+  }
+
+  .u-text-chinese {
+    font-family: var(--font-chinese);
+  }
+
+  /* Visual Utilities */
+  .u-border-hairline {
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  .u-flat-rest {
+    box-shadow: none !important;
+  }
+}

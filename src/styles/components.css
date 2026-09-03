@@ -1,0 +1,82 @@
+@layer components {
+  /* Base Button */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-transform: lowercase;
+    border-radius: var(--radius-none) !important;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: var(--leading-body);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .btn:active {
+    transform: scale(0.985);
+  }
+
+  /* Primary Button / CTA */
+  .btn-primary {
+    background-color: var(--color-action-primary);
+    color: var(--color-action-primary-text);
+    padding: var(--space-05) var(--space-07); /* 16px 32px */
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-action-primary-hover);
+    box-shadow: 0 0 24px rgba(245, 174, 102, 0.28);
+  }
+
+  /* Secondary Button */
+  .btn-secondary {
+    background-color: var(--color-action-secondary);
+    color: var(--color-action-secondary-text);
+    border: 1px solid var(--color-border-subtle);
+    padding: var(--space-05) var(--space-07); /* 16px 32px */
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--color-border-strong);
+    color: var(--color-pure-white);
+  }
+
+  /* Signature Route Card Foundation */
+  .card-route {
+    background-color: var(--color-route-orange);
+    color: var(--color-canvas-black);
+    padding: var(--space-06); /* 24px */
+    border-radius: var(--radius-none) !important;
+    position: relative;
+    box-shadow: none;
+  }
+
+  /* Group Run Badge Foundation */
+  .badge-group-run {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--color-group-run-green);
+    color: var(--color-canvas-black);
+    padding: var(--space-02) var(--space-03); /* 4px 8px */
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--font-fluid-label);
+    line-height: var(--leading-body);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-none) !important;
+  }
+
+  /* Media Placeholder Frame */
+  .media-placeholder {
+    background-color: var(--color-placeholder-grey);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-none) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
