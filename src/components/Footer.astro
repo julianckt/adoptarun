@@ -1,0 +1,27 @@
+---
+export interface Props {
+  class?: string;
+  [key: string]: any;
+}
+
+const { class: className, ...restProps } = Astro.props;
+---
+
+<footer class:list={['site-footer', className]} {...restProps}>
+  <div class="site-footer-inner">
+    <div class="footer-coordinates">
+      22.3193° N, 114.1694° E
+    </div>
+
+    <nav class="footer-links" aria-label="Footer community links">
+      <a href="https://strava.com/clubs/adoptarun" class="footer-link" target="_blank" rel="noopener noreferrer">strava club</a>
+      <a href="https://instagram.com/adoptarun" class="footer-link" target="_blank" rel="noopener noreferrer">instagram</a>
+      <a href="https://github.com/julianckt/adoptarun" class="footer-link" target="_blank" rel="noopener noreferrer">github</a>
+      <a href="/terms" class="footer-link">terms</a>
+    </nav>
+
+    <div class="footer-copyright">
+      © 2026 adopt a run. all rights reserved.
+    </div>
+  </div>
+</footer>

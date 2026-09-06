@@ -1,0 +1,53 @@
+---
+import AnnouncementBanner from '@/components/AnnouncementBanner';
+import MobileNavDrawer from '@/components/MobileNavDrawer';
+
+export interface Props {
+  class?: string;
+  [key: string]: any;
+}
+
+const { class: className, ...restProps } = Astro.props;
+---
+
+<header class:list={['site-header', className]} {...restProps}>
+  <div class="site-header-grid">
+    <!-- Column 1: Primary brand CTA -->
+    <a href="/signup" class="nav-brand-cta">
+      <span class="brand-run">run</span> with us
+    </a>
+
+    <!-- Columns 2 & 3: Announcement Banner -->
+    <AnnouncementBanner client:load />
+
+    <!-- Column 4: Stacked links -->
+    <div class="nav-col-stack">
+      <a href="/routes" class="nav-link">routes</a>
+      <a href="/charities" class="nav-link">charities</a>
+    </div>
+
+    <!-- Column 5: Stacked links -->
+    <div class="nav-col-stack">
+      <a href="/donate" class="nav-link">donate</a>
+      <a href="/log" class="nav-link">log a run</a>
+    </div>
+
+    <!-- Mobile Hamburger Toggle -->
+    <button class="nav-mobile-toggle" id="nav-mobile-toggle" type="button" aria-label="Toggle Navigation Menu">
+      menu
+    </button>
+  </div>
+
+  <MobileNavDrawer client:load />
+</header>
+
+<script>
+  import { openNav } from '@/stores/shell';
+
+  const toggle = document.getElementById('nav-mobile-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      openNav();
+    });
+  }
+</script>

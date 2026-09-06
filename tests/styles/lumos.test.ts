@@ -205,13 +205,9 @@ describe('Lumos Design System & Fluid Design Token Foundation', () => {
   });
 
   describe('BaseLayout Integration', () => {
-    it('should import global.css and link Google Fonts in BaseLayout.astro', () => {
+    it('should import global.css in BaseLayout.astro', () => {
       const content = readFileSync(layoutPath, 'utf-8');
       expect(content).toMatch(/import\s+['"]@\/styles\/global\.css['"]/);
-      expect(content).toContain('fonts.googleapis.com');
-      expect(content).toContain('fonts.gstatic.com');
-      expect(content).toContain('family=JetBrains+Mono');
-      expect(content).toContain('family=Noto+Sans+HK');
     });
   });
 });

@@ -79,4 +79,268 @@
     align-items: center;
     justify-content: center;
   }
+
+  /* -------------------------------------------------------------
+     Site Header (5-Column Grid & Sticky Shell)
+     ------------------------------------------------------------- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    background-color: rgba(24, 19, 17, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding: var(--space-04) var(--space-06);
+  }
+
+  .site-header-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 2fr 1fr 1fr; /* Col 1, Col 2-3 (Announcement), Col 4, Col 5 */
+    align-items: center;
+    gap: var(--space-06);
+    max-width: 1512px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .nav-brand-cta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-02);
+    font-family: var(--font-body);
+    font-size: 18px;
+    color: var(--color-canvas-white);
+    text-decoration: none;
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+
+  .nav-brand-cta .brand-run {
+    font-family: var(--font-wordmark);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-pure-white);
+  }
+
+  .announcement-bar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-none) !important;
+    padding: var(--space-02) var(--space-04);
+    min-height: 38px;
+    gap: var(--space-03);
+  }
+
+  .announcement-link {
+    color: var(--color-canvas-white);
+    font-family: var(--font-body);
+    font-size: 13px;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .announcement-dismiss {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    padding: var(--space-01);
+  }
+
+  .announcement-dismiss:hover {
+    color: var(--color-pure-white);
+  }
+
+  .nav-col-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nav-link {
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--color-canvas-white);
+    text-decoration: none;
+    text-transform: lowercase;
+    transition: color 0.15s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--color-accent);
+  }
+
+  .nav-mobile-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-none) !important;
+    color: var(--color-canvas-white);
+    font-family: var(--font-body);
+    font-size: 14px;
+    text-transform: lowercase;
+    padding: var(--space-02) var(--space-04);
+    cursor: pointer;
+  }
+
+  /* -------------------------------------------------------------
+     Mobile Responsive Breakpoint (< 768px)
+     ------------------------------------------------------------- */
+  @media (max-width: 768px) {
+    .site-header-grid {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .announcement-bar-container,
+    .nav-col-stack {
+      display: none;
+    }
+
+    .nav-mobile-toggle {
+      display: block;
+    }
+  }
+
+  /* -------------------------------------------------------------
+     Mobile Navigation Drawer & Overlay
+     ------------------------------------------------------------- */
+  .mobile-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background-color: var(--color-surface-overlay);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 769px) {
+    .mobile-nav-backdrop {
+      display: none;
+    }
+  }
+
+  .mobile-nav-drawer {
+    background-color: var(--color-surface-canvas);
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding: var(--space-06);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-06);
+    border-radius: var(--radius-none) !important;
+  }
+
+  .mobile-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mobile-nav-close {
+    background: transparent;
+    border: none;
+    color: var(--color-canvas-white);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: var(--space-01);
+  }
+
+  .mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-05);
+  }
+
+  .mobile-nav-link {
+    font-family: var(--font-body);
+    font-size: 20px;
+    color: var(--color-canvas-white);
+    text-decoration: none;
+    text-transform: lowercase;
+    transition: color 0.15s ease;
+  }
+
+  .mobile-nav-link:hover {
+    color: var(--color-accent);
+  }
+
+  .mobile-nav-footer {
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--space-04);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .mobile-cta-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* -------------------------------------------------------------
+     Global Footer
+     ------------------------------------------------------------- */
+  .site-footer {
+    width: 100%;
+    background-color: var(--color-surface-canvas);
+    border-top: 1px solid var(--color-border-subtle);
+    padding: var(--space-08) var(--space-06);
+    margin-top: auto;
+  }
+
+  .site-footer-inner {
+    max-width: 1512px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-06);
+  }
+
+  .footer-coordinates {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.05em;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: var(--space-05);
+    flex-wrap: wrap;
+  }
+
+  .footer-link {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    text-transform: lowercase;
+  }
+
+  .footer-link:hover {
+    color: var(--color-canvas-white);
+  }
+
+  .footer-copyright {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--color-text-muted);
+    text-transform: lowercase;
+  }
 }
+

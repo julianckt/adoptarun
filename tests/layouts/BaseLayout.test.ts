@@ -34,4 +34,19 @@ describe('BaseLayout Shell Interface & Metadata', () => {
     // Clean-prop / class forwarding
     expect(content).toContain('class:list');
   });
+
+  it('should import and integrate Header and Footer components', () => {
+    const content = readFileSync(layoutPath, 'utf-8');
+
+    // Header & Footer imports
+    expect(content).toMatch(/import\s+Header\s+from\s+['"]@\/components\/Header\.astro['"]/);
+    expect(content).toMatch(/import\s+Footer\s+from\s+['"]@\/components\/Footer\.astro['"]/);
+
+    // Header & Footer mounting with conditional hide props
+    expect(content).toContain('<Header');
+    expect(content).toContain('<Footer');
+    expect(content).toContain('hideHeader');
+    expect(content).toContain('hideFooter');
+  });
 });
+
