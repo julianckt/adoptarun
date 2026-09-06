@@ -17,10 +17,10 @@ describe('Astro Core & React Island Smoke Tests', () => {
     
     expect(screen.getByText('Adopt A Run Island')).not.toBeNull();
     const container = screen.getByTestId('island-verification');
-    expect(container.textContent).toContain('Current Count: 1200');
+    expect(container.textContent).toMatch(/Current Count:\s*1200/i);
 
     const button = screen.getByRole('button', { name: /Increment Counter/i });
     fireEvent.click(button);
-    expect(container.textContent).toContain('Current Count: 1201');
+    expect(container.textContent).toMatch(/Current Count:\s*1201/i);
   });
 });

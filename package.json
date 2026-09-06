@@ -9,9 +9,10 @@
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "astro": "ASTRO_TELEMETRY_DISABLED=1 astro",
-    "test": "vitest run",
+    "test": "vitest run && npm run check:design",
     "test:watch": "vitest",
-    "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro check && tsc --noEmit"
+    "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro check && tsc --noEmit",
+    "check:design": "node .agents/skills/impeccable/scripts/detect.mjs src/"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.9",

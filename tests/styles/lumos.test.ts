@@ -154,6 +154,23 @@ describe('Lumos Design System & Fluid Design Token Foundation', () => {
       }
     });
 
+    it('should declare discrete typography scale tokens matching DESIGN.md', () => {
+      const expectedTokens = [
+        ['--font-size-micro', '12px'],
+        ['--font-size-label', '16px'],
+        ['--font-size-body', '20px'],
+        ['--font-size-metric', '24px'],
+        ['--font-size-wordmark', '48px'],
+        ['--font-size-title', '64px'],
+        ['--font-size-headline', '80px'],
+        ['--font-size-display', '160px'],
+      ];
+
+      for (const [token, value] of expectedTokens) {
+        expect(tokensContent).toContain(`${token}: ${value};`);
+      }
+    });
+
     it('should enforce architectural rules (Zero Radius & Compression)', () => {
       expect(tokensContent).toContain('--radius-none: 0px;');
       expect(tokensContent).toContain('--leading-compressed: 0.8;');

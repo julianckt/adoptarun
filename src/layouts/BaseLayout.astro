@@ -14,8 +14,8 @@ export interface Props {
 }
 
 const {
-  title = 'Adopt A Run — GPS Art Community Movement',
-  description = 'An international GPS-art community movement debuting in Hong Kong. Bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.',
+  title = 'adopt a run — gps art community movement',
+  description = 'an international gps-art community movement debuting in hong kong. bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.',
   ogImage = '/images/og-default.jpg',
   class: className,
   hideHeader = false,
@@ -46,7 +46,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://adoptaru
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={new URL(ogImage, canonicalURL)} />
-    <meta property="og:site_name" content="Adopt A Run" />
+    <meta property="og:site_name" content="adopt a run" />
 
     <!-- Twitter Card -->
     <meta property="twitter:card" content="summary_large_image" />
