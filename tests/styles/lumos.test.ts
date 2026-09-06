@@ -173,8 +173,13 @@ describe('Lumos Design System & Fluid Design Token Foundation', () => {
 
     it('should enforce architectural rules (Zero Radius & Compression)', () => {
       expect(tokensContent).toContain('--radius-none: 0px;');
-      expect(tokensContent).toContain('--leading-compressed: 0.8;');
+      expect(tokensContent).toContain('--leading-default: 1.0;');
       expect(tokensContent).toContain('--leading-body: 1.0;');
+      expect(tokensContent).toContain('--leading-compressed: 0.8;');
+      expect(tokensContent).toContain('--leading-display: 0.8;');
+      expect(tokensContent).toContain('--leading-action: 0.8;');
+      expect(tokensContent).toContain('--leading-cta: 0.8;');
+      expect(tokensContent).toContain('--leading-wordmark: 0.75;');
     });
   });
 
@@ -190,7 +195,8 @@ describe('Lumos Design System & Fluid Design Token Foundation', () => {
       expect(content).toContain('background-color: var(--color-surface-canvas);');
       expect(content).toContain('color: var(--color-text-primary);');
       expect(content).toContain('font-family: var(--font-body);');
-      expect(content).toContain('line-height: var(--leading-body);');
+      expect(content).toContain('line-height: var(--leading-default);');
+      expect(content).toContain('line-height: var(--leading-action);');
     });
   });
 
@@ -204,6 +210,8 @@ describe('Lumos Design System & Fluid Design Token Foundation', () => {
       expect(content).toContain('.badge-group-run');
       expect(content).toContain('.media-placeholder');
       expect(content).toContain('box-shadow: 0 0 24px rgba(245, 174, 102, 0.28)');
+      expect(content).toContain('line-height: var(--leading-action);');
+      expect(content).toContain('line-height: var(--leading-wordmark);');
     });
   });
 
@@ -218,6 +226,9 @@ describe('Lumos Design System & Fluid Design Token Foundation', () => {
       expect(content).toContain('.u-text-display');
       expect(content).toContain('.u-border-hairline');
       expect(content).toContain('.u-flat-rest');
+      expect(content).toContain('.u-leading-action');
+      expect(content).toContain('.u-leading-wordmark');
+      expect(content).toContain('line-height: var(--leading-wordmark);');
     });
   });
 

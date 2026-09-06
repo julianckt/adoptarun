@@ -12,7 +12,7 @@
     border: none;
     cursor: pointer;
     text-decoration: none;
-    line-height: var(--leading-body);
+    line-height: var(--leading-action);
     transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
   }
 
@@ -119,6 +119,7 @@
     gap: var(--space-02);
     font-family: var(--font-body);
     font-size: var(--font-size-body);
+    line-height: var(--leading-wordmark);
     color: var(--color-canvas-white);
     text-decoration: none;
     text-transform: lowercase;
@@ -132,7 +133,7 @@
     font-size: var(--font-size-body);
     font-variation-settings: 'wdth' 150, 'wght' 900;
     font-weight: 900;
-    line-height: 1;
+    line-height: var(--leading-wordmark);
     color: var(--color-pure-white);
   }
 
@@ -162,6 +163,7 @@
     color: var(--color-canvas-white);
     font-family: var(--font-body);
     font-size: var(--font-size-micro);
+    line-height: var(--leading-action);
     text-decoration: none;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -174,7 +176,7 @@
     color: var(--color-text-secondary);
     font-family: var(--font-body);
     font-size: var(--font-size-label);
-    line-height: 1;
+    line-height: var(--leading-action);
     cursor: pointer;
     padding: var(--space-01);
   }
@@ -203,6 +205,7 @@
   .nav-link {
     font-family: var(--font-body);
     font-size: var(--font-size-label);
+    line-height: var(--leading-action);
     color: var(--color-canvas-white);
     text-decoration: none;
     text-transform: lowercase;
@@ -222,6 +225,7 @@
     color: var(--color-canvas-white);
     font-family: var(--font-body);
     font-size: var(--font-size-label);
+    line-height: var(--leading-action);
     text-transform: lowercase;
     padding: var(--space-02) var(--space-04);
     cursor: pointer;
@@ -291,7 +295,7 @@
     color: var(--color-canvas-white);
     font-size: var(--font-size-body);
     cursor: pointer;
-    line-height: 1;
+    line-height: var(--leading-action);
     padding: var(--space-01);
   }
 
@@ -304,6 +308,7 @@
   .mobile-nav-link {
     font-family: var(--font-body);
     font-size: var(--font-size-body);
+    line-height: var(--leading-action);
     color: var(--color-canvas-white);
     text-decoration: none;
     text-transform: lowercase;
@@ -363,6 +368,7 @@
   .footer-link {
     font-family: var(--font-body);
     font-size: var(--font-size-label);
+    line-height: var(--leading-action);
     color: var(--color-text-secondary);
     text-decoration: none;
     text-transform: lowercase;

@@ -47,6 +47,12 @@ typography:
     fontSize: "16px"
     fontWeight: 500
     lineHeight: 1.0
+  leading:
+    default: 1.0
+    body: 1.0
+    compressed: 0.8
+    action: 0.8
+    wordmark: 0.75
 rounded:
   none: "0px"
 spacing:
@@ -154,6 +160,12 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 
 ### Named Rules
 **The Line-Height Compression Rule.** Degular Display must always be set at an ultra-compressed line-height of 0.8 (80%). Headings must read as dense blocks of typographic texture rather than loose text.
+**The Typography Line-Height Rules**:
+- **Degular Display**: Always set at `0.8` (80%) (`--leading-compressed`).
+- **Runda**: Always set at `1.0` (100%) (`--leading-body`) for standard body and metadata.
+- **Wordmark & Brand Lockup**: Scale VF and Runda paired with the wordmark must be set at `0.75` (75%) (`--leading-wordmark`).
+- **CTAs & Clickables**: All buttons, links, dismissal buttons, and interactive elements must be set at `0.8` (80%) (`--leading-action`).
+- **Global Baseline**: All other text defaults to `1.0` (100%) (`--leading-default`).
 **The Runda Weight Ceiling Rule.** No text set in Runda should ever exceed Medium width/weight (500). Bold and Black weights are prohibited in general UI copy; H4 is rendered as Runda Medium all-caps.
 **The Scale VF Restraint Rule.** Scale VF is strictly reserved for the two-line wordmark `adopt / a run` and the hero CTA `run with us`. It must never be applied to general headings, body, or standard navigation links.
 **The Lowercase Identity Rule.** Navigation links, primary buttons, taglines, metric abbreviations, and the wordmark are strictly lowercase (`routes`, `charities`, `donate`, `log a run`, `run with us`). Editorial titles alone use Title Case.

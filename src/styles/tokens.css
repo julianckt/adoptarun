@@ -91,10 +91,23 @@
     --font-fluid-label: clamp(1rem, 1.2vw, 1rem);
     /* Locked to 16px */
 
-    /* Architectural Constraints */
-    --leading-compressed: 0.8;
-    /* Line-Height Compression Rule */
+    /* Line Height / Leading Tokens (Lumos Framework) */
+    --leading-default: 1.0;
+    /* Default for all general content (100%) */
     --leading-body: 1.0;
+    /* Runda body, metadata, and general text (100%) */
+    --leading-compressed: 0.8;
+    /* Degular Display headings & compression (80%) */
+    --leading-display: 0.8;
+    /* Degular Display alias (80%) */
+    --leading-action: 0.8;
+    /* Buttons, CTAs, clickables (80%) */
+    --leading-cta: 0.8;
+    /* Action / CTA alias (80%) */
+    --leading-wordmark: 0.75;
+    /* Scale VF & Runda paired with wordmark (75%) */
+
+    /* Architectural Constraints */
     --radius-none: 0px;
     /* Zero Radius Rule */
   }
