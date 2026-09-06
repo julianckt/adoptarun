@@ -105,4 +105,44 @@ describe('Header Interactive Components', () => {
       expect($isNavOpen.get()).toBe(false);
     });
   });
+
+  describe('Header 5-Column Grid Layout & Alignment Spec', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const headerAstroPath = path.resolve(__dirname, '../../src/components/Header.astro');
+    const componentsCssPath = path.resolve(__dirname, '../../src/styles/components.css');
+
+    it('Header.astro contains persistent announcement slot and explicit column classes', () => {
+      const headerContent = fs.readFileSync(headerAstroPath, 'utf-8');
+      expect(headerContent).toContain('<div class="nav-announcement-slot">');
+      expect(headerContent).toContain('nav-col-routes');
+      expect(headerContent).toContain('nav-col-actions');
+    });
+
+    it('components.css contains 5-column grid and top alignment for .site-header-grid', () => {
+      const cssContent = fs.readFileSync(componentsCssPath, 'utf-8');
+      expect(cssContent).toMatch(/grid-template-columns:\s*1\.2fr\s+1fr\s+1fr\s+1fr\s+1fr;/);
+      expect(cssContent).toMatch(/\.site-header-grid\s*\{[^}]*align-items:\s*start;/s);
+    });
+
+    it('components.css right-aligns stacked links in .nav-col-stack', () => {
+      const cssContent = fs.readFileSync(componentsCssPath, 'utf-8');
+      expect(cssContent).toMatch(/\.nav-col-stack\s*\{[^}]*align-items:\s*flex-end;/s);
+      expect(cssContent).toMatch(/\.nav-col-stack\s*\{[^}]*text-align:\s*right;/s);
+    });
+
+    it('components.css defines explicit grid columns for slots and stacks', () => {
+      const cssContent = fs.readFileSync(componentsCssPath, 'utf-8');
+      expect(cssContent).toMatch(/\.nav-announcement-slot\s*\{[^}]*grid-column:\s*2\s*\/\s*span 2;/s);
+      expect(cssContent).toMatch(/\.nav-col-routes\s*\{[^}]*grid-column:\s*4;/s);
+      expect(cssContent).toMatch(/\.nav-col-actions\s*\{[^}]*grid-column:\s*5;/s);
+    });
+
+    it('components.css removes border-bottom from .site-header', () => {
+      const cssContent = fs.readFileSync(componentsCssPath, 'utf-8');
+      const headerMatch = cssContent.match(/\.site-header\s*\{([^}]+)\}/);
+      expect(headerMatch).not.toBeNull();
+      expect(headerMatch![1]).not.toMatch(/border-bottom\s*:/);
+    });
+  });
 });

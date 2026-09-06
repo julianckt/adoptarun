@@ -17,17 +17,19 @@ const { class: className, ...restProps } = Astro.props;
       <span class="brand-run">run</span> with us
     </a>
 
-    <!-- Columns 2 & 3: Announcement Banner -->
-    <AnnouncementBanner client:load />
+    <!-- Columns 2 & 3: Announcement Banner Slot -->
+    <div class="nav-announcement-slot">
+      <AnnouncementBanner client:load />
+    </div>
 
-    <!-- Column 4: Stacked links -->
-    <div class="nav-col-stack">
+    <!-- Column 4: Stacked links (routes, charities) -->
+    <div class="nav-col-stack nav-col-routes">
       <a href="/routes" class="nav-link">routes</a>
       <a href="/charities" class="nav-link">charities</a>
     </div>
 
-    <!-- Column 5: Stacked links -->
-    <div class="nav-col-stack">
+    <!-- Column 5: Stacked links (donate, log a run) -->
+    <div class="nav-col-stack nav-col-actions">
       <a href="/donate" class="nav-link">donate</a>
       <a href="/log" class="nav-link">log a run</a>
     </div>
