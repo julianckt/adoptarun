@@ -35,18 +35,27 @@ describe('Header Interactive Components', () => {
       expect(link.textContent).toBe('Next Group Run: Saturday 7am');
     });
 
-    it('dismisses banner on dismiss button click', () => {
+    it('dismisses banner on dismiss button click and adds announcement-dismissed class', () => {
       render(<AnnouncementBanner />);
       const dismissBtn = screen.getByRole('button', { name: /dismiss announcement/i });
       fireEvent.click(dismissBtn);
       expect($announcementTicker.get().isVisible).toBe(false);
       expect(screen.queryByRole('link')).toBeNull();
+      expect(document.documentElement.classList.contains('announcement-dismissed')).toBe(true);
     });
 
     it('does not render when isVisible is false', () => {
       $announcementTicker.setKey('isVisible', false);
       const { container } = render(<AnnouncementBanner />);
       expect(container.firstChild).toBeNull();
+    });
+
+    it('dismisses banner on mount if already dismissed in sessionStorage', () => {
+      sessionStorage.setItem('adoptarun_announcement_dismissed', 'true');
+      const { container } = render(<AnnouncementBanner />);
+      expect(container.firstChild).toBeNull();
+      expect($announcementTicker.get().isVisible).toBe(false);
+      expect(document.documentElement.classList.contains('announcement-dismissed')).toBe(true);
     });
   });
 
@@ -143,6 +152,19 @@ describe('Header Interactive Components', () => {
       const headerMatch = cssContent.match(/\.site-header\s*\{([^}]+)\}/);
       expect(headerMatch).not.toBeNull();
       expect(headerMatch![1]).not.toMatch(/border-bottom\s*:/);
+    });
+
+    it('components.css contains anti-FOUC rule for dismissed announcement bar', () => {
+      const cssContent = fs.readFileSync(componentsCssPath, 'utf-8');
+      expect(cssContent).toMatch(/html\.announcement-dismissed\s+\.announcement-bar-container\s*\{\s*display:\s*none\s*!important;\s*\}/);
+    });
+
+    it('BaseLayout.astro contains pre-paint inline script checking sessionStorage', () => {
+      const baseLayoutPath = path.resolve(__dirname, '../../src/layouts/BaseLayout.astro');
+      const baseLayoutContent = fs.readFileSync(baseLayoutPath, 'utf-8');
+      expect(baseLayoutContent).toContain('<script is:inline>');
+      expect(baseLayoutContent).toContain("sessionStorage.getItem('adoptarun_announcement_dismissed')");
+      expect(baseLayoutContent).toContain("document.documentElement.classList.add('announcement-dismissed')");
     });
   });
 });

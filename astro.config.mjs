@@ -10,4 +10,9 @@ export default defineConfig({
     imageService: 'cloudflare',
   }),
   integrations: [react()],
+  vite: {
+    resolve: {
+      dedupe: ['react', 'react-dom'],
+    },
+  },
 });

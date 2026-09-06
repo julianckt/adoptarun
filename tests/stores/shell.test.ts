@@ -6,6 +6,8 @@ import {
   DEFAULT_ANNOUNCEMENT_TEXT,
   DEFAULT_ANNOUNCEMENT_LINK,
   FALLBACK_SLOGAN_TEXT,
+  ANNOUNCEMENT_STORAGE_KEY,
+  isAnnouncementDismissed,
   setAnnouncement,
   dismissAnnouncement,
   resetAnnouncement,
@@ -56,21 +58,29 @@ describe('Shell Nano Stores', () => {
       expect($announcementTicker.get().text).toBe(FALLBACK_SLOGAN_TEXT);
     });
 
-    it('should hide announcement on dismissAnnouncement', () => {
+    it('should hide announcement, persist to sessionStorage, and add announcement-dismissed class on dismissAnnouncement', () => {
       dismissAnnouncement();
       expect($announcementTicker.get().isVisible).toBe(false);
+      expect(isAnnouncementDismissed()).toBe(true);
+      expect(sessionStorage.getItem(ANNOUNCEMENT_STORAGE_KEY)).toBe('true');
+      expect(document.documentElement.classList.contains('announcement-dismissed')).toBe(true);
     });
 
-    it('should reset announcement state to defaults', () => {
+    it('should reset announcement state to defaults, clear sessionStorage, and remove announcement-dismissed class', () => {
       setAnnouncement('Custom', '/custom');
       dismissAnnouncement();
       expect($announcementTicker.get().isVisible).toBe(false);
+      expect(isAnnouncementDismissed()).toBe(true);
+      expect(document.documentElement.classList.contains('announcement-dismissed')).toBe(true);
 
       resetAnnouncement();
       const state = $announcementTicker.get();
       expect(state.text).toBe(DEFAULT_ANNOUNCEMENT_TEXT);
       expect(state.link).toBe(DEFAULT_ANNOUNCEMENT_LINK);
       expect(state.isVisible).toBe(true);
+      expect(isAnnouncementDismissed()).toBe(false);
+      expect(sessionStorage.getItem(ANNOUNCEMENT_STORAGE_KEY)).toBeNull();
+      expect(document.documentElement.classList.contains('announcement-dismissed')).toBe(false);
     });
   });
 

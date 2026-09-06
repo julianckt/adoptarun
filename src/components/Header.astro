@@ -4,10 +4,15 @@ import MobileNavDrawer from '@/components/MobileNavDrawer';
 
 export interface Props {
   class?: string;
+  showAnnouncement?: boolean;
   [key: string]: any;
 }
 
-const { class: className, ...restProps } = Astro.props;
+const {
+  class: className,
+  showAnnouncement = Astro.url.pathname === '/' || Astro.url.pathname === '',
+  ...restProps
+} = Astro.props;
 ---
 
 <header class:list={['site-header', className]} {...restProps}>
@@ -19,7 +24,7 @@ const { class: className, ...restProps } = Astro.props;
 
     <!-- Columns 2 & 3: Announcement Banner Slot -->
     <div class="nav-announcement-slot">
-      <AnnouncementBanner client:load />
+      {showAnnouncement && <AnnouncementBanner client:load />}
     </div>
 
     <!-- Column 4: Stacked links (routes, charities) -->
@@ -44,12 +49,25 @@ const { class: className, ...restProps } = Astro.props;
 </header>
 
 <script>
-  import { openNav } from '@/stores/shell';
+  import { openNav, dismissAnnouncement } from '@/stores/shell';
 
   const toggle = document.getElementById('nav-mobile-toggle');
   if (toggle) {
     toggle.addEventListener('click', () => {
       openNav();
+    });
+  }
+
+  // Pre-hydration click delegation: dismiss immediately if user clicks before React hydrates
+  const slot = document.querySelector('.nav-announcement-slot');
+  if (slot) {
+    slot.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest('.announcement-dismiss')) {
+        e.preventDefault();
+        e.stopPropagation();
+        dismissAnnouncement();
+      }
     });
   }
 </script>

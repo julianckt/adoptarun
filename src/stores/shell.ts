@@ -10,6 +10,19 @@ export const DEFAULT_ANNOUNCEMENT_TEXT = 'Looking for Community Run Route Sugges
 export const DEFAULT_ANNOUNCEMENT_LINK = '/signup';
 export const FALLBACK_SLOGAN_TEXT = 'by bringing people together through long-distance running and community art';
 
+export const ANNOUNCEMENT_STORAGE_KEY = 'adoptarun_announcement_dismissed';
+
+export function isAnnouncementDismissed(): boolean {
+  if (typeof window === 'undefined' || !window.sessionStorage) {
+    return false;
+  }
+  try {
+    return sessionStorage.getItem(ANNOUNCEMENT_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
 // 1. $announcementTicker: manages reactive banner text, link, and visibility
 export const $announcementTicker = map<AnnouncementState>({
   text: DEFAULT_ANNOUNCEMENT_TEXT,
@@ -28,9 +41,27 @@ export function setAnnouncement(text: string, link: string = DEFAULT_ANNOUNCEMEN
 
 export function dismissAnnouncement() {
   $announcementTicker.setKey('isVisible', false);
+  if (typeof window !== 'undefined') {
+    if (window.sessionStorage) {
+      try {
+        sessionStorage.setItem(ANNOUNCEMENT_STORAGE_KEY, 'true');
+      } catch {
+        // safe fallback if storage unavailable
+      }
+    }
+    document.documentElement.classList.add('announcement-dismissed');
+  }
 }
 
 export function resetAnnouncement() {
+  if (typeof window !== 'undefined') {
+    if (window.sessionStorage) {
+      try {
+        sessionStorage.removeItem(ANNOUNCEMENT_STORAGE_KEY);
+      } catch {}
+    }
+    document.documentElement.classList.remove('announcement-dismissed');
+  }
   $announcementTicker.set({
     text: DEFAULT_ANNOUNCEMENT_TEXT,
     link: DEFAULT_ANNOUNCEMENT_LINK,

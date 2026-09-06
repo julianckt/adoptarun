@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStore } from '@nanostores/react';
-import { $announcementTicker, dismissAnnouncement } from '@/stores/shell';
+import { $announcementTicker, dismissAnnouncement, isAnnouncementDismissed } from '@/stores/shell';
 
 export const AnnouncementBanner: React.FC = () => {
   const ticker = useStore($announcementTicker);
+
+  useEffect(() => {
+    if (isAnnouncementDismissed()) {
+      dismissAnnouncement();
+    }
+  }, []);
 
   if (!ticker.isVisible) {
     return null;
