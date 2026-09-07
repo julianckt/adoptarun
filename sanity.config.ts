@@ -4,11 +4,22 @@ import { presentationTool, defineLocations } from 'sanity/presentation';
 import { schemaTypes } from './src/sanity/schemaTypes';
 import { structure } from './src/sanity/structure';
 
+const projectId =
+  (typeof process !== 'undefined' ? process.env?.PUBLIC_SANITY_PROJECT_ID : undefined) ||
+  (typeof import.meta !== 'undefined' ? import.meta.env?.PUBLIC_SANITY_PROJECT_ID : undefined) ||
+  'huk9xx07';
+
+const dataset =
+  (typeof process !== 'undefined' ? process.env?.PUBLIC_SANITY_DATASET : undefined) ||
+  (typeof import.meta !== 'undefined' ? import.meta.env?.PUBLIC_SANITY_DATASET : undefined) ||
+  'production';
+
 export default defineConfig({
   name: 'adopt-a-run',
   title: 'Adopt A Run',
-  projectId: process.env.PUBLIC_SANITY_PROJECT_ID || 'huk9xx07',
-  dataset: process.env.PUBLIC_SANITY_DATASET || 'production',
+  basePath: '/studio',
+  projectId,
+  dataset,
   plugins: [
     structureTool({
       structure,

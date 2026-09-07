@@ -28,7 +28,6 @@ export default defineConfig({
       dataset: PUBLIC_SANITY_DATASET || 'production',
       apiVersion: PUBLIC_SANITY_API_VERSION || '2026-03-01',
       useCdn: false,
-      studioBasePath: '/studio',
       stega: {
         studioUrl: '/studio',
       },
@@ -36,7 +35,7 @@ export default defineConfig({
   ],
   vite: {
     resolve: {
-      dedupe: ['react', 'react-dom'],
+      dedupe: ['react', 'react-dom', 'styled-components'],
     },
   },
 });
