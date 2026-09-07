@@ -128,10 +128,10 @@ describe('Header Interactive Components', () => {
       expect(headerContent).toContain('nav-col-actions');
     });
 
-    it('components.css contains 5-column grid and top alignment for .site-header-grid', () => {
+    it('components.css contains 5-column grid and center alignment for .site-header-grid', () => {
       const cssContent = fs.readFileSync(componentsCssPath, 'utf-8');
       expect(cssContent).toMatch(/grid-template-columns:\s*1\.2fr\s+1fr\s+1fr\s+1fr\s+1fr;/);
-      expect(cssContent).toMatch(/\.site-header-grid\s*\{[^}]*align-items:\s*start;/s);
+      expect(cssContent).toMatch(/\.site-header-grid\s*\{[^}]*align-items:\s*center;/s);
     });
 
     it('components.css right-aligns stacked links in .nav-col-stack', () => {

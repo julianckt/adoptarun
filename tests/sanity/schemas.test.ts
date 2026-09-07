@@ -1,0 +1,137 @@
+import { describe, it, expect } from 'vitest';
+import { schemaTypes, routeType, charityType, siteCopyType } from '../../src/sanity/schemaTypes';
+import { structure } from '../../src/sanity/structure';
+import {
+  ROUTES_QUERY,
+  ROUTE_BY_SLUG_QUERY,
+  CHARITIES_QUERY,
+  CHARITY_BY_SLUG_QUERY,
+  SITE_COPY_QUERY,
+} from '../../src/sanity/queries';
+import { urlForImage } from '../../src/sanity/image';
+import { sanityClient, projectId, dataset } from '../../src/sanity/client';
+
+describe('Sanity CMS Schemas & Configuration', () => {
+  describe('Schema Registry', () => {
+    it('exports all 3 content schemas', () => {
+      const typeNames = schemaTypes.map((t) => t.name);
+      expect(typeNames).toContain('route');
+      expect(typeNames).toContain('charity');
+      expect(typeNames).toContain('siteCopy');
+      expect(schemaTypes.length).toBe(3);
+    });
+  });
+
+  describe('Route Schema (routeType)', () => {
+    it('contains all required fields and fieldsets', () => {
+      expect(routeType.name).toBe('route');
+      expect(routeType.type).toBe('document');
+
+      const fieldNames = (routeType.fields || []).map((f) => f.name);
+      expect(fieldNames).toContain('title');
+      expect(fieldNames).toContain('slug');
+      expect(fieldNames).toContain('animalType');
+      expect(fieldNames).toContain('district');
+      expect(fieldNames).toContain('region');
+      expect(fieldNames).toContain('city');
+      expect(fieldNames).toContain('difficulty');
+      expect(fieldNames).toContain('colorTheme');
+      expect(fieldNames).toContain('distanceKm');
+      expect(fieldNames).toContain('elevationGain');
+      expect(fieldNames).toContain('estimatedDurationMin');
+      expect(fieldNames).toContain('gpxFile');
+      expect(fieldNames).toContain('routePolyline');
+      expect(fieldNames).toContain('miniMapSvg');
+      expect(fieldNames).toContain('elevationProfile');
+      expect(fieldNames).toContain('stravaRouteUrl');
+      expect(fieldNames).toContain('description');
+      expect(fieldNames).toContain('coverImage');
+      expect(fieldNames).toContain('isGroupRun');
+      expect(fieldNames).toContain('groupRunDateTime');
+      expect(fieldNames).toContain('groupRunMeetupPoint');
+      expect(fieldNames).toContain('groupRunNotes');
+    });
+
+    it('has groupRun fields assigned to groupRun fieldset', () => {
+      const groupRunField = (routeType.fields || []).find((f) => f.name === 'isGroupRun');
+      expect(groupRunField?.fieldset).toBe('groupRun');
+    });
+  });
+
+  describe('Charity Schema (charityType)', () => {
+    it('contains all partner, logo, and impact calculation fields', () => {
+      expect(charityType.name).toBe('charity');
+      expect(charityType.type).toBe('document');
+
+      const fieldNames = (charityType.fields || []).map((f) => f.name);
+      expect(fieldNames).toContain('name');
+      expect(fieldNames).toContain('slug');
+      expect(fieldNames).toContain('websiteUrl');
+      expect(fieldNames).toContain('logo');
+      expect(fieldNames).toContain('coverPhoto');
+      expect(fieldNames).toContain('charityDescription');
+      expect(fieldNames).toContain('causeDescription');
+      expect(fieldNames).toContain('impactUnitName');
+      expect(fieldNames).toContain('impactMultiplierPerHkd');
+      expect(fieldNames).toContain('impactDisplayTemplate');
+    });
+  });
+
+  describe('SiteCopy Singleton Schema (siteCopyType)', () => {
+    it('has studio tabs defined for hero, announcement, counters, journey, and faqs', () => {
+      expect(siteCopyType.name).toBe('siteCopy');
+      const groupNames = (siteCopyType.groups || []).map((g) => g.name);
+      expect(groupNames).toContain('announcement');
+      expect(groupNames).toContain('hero');
+      expect(groupNames).toContain('counters');
+      expect(groupNames).toContain('journey');
+      expect(groupNames).toContain('faqs');
+      expect(groupNames).toContain('about');
+    });
+
+    it('contains movement counters fields', () => {
+      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
+      expect(fieldNames).toContain('totalKmCovered');
+      expect(fieldNames).toContain('totalRunsCompleted');
+      expect(fieldNames).toContain('totalParticipantsCount');
+    });
+  });
+
+  describe('Studio Structure', () => {
+    it('defines a structure resolver function', () => {
+      expect(typeof structure).toBe('function');
+    });
+  });
+
+  describe('Client & Image Utilities', () => {
+    it('configures sanityClient with project and dataset', () => {
+      expect(projectId).toBe('huk9xx07');
+      expect(dataset).toBe('production');
+      expect(sanityClient).toBeDefined();
+    });
+
+    it('urlForImage generates valid image url string', () => {
+      const mockImageSource = {
+        _type: 'image' as const,
+        asset: {
+          _ref: 'image-1234567890abcdef-800x600-png',
+          _type: 'reference' as const,
+        },
+      };
+      const url = urlForImage(mockImageSource).width(400).url();
+      expect(url).toContain('https://cdn.sanity.io/images/huk9xx07/production/');
+      expect(url).toContain('w=400');
+    });
+
+    it('GROQ queries are valid strings', () => {
+      expect(typeof ROUTES_QUERY).toBe('string');
+      expect(typeof ROUTE_BY_SLUG_QUERY).toBe('string');
+      expect(typeof CHARITIES_QUERY).toBe('string');
+      expect(typeof CHARITY_BY_SLUG_QUERY).toBe('string');
+      expect(typeof SITE_COPY_QUERY).toBe('string');
+      expect(ROUTES_QUERY).toContain('*[_type == "route"]');
+      expect(CHARITIES_QUERY).toContain('*[_type == "charity"]');
+      expect(SITE_COPY_QUERY).toContain('*[_type == "siteCopy"');
+    });
+  });
+});

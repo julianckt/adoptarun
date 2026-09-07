@@ -15,17 +15,22 @@
     "check:design": "node .agents/skills/impeccable/scripts/detect.mjs src/"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.6.9",
+    "@astrojs/cloudflare": "^14.3.0",
     "@astrojs/react": "^4.4.2",
     "@nanostores/react": "^2.0.1",
-    "astro": "^5.4.2",
+    "@sanity/astro": "^3.5.1",
+    "@sanity/icons": "^5.2.1",
+    "@sanity/image-url": "^2.1.1",
+    "astro": "^7.3.1",
+    "groq": "^6.12.0",
     "nanostores": "^1.5.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "sanity": "^6.12.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "@cloudflare/workers-types": "^4.20250224.0",
+    "@cloudflare/workers-types": "^5.20260907.1",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.13.5",
     "@types/react": "^19.0.10",
@@ -33,5 +38,13 @@
     "jsdom": "^26.0.0",
     "typescript": "^5.7.3",
     "vitest": "^3.0.7"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.25.12": true,
+    "fsevents@2.3.3": true,
+    "sharp@0.35.2": true,
+    "sharp@0.35.4": true,
+    "workerd@1.20260903.1": true
   }
 }
