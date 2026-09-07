@@ -48,5 +48,15 @@ describe('BaseLayout Shell Interface & Metadata', () => {
     expect(content).toContain('hideHeader');
     expect(content).toContain('hideFooter');
   });
+
+  it('should import and mount Sanity VisualEditing component', () => {
+    const content = readFileSync(layoutPath, 'utf-8');
+
+    expect(content).toMatch(
+      /import\s+\{\s*VisualEditing\s*\}\s+from\s+['"]@sanity\/astro\/visual-editing['"]/
+    );
+    expect(content).toContain('visualEditingEnabled');
+    expect(content).toContain('<VisualEditing enabled={visualEditingEnabled} zIndex={1000} />');
+  });
 });
 

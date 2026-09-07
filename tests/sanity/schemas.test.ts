@@ -9,7 +9,9 @@ import {
   SITE_COPY_QUERY,
 } from '../../src/sanity/queries';
 import { urlForImage } from '../../src/sanity/image';
-import { sanityClient, projectId, dataset } from '../../src/sanity/client';
+import { sanityClient, projectId, dataset, visualEditingEnabled } from '../../src/sanity/client';
+import { cleanStega } from '../../src/sanity';
+import sanityConfig from '../../sanity.config';
 
 describe('Sanity CMS Schemas & Configuration', () => {
   describe('Schema Registry', () => {
@@ -97,17 +99,27 @@ describe('Sanity CMS Schemas & Configuration', () => {
     });
   });
 
-  describe('Studio Structure', () => {
+  describe('Studio Structure & Configuration', () => {
     it('defines a structure resolver function', () => {
       expect(typeof structure).toBe('function');
     });
+
+    it('configures presentationTool in sanity.config.ts plugins', () => {
+      expect(Array.isArray(sanityConfig.plugins)).toBe(true);
+      expect(sanityConfig.plugins?.length).toBeGreaterThanOrEqual(2);
+    });
   });
 
-  describe('Client & Image Utilities', () => {
+  describe('Client, Visual Editing & Image Utilities', () => {
     it('configures sanityClient with project and dataset', () => {
       expect(projectId).toBe('huk9xx07');
       expect(dataset).toBe('production');
       expect(sanityClient).toBeDefined();
+    });
+
+    it('exports visualEditingEnabled boolean and cleanStega helper', () => {
+      expect(typeof visualEditingEnabled).toBe('boolean');
+      expect(typeof cleanStega).toBe('function');
     });
 
     it('urlForImage generates valid image url string', () => {

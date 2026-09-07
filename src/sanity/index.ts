@@ -4,3 +4,4 @@ export * from './queries';
 export * from './types';
 export * from './schemaTypes';
 export * from './structure';
+export * from './cleanStega';

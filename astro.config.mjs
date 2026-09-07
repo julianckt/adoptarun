@@ -10,13 +10,17 @@ const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET, PUBLIC_SANITY_API_VERSI
   ''
 );
 
+const isBuildOrPreview = process.argv.some((arg) => ['build', 'preview'].includes(arg));
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://adoptarun.org',
   output: 'static',
-  adapter: cloudflare({
-    imageService: 'cloudflare',
-  }),
+  adapter: isBuildOrPreview
+    ? cloudflare({
+        imageService: 'cloudflare',
+      })
+    : undefined,
   integrations: [
     react(),
     sanity({
@@ -25,6 +29,9 @@ export default defineConfig({
       apiVersion: PUBLIC_SANITY_API_VERSION || '2026-03-01',
       useCdn: false,
       studioBasePath: '/studio',
+      stega: {
+        studioUrl: '/studio',
+      },
     }),
   ],
   vite: {

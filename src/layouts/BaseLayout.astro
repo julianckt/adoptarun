@@ -2,6 +2,7 @@
 import '@/styles/global.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import { VisualEditing } from '@sanity/astro/visual-editing';
 
 export interface Props {
   title?: string;
@@ -24,6 +25,9 @@ const {
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://adoptarun.org');
+const visualEditingEnabled =
+  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === 'true' ||
+  Astro.url.searchParams.get('preview') === 'true';
 ---
 
 <!doctype html>
@@ -66,5 +70,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://adoptaru
     {!hideHeader && <Header />}
     <slot />
     {!hideFooter && <Footer />}
+    <VisualEditing enabled={visualEditingEnabled} zIndex={1000} />
   </body>
 </html>
