@@ -69,3 +69,14 @@ export function formatRouteDifficulty(difficulty: string = 'beginner'): string {
 export function formatRouteSubtitle(subtitle?: string, tags: string[] = []): string {
   return subtitle || (tags.length > 0 ? tags.join(' · ') : '');
 }
+
+/**
+ * Format route tags into dot-separated display string (e.g. 'Scenic · Waterfront') or empty string if empty.
+ */
+export function formatRouteTags(tags?: string[] | null): string {
+  if (!tags || tags.length === 0) {
+    return '';
+  }
+  return tags.filter(Boolean).join(' · ');
+}
+

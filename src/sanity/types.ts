@@ -51,7 +51,7 @@ export interface SanityRoute {
   startPointDescription?: string;
   description: string;
   coverImage?: SanityImageReference;
-  tags?: string[];
+  tags?: string[] | null;
   isGroupRun: boolean;
   groupRunDateTime?: string;
   groupRunMeetupPoint?: string;

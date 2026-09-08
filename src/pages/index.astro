@@ -2,6 +2,31 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import IslandVerification from '@/components/IslandVerification';
 import RouteCard from '@/components/RouteCard.astro';
+import { getRoutes } from '@/sanity/queries';
+import type { SanityRoute } from '@/sanity/types';
+
+const fallbackRoute: SanityRoute = {
+  _id: 'fallback-test-1',
+  _type: 'route',
+  title: 'Test 1',
+  animalType: 'Test',
+  district: 'YYC',
+  region: 'Kowloon',
+  city: 'Hong Kong',
+  difficulty: 'easy',
+  colorTheme: 'route-orange',
+  featured: false,
+  distanceKm: 5.18,
+  elevationGain: 42,
+  estimatedDurationMin: 31,
+  description: 'Test run w/ jackie night run',
+  routePolyline: '',
+  slug: { _type: 'slug', current: 'test-1' },
+  isGroupRun: false,
+};
+
+const routes = await getRoutes().catch(() => []);
+const displayRoute = routes.length > 0 ? routes[0] : fallbackRoute;
 ---
 
 <BaseLayout title="adopt a run — gps art community movement">
@@ -31,15 +56,7 @@ import RouteCard from '@/components/RouteCard.astro';
       </h2>
       <div class="u-grid-autofit" style="--grid-min: 380px; --grid-gap: var(--space-06);">
         <!-- Signature Route Card Component -->
-        <RouteCard
-          district="Wan Chai"
-          subtitle="Near MTR · Traffic-Free Promenade Run"
-          distanceKm={14}
-          estimatedDurationMin={10}
-          elevationGainM={4}
-          difficulty="Beginner"
-          colorTheme="route-orange"
-        />
+        <RouteCard route={displayRoute} />
 
         <!-- Route Card Sample (Ad-hoc) -->
         <article class="card-route p-micro-frame">

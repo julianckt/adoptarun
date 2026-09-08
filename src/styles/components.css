@@ -107,6 +107,21 @@
     border-radius: var(--radius-none) !important;
   }
 
+  .route-card-minimap-svg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .route-card-minimap-svg svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    color: var(--color-canvas-white);
+  }
+
   .route-card-minimap-placeholder {
     width: 100%;
     height: 100%;

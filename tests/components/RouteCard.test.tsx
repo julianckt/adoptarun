@@ -7,7 +7,9 @@ import {
   formatRouteElevation,
   formatRouteDifficulty,
   formatRouteSubtitle,
+  formatRouteTags,
 } from '@/utils/formatters';
+import type { SanityRoute } from '@/sanity/types';
 
 describe('RouteCard Behavioral Contracts', () => {
   const componentPath = resolve(__dirname, '../../src/components/RouteCard.astro');
@@ -104,5 +106,54 @@ describe('RouteCard Behavioral Contracts', () => {
         expect(formatRouteSubtitle(undefined, [])).toBe('');
       });
     });
+
+    describe('formatRouteTags', () => {
+      it('formats an array of tags with dot separator', () => {
+        expect(formatRouteTags(['Scenic', 'Waterfront'])).toBe('Scenic · Waterfront');
+        expect(formatRouteTags(['Paved', 'Flat', 'Night Run'])).toBe('Paved · Flat · Night Run');
+      });
+
+      it('filters out empty or falsy tag values', () => {
+        expect(formatRouteTags(['Scenic', '', 'Waterfront'])).toBe('Scenic · Waterfront');
+      });
+
+      it('returns empty string when tags is null, undefined, or empty', () => {
+        expect(formatRouteTags(null)).toBe('');
+        expect(formatRouteTags(undefined)).toBe('');
+        expect(formatRouteTags([])).toBe('');
+      });
+    });
+
+    describe('SanityRoute fixture formatting contract', () => {
+      const sanityTestDoc: SanityRoute = {
+        _id: 'f1eaba7f-c51c-4453-b3db-d2021b42b87a',
+        _type: 'route',
+        title: 'Test 1',
+        animalType: 'Test',
+        district: 'YYC',
+        region: 'Kowloon',
+        city: 'Hong Kong',
+        difficulty: 'easy',
+        colorTheme: 'route-orange',
+        featured: false,
+        distanceKm: 5.18,
+        elevationGain: 42,
+        estimatedDurationMin: 31,
+        description: 'Test run w/ jackie night run',
+        routePolyline: '{}ggC_lzwTVDJBYQGJAHAVCDADA@CBC...',
+        slug: { _type: 'slug', current: 'test-1' },
+        tags: null,
+        isGroupRun: false,
+      };
+
+      it('correctly formats all telemetry readouts and tags from Sanity test document', () => {
+        expect(formatRouteDistance(sanityTestDoc.distanceKm)).toBe('5.18km');
+        expect(formatRouteDuration(sanityTestDoc.estimatedDurationMin)).toBe('31min');
+        expect(formatRouteElevation(sanityTestDoc.elevationGain)).toBe('+42m');
+        expect(formatRouteDifficulty(sanityTestDoc.difficulty)).toBe('Easy');
+        expect(formatRouteTags(sanityTestDoc.tags)).toBe('');
+      });
+    });
   });
 });
+

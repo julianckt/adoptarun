@@ -1,52 +1,47 @@
 ---
-import { formatRouteDistance, formatRouteDuration, formatRouteElevation, formatRouteDifficulty, formatRouteSubtitle } from '@/utils/formatters';
+import type { SanityRoute } from '@/sanity/types';
+import { urlForImage } from '@/sanity/image';
+import {
+  formatRouteDistance,
+  formatRouteDuration,
+  formatRouteElevation,
+  formatRouteDifficulty,
+  formatRouteTags,
+} from '@/utils/formatters';
 
 export interface Props {
   class?: string;
-  district: string;
-  title?: string;
-  subtitle?: string;
-  tags?: string[];
-  distanceKm: number | string;
-  estimatedDurationMin?: number | string;
-  elevationGainM?: number | string;
-  difficulty?: string;
-  colorTheme?: 'route-orange' | 'route-coral' | 'route-blush' | 'orange' | 'coral' | 'blush';
-  mapImage?: string;
-  miniMapSvg?: string;
+  route: SanityRoute;
   [key: string]: any;
 }
 
+const { class: className, route, ...restProps } = Astro.props;
+
 const {
-  class: className,
   district,
-  title,
-  subtitle,
-  tags = [],
+  tags,
   distanceKm,
   estimatedDurationMin,
-  elevationGainM,
+  elevationGain,
   difficulty = 'beginner',
   colorTheme = 'route-orange',
-  mapImage,
   miniMapSvg,
-  ...restProps
-} = Astro.props;
+  coverImage,
+} = route;
 
-// Color Theme modifier
 const themeClass =
-  colorTheme === 'route-coral' || colorTheme === 'coral'
+  colorTheme === 'route-coral'
     ? 'route-card--coral'
-    : colorTheme === 'route-blush' || colorTheme === 'blush'
+    : colorTheme === 'route-blush'
       ? 'route-card--blush'
       : 'route-card--orange';
 
-// Telemetry and metadata formatting
 const formattedDistance = formatRouteDistance(distanceKm);
 const formattedDuration = formatRouteDuration(estimatedDurationMin);
-const formattedElevation = formatRouteElevation(elevationGainM);
+const formattedElevation = formatRouteElevation(elevationGain);
 const formattedDifficulty = formatRouteDifficulty(difficulty);
-const displaySubtitle = formatRouteSubtitle(subtitle, tags);
+const displayTags = formatRouteTags(tags);
+const mapImage = coverImage ? urlForImage(coverImage).url() : undefined;
 ---
 
 <article class:list={['route-card', themeClass, className]} {...restProps}>
@@ -56,7 +51,7 @@ const displaySubtitle = formatRouteSubtitle(subtitle, tags);
       {mapImage ? (
         <img
           src={mapImage}
-          alt={title || district ? `${title || district} route minimap` : 'route minimap'}
+          alt={route.title || district ? `${route.title || district} route minimap` : 'route minimap'}
           class="route-card-minimap-img"
           loading="lazy"
         />
@@ -75,8 +70,8 @@ const displaySubtitle = formatRouteSubtitle(subtitle, tags);
     <div class="route-card-header">
       <div class="route-card-heading-group">
         <h3 class="route-card-district">{district}</h3>
-        {displaySubtitle && (
-          <p class="route-card-blurb">{displaySubtitle}</p>
+        {displayTags && (
+          <p class="route-card-blurb">{displayTags}</p>
         )}
       </div>
 
@@ -107,3 +102,4 @@ const displaySubtitle = formatRouteSubtitle(subtitle, tags);
 
   <slot />
 </article>
+
