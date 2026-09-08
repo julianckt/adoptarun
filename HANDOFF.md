@@ -1,196 +1,124 @@
-# Agent Handoff: Connect RouteCard to Sanity CMS
+# Handoff: Connect Homepage Route Card to Sanity & Enforce 1-Decimal Distance
 
 ## 1. Suggested Skills
-
-The implementing agent should invoke:
-1. **`tdd`** (`.agents/skills/tdd/SKILL.md`): Follow test-first behavioral verification on public seams (formatting utilities) without testing internal styling or parsing `.astro` templates in Vitest.
-2. **`impeccable`** (`.agents/skills/impeccable/SKILL.md`): Ensure zero design token anti-patterns via `npm run check:design`.
-
----
-
-## 2. Objective & User Constraints
-
-Connect [src/components/RouteCard.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/RouteCard.astro) strictly to Sanity CMS using the existing test document in the production dataset (`title: "Test 1"`, `district: "YYC"`, `distanceKm: 5.18`) as the display source on [src/pages/index.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/pages/index.astro).
-
-### Strict Scope Rules (Do Not Deviate):
-- **Props contract**: `RouteCard.astro` must **only** accept `route: SanityRoute` (and optional `class?: string`). Remove support for individual discrete props (`district`, `distanceKm`, etc.).
-- **Existing elements only**: Do NOT add new elements, links, or CTA buttons:
-  - **NO** "Adopt This Route" link or CTA (signup portal is not created yet).
-  - **NO** Group run banner variant (group run component is not created yet).
-  - **NO** hover / expansion states.
-- **District Sub-box = Feature Tags**: The element underneath the district heading (`.route-card-blurb`) is **strictly connected to feature tags (`route.tags`)**, formatted via `formatRouteTags(route.tags)`. If `tags` is null, undefined, or empty, do not render this element.
+The executing agent should invoke:
+1. **`tdd`** (`.agents/skills/tdd/SKILL.md`): Execute test-first updates on the distance formatter seam and behavioral contracts in [tests/components/RouteCard.test.tsx](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/tests/components/RouteCard.test.tsx).
+2. **`impeccable`** (`.agents/skills/impeccable/SKILL.md`): Validate Lumos design system token compliance via `npm run check:design`.
 
 ---
 
-## 3. Sanity Test Document Reference
-
-The test document currently in the Sanity production dataset (`projectId: "huk9xx07"`, `dataset: "production"`) has been verified via Sanity MCP `query_documents`:
-
-```json
-{
-  "_id": "f1eaba7f-c51c-4453-b3db-d2021b42b87a",
-  "_type": "route",
-  "title": "Test 1",
-  "animalType": "Test",
-  "district": "YYC",
-  "region": "Kowloon",
-  "city": "Hong Kong",
-  "difficulty": "easy",
-  "colorTheme": "route-orange",
-  "distanceKm": 5.18,
-  "elevationGain": 42,
-  "estimatedDurationMin": 31,
-  "description": "Test run w/ jackie night run",
-  "miniMapSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M45.5 80.7 L45.2 82 ...\"/></svg>",
-  "routePolyline": "{}ggC_lzwTVDJBYQGJAHAVCDADA@CBC...",
-  "slug": { "_type": "slug", "current": "test-1" },
-  "tags": null,
-  "isGroupRun": false
-}
-```
+## 2. Objective & Scope
+1. **Sanity Data Connection**: Stop using hardcoded fallback values in [src/pages/index.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/pages/index.astro); bind `<RouteCard />` directly to the live route document from Sanity.
+2. **GPS Trace Display**: In [src/components/RouteCard.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/RouteCard.astro), `miniMapSvg` must be the default and sole graphic. Completely remove all references to `coverImage` and `urlForImage`.
+3. **Drafts Perspective Fix**: In [src/sanity/client.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/sanity/client.ts), ensure unauthenticated public queries use `'published'` perspective so queries do not return empty arrays `[]`.
+4. **Distance Formatting**: In [src/utils/formatters.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/formatters.ts), format distances to exactly one decimal place (`.toFixed(1)`), e.g. `14` -> `'14.0km'`, `5.18` -> `'5.2km'`.
 
 ---
 
-## 4. Implementation Steps & Exact Target Files
+## 3. Targeted Changes
 
-### 4.1. Formatting Utilities
+### Seam 1: Telemetry Formatter & Tests
 - **File**: [src/utils/formatters.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/formatters.ts)
-- Add `formatRouteTags(tags?: string[] | null): string`:
-  - Returns `tags.filter(Boolean).join(' · ')` when tags exist.
-  - Returns `''` if tags is null, undefined, or empty.
-
-### 4.2. RouteCard Component
-- **File**: [src/components/RouteCard.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/RouteCard.astro)
-- Update `Props` interface:
-  ```astro
-  ---
-  import type { SanityRoute } from '@/sanity/types';
-  import { urlForImage } from '@/sanity/image';
-  import {
-    formatRouteDistance,
-    formatRouteDuration,
-    formatRouteElevation,
-    formatRouteDifficulty,
-    formatRouteTags,
-  } from '@/utils/formatters';
-
-  export interface Props {
-    class?: string;
-    route: SanityRoute;
-    [key: string]: any;
-  }
-
-  const { class: className, route, ...restProps } = Astro.props;
-
-  const {
-    district,
-    tags,
-    distanceKm,
-    estimatedDurationMin,
-    elevationGain,
-    difficulty = 'beginner',
-    colorTheme = 'route-orange',
-    miniMapSvg,
-    coverImage,
-  } = route;
-
-  const themeClass =
-    colorTheme === 'route-coral'
-      ? 'route-card--coral'
-      : colorTheme === 'route-blush'
-        ? 'route-card--blush'
-        : 'route-card--orange';
-
-  const formattedDistance = formatRouteDistance(distanceKm);
-  const formattedDuration = formatRouteDuration(estimatedDurationMin);
-  const formattedElevation = formatRouteElevation(elevationGain);
-  const formattedDifficulty = formatRouteDifficulty(difficulty);
-  const displayTags = formatRouteTags(tags);
-  const mapImage = coverImage ? urlForImage(coverImage).url() : undefined;
-  ---
-  ```
-- In the template, bind `displayTags` to `.route-card-blurb`:
-  ```astro
-  <div class="route-card-heading-group">
-    <h3 class="route-card-district">{district}</h3>
-    {displayTags && (
-      <p class="route-card-blurb">{displayTags}</p>
-    )}
-  </div>
-  ```
-
-### 4.3. Minimap SVG Styling
-- **File**: [src/styles/components.css](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/styles/components.css)
-- Add rules inside `@layer components` for `.route-card-minimap-svg` and `.route-card-minimap-svg svg`:
-  ```css
-  .route-card-minimap-svg {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .route-card-minimap-svg svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    color: var(--color-canvas-white);
-  }
-  ```
-  *(Note: Must comply strictly with `DESIGN.md`: 0px border-radius, only sanctioned tokens from `tokens.css`).*
-
-### 4.4. Showcase Page Integration
-- **File**: [src/pages/index.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/pages/index.astro)
-- Fetch routes via `getRoutes()` from `@/sanity/queries`:
-  ```astro
-  ---
-  import BaseLayout from '@/layouts/BaseLayout.astro';
-  import IslandVerification from '@/components/IslandVerification';
-  import RouteCard from '@/components/RouteCard.astro';
-  import { getRoutes } from '@/sanity/queries';
-  import type { SanityRoute } from '@/sanity/types';
-
-  const fallbackRoute: SanityRoute = {
-    _id: 'fallback-test-1',
-    _type: 'route',
-    title: 'Test 1',
-    animalType: 'Test',
-    district: 'YYC',
-    region: 'Kowloon',
-    city: 'Hong Kong',
-    difficulty: 'easy',
-    colorTheme: 'route-orange',
-    distanceKm: 5.18,
-    elevationGain: 42,
-    estimatedDurationMin: 31,
-    description: 'Test run w/ jackie night run',
-    routePolyline: '',
-    slug: { _type: 'slug', current: 'test-1' },
-    isGroupRun: false,
-  };
-
-  const routes = await getRoutes().catch(() => []);
-  const displayRoute = routes.length > 0 ? routes[0] : fallbackRoute;
-  ---
-  ```
-- Render:
-  ```astro
-  <RouteCard route={displayRoute} />
-  ```
-
-### 4.5. Tests
+  - Update `formatRouteDistance(distanceKm: number | string | undefined | null): string`:
+    - If `distanceKm === null || distanceKm === undefined || distanceKm === ''`, return `''`.
+    - Parse numeric value (handles both number types and numeric strings with/without `'km'`).
+    - Format with `val.toFixed(1) + 'km'`.
+    - Return `''` if parsed value is `NaN`.
 - **File**: [tests/components/RouteCard.test.tsx](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/tests/components/RouteCard.test.tsx)
-- Add tests for `formatRouteTags`:
-  - `formatRouteTags(['Scenic', 'Waterfront'])` returns `'Scenic · Waterfront'`
-  - `formatRouteTags(null)` / `formatRouteTags(undefined)` / `formatRouteTags([])` returns `''`
-- Add test verifying telemetry & metadata formatting against a `SanityRoute` fixture representing the Sanity test document.
+  - Update assertions in `describe('formatRouteDistance')`:
+    - `14` -> `'14.0km'`
+    - `5.2` -> `'5.2km'`
+    - `0` -> `'0.0km'`
+    - `'14'` -> `'14.0km'`
+    - `'14km'` -> `'14.0km'`
+    - `'  8.5km  '` -> `'8.5km'`
+  - Update `SanityRoute fixture formatting contract`:
+    - Fixture with `distanceKm: 5.18` must expect `'5.2km'`.
+
+### Seam 2: Sanity Client Configuration
+- **File**: [src/sanity/client.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/sanity/client.ts)
+  - Root cause: `perspective: visualEditingEnabled ? 'drafts' : 'published'` caused queries to request drafts. Without an API read token, Sanity returns `[]` for unauthenticated requests.
+  - Apply:
+    ```typescript
+    export const projectId = import.meta.env?.PUBLIC_SANITY_PROJECT_ID || 'huk9xx07';
+    export const dataset = import.meta.env?.PUBLIC_SANITY_DATASET || 'production';
+    export const apiVersion = import.meta.env?.PUBLIC_SANITY_API_VERSION || '2026-03-01';
+    export const visualEditingEnabled =
+      import.meta.env?.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === 'true';
+
+    export const sanityClient: SanityClient = createClient({
+      projectId,
+      dataset,
+      apiVersion,
+      useCdn: false,
+      perspective:
+        visualEditingEnabled && Boolean(import.meta.env?.SANITY_API_READ_TOKEN)
+          ? 'drafts'
+          : 'published',
+      stega: {
+        enabled: visualEditingEnabled,
+        studioUrl: '/studio',
+      },
+    });
+    ```
+
+### Seam 3: RouteCard Component
+- **File**: [src/components/RouteCard.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/RouteCard.astro)
+  - Remove `coverImage` from destructuring and component logic.
+  - Remove `import { urlForImage } from '@/sanity/image';`.
+  - Replace the `<div class="route-card-minimap">` slot content with:
+    ```astro
+    <div class="route-card-minimap">
+      <slot name="minimap">
+        {miniMapSvg ? (
+          <div class="route-card-minimap-svg" set:html={miniMapSvg} />
+        ) : (
+          <div class="media-placeholder route-card-minimap-placeholder" aria-label="Route minimap placeholder">
+            <span class="route-card-placeholder-label">gps trace</span>
+          </div>
+        )}
+      </slot>
+    </div>
+    ```
+
+### Seam 4: Homepage Card Binding
+- **File**: [src/pages/index.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/pages/index.astro)
+  - Delete `fallbackRoute` constant.
+  - Retrieve live routes:
+    ```astro
+    const routes = await getRoutes();
+    const displayRoute = routes[0];
+    ```
+  - Guard the template rendering:
+    ```astro
+    <!-- Signature Route Card Component -->
+    {displayRoute && <RouteCard route={displayRoute} />}
+    ```
 
 ---
 
-## 5. Verification Commands
+## 4. Verification & Completion Criteria
 
-Run these exact commands from repository root:
-1. `npm test` with `BypassSandbox: true` (Must pass 100% of tests).
-2. `npm run check:design` with `BypassSandbox: true` (Must report 0 anti-patterns).
-3. `npx astro check` (Must pass type checks).
+Always run verification commands with `BypassSandbox: true` per repository rules.
+
+1. **Unit & Design Invariant Tests**:
+   ```bash
+   npm test
+   ```
+   - Must pass all tests in Vitest.
+   - `npm run check:design` must report **0 anti-patterns**.
+
+2. **Typecheck**:
+   ```bash
+   npm run typecheck
+   ```
+   - Astro check & TypeScript validation must report **0 errors**.
+
+3. **Production Build & Markup Verification**:
+   ```bash
+   npm run build
+   ```
+   - Confirm [dist/client/index.html](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/dist/client/index.html) contains:
+     - The inline `<svg ...>` element inside `.route-card-minimap-svg`.
+     - Distance formatted as `5.2km`.
+     - Zero instances of `<div class="media-placeholder route-card-minimap-placeholder">` on the signature card.

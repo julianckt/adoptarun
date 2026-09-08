@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { type FileInputProps, set, unset, PatchEvent, useFormCallbacks, useClient } from 'sanity';
-import { useDocumentPane } from 'sanity/structure';
 import { Card, Stack, Flex, Text, Badge, Box, Button, Spinner } from '@sanity/ui';
 import { parseGpx, type ParsedGpxResult } from '../../geo/gpx-parser';
 
@@ -19,32 +18,11 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Safely obtain document pane context for patching root document fields
-  let documentPane: ReturnType<typeof useDocumentPane> | undefined;
-  try {
-    documentPane = useDocumentPane();
-  } catch {
-    // Outside Sanity Structure DocumentPane context (e.g. unit tests)
-  }
-
-  // Safely obtain form callbacks as secondary fallback
-  let formCallbacks: ReturnType<typeof useFormCallbacks> | undefined;
-  try {
-    formCallbacks = useFormCallbacks();
-  } catch {
-    // Outside Sanity form provider context
-  }
-
-  // Safely obtain Sanity client for uploading file asset to Sanity CDN
-  let sanityClient: any;
-  try {
-    sanityClient = useClient({ apiVersion: '2025-02-19' });
-  } catch {
-    // Outside Sanity Studio source context
-  }
+  const sanityClient = useClient({ apiVersion: '2025-02-19' });
+  const { onChange: rootOnChange } = useFormCallbacks();
 
   const activeClient = props.client || sanityClient;
-  const targetDocumentOnChange = props.documentOnChange || documentPane?.onChange || formCallbacks?.onChange;
+  const targetDocumentOnChange = props.documentOnChange || rootOnChange;
 
   const processGpxFile = useCallback(
     async (file: File) => {

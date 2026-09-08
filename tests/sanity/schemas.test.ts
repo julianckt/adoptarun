@@ -8,7 +8,7 @@ import {
   CHARITY_BY_SLUG_QUERY,
   SITE_COPY_QUERY,
 } from '../../src/sanity/queries';
-import { urlForImage } from '../../src/sanity/image';
+import { urlForImage, hasImageAsset, safeUrlForImage } from '../../src/sanity/image';
 import { sanityClient, projectId, dataset, visualEditingEnabled } from '../../src/sanity/client';
 import { cleanStega } from '../../src/sanity';
 import sanityConfig from '../../sanity.config';
@@ -63,6 +63,30 @@ describe('Sanity CMS Schemas & Configuration', () => {
       const gpxField = (routeType.fields || []).find((f) => f.name === 'gpxFile');
       expect(gpxField).toBeDefined();
       expect(gpxField?.components?.input).toBeDefined();
+    });
+
+    it('previews with media only when asset reference is present', () => {
+      const prepare = (routeType.preview as any).prepare;
+      const previewWithoutAsset = prepare({
+        title: 'Jackie Run',
+        district: 'YYC',
+        distance: 5.18,
+        media: { _type: 'image', alt: 'Route photo' },
+        isGroupRun: false,
+      });
+      expect(previewWithoutAsset.media).toBeUndefined();
+
+      const previewWithAsset = prepare({
+        title: 'Jackie Run',
+        district: 'YYC',
+        distance: 5.18,
+        media: {
+          _type: 'image',
+          asset: { _ref: 'image-1234567890abcdef-800x600-png', _type: 'reference' },
+        },
+        isGroupRun: false,
+      });
+      expect(previewWithAsset.media).toBeDefined();
     });
   });
 
@@ -139,6 +163,44 @@ describe('Sanity CMS Schemas & Configuration', () => {
       const url = urlForImage(mockImageSource).width(400).url();
       expect(url).toContain('https://cdn.sanity.io/images/huk9xx07/production/');
       expect(url).toContain('w=400');
+    });
+
+    it('hasImageAsset validates asset presence correctly', () => {
+      expect(hasImageAsset(null)).toBe(false);
+      expect(hasImageAsset(undefined)).toBe(false);
+      expect(hasImageAsset('')).toBe(false);
+      expect(hasImageAsset({})).toBe(false);
+      expect(hasImageAsset({ _type: 'image', alt: 'Route photo' })).toBe(false);
+      expect(hasImageAsset({ _type: 'image', asset: {} })).toBe(false);
+
+      expect(
+        hasImageAsset({
+          _type: 'image',
+          asset: { _ref: 'image-1234567890abcdef-800x600-png', _type: 'reference' },
+        })
+      ).toBe(true);
+      expect(hasImageAsset({ asset: { _id: 'image-1234' } })).toBe(true);
+      expect(hasImageAsset({ asset: { url: 'https://cdn.sanity.io/images/foo.png' } })).toBe(true);
+      expect(hasImageAsset({ asset: 'image-1234' })).toBe(true);
+      expect(hasImageAsset('image-1234')).toBe(true);
+      expect(hasImageAsset({ _ref: 'image-1234' })).toBe(true);
+    });
+
+    it('safeUrlForImage gracefully resolves URLs or returns undefined', () => {
+      expect(safeUrlForImage(null)).toBeUndefined();
+      expect(safeUrlForImage(undefined)).toBeUndefined();
+      expect(safeUrlForImage({ _type: 'image', alt: 'Route photo' })).toBeUndefined();
+
+      const validSource = {
+        _type: 'image' as const,
+        asset: {
+          _ref: 'image-1234567890abcdef-800x600-png',
+          _type: 'reference' as const,
+        },
+      };
+      const resolved = safeUrlForImage(validSource);
+      expect(resolved).toBeDefined();
+      expect(resolved).toContain('https://cdn.sanity.io/images/huk9xx07/production/');
     });
 
     it('GROQ queries are valid strings', () => {

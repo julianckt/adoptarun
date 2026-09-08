@@ -43,6 +43,30 @@ describe('Sanity Studio Integration & Configuration', () => {
       expect(element).toBeDefined();
       expect(element.type).toBeDefined();
     });
+
+    it('provides unstable_history for hash-based routing', () => {
+      const element = SanityStudio();
+      const studioChild = (element as any).props.children;
+      expect(studioChild.props.unstable_history).toBeDefined();
+      expect(typeof studioChild.props.unstable_history.push).toBe('function');
+      expect(studioChild.props.unstable_history.location.pathname).toBe('/studio');
+    });
+
+    it('unstable_history.listen dispatches composite update to listeners', () => {
+      const element = SanityStudio();
+      const studioChild = (element as any).props.children;
+      const history = studioChild.props.unstable_history;
+
+      let receivedUpdate: any = null;
+      const unlisten = history.listen((update: any) => {
+        receivedUpdate = update;
+      });
+
+      history.push('/studio/structure');
+      expect(receivedUpdate).toBeDefined();
+      expect(receivedUpdate.pathname || receivedUpdate.location?.pathname).toBe('/studio/structure');
+      unlisten();
+    });
   });
 });
 

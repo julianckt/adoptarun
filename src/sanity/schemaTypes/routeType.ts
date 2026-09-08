@@ -274,7 +274,7 @@ export const routeType = defineType({
       return {
         title: `${title}${groupRunBadge}`,
         subtitle: `${district || 'Hong Kong'} · ${distance ? `${distance}km` : 'TBD'}`,
-        media,
+        media: media?.asset ? media : undefined,
       };
     },
   },

@@ -1,13 +1,19 @@
 /**
- * Format route distance into standard display string (e.g. '14km').
+ * Format route distance into standard display string (e.g. '14.0km', '5.2km').
  */
 export function formatRouteDistance(distanceKm: number | string | undefined | null): string {
-  if (typeof distanceKm === 'number') {
-    return `${distanceKm}km`;
+  if (distanceKm === null || distanceKm === undefined || distanceKm === '') {
+    return '';
   }
-  const str = String(distanceKm ?? '').trim();
-  if (!str) return '';
-  return str.endsWith('km') ? str : `${str}km`;
+  const numericVal =
+    typeof distanceKm === 'number'
+      ? distanceKm
+      : parseFloat(String(distanceKm).replace(/km/i, '').trim());
+
+  if (Number.isNaN(numericVal)) {
+    return '';
+  }
+  return `${numericVal.toFixed(1)}km`;
 }
 
 /**

@@ -21,14 +21,14 @@ describe('RouteCard Behavioral Contracts', () => {
   describe('Telemetry & Metadata Formatting Seam', () => {
     describe('formatRouteDistance', () => {
       it('formats numeric kilometers', () => {
-        expect(formatRouteDistance(14)).toBe('14km');
+        expect(formatRouteDistance(14)).toBe('14.0km');
         expect(formatRouteDistance(5.2)).toBe('5.2km');
-        expect(formatRouteDistance(0)).toBe('0km');
+        expect(formatRouteDistance(0)).toBe('0.0km');
       });
 
       it('formats string kilometers with or without existing suffix', () => {
-        expect(formatRouteDistance('14')).toBe('14km');
-        expect(formatRouteDistance('14km')).toBe('14km');
+        expect(formatRouteDistance('14')).toBe('14.0km');
+        expect(formatRouteDistance('14km')).toBe('14.0km');
         expect(formatRouteDistance('  8.5km  ')).toBe('8.5km');
       });
 
@@ -147,7 +147,7 @@ describe('RouteCard Behavioral Contracts', () => {
       };
 
       it('correctly formats all telemetry readouts and tags from Sanity test document', () => {
-        expect(formatRouteDistance(sanityTestDoc.distanceKm)).toBe('5.18km');
+        expect(formatRouteDistance(sanityTestDoc.distanceKm)).toBe('5.2km');
         expect(formatRouteDuration(sanityTestDoc.estimatedDurationMin)).toBe('31min');
         expect(formatRouteElevation(sanityTestDoc.elevationGain)).toBe('+42m');
         expect(formatRouteDifficulty(sanityTestDoc.difficulty)).toBe('Easy');

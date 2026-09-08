@@ -2,6 +2,21 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { ThemeProvider, studioTheme } from '@sanity/ui';
+
+vi.mock('sanity', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('sanity')>();
+  return {
+    ...actual,
+    useClient: vi.fn(() => ({
+      assets: { upload: vi.fn() },
+      getDocument: vi.fn(),
+    })),
+    useFormCallbacks: vi.fn(() => ({
+      onChange: vi.fn(),
+    })),
+  };
+});
+
 import { GpxUploadInput } from '../../src/components/sanity/GpxUploadInput';
 
 function renderWithTheme(ui: React.ReactElement) {
