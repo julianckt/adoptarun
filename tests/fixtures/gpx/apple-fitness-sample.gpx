@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Apple Fitness+" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>Morning Outdoor Run</name>
+    <trkseg>
+      <trkpt lat="22.2800" lon="114.1500">
+        <ele>10.0</ele>
+        <time>2026-09-02T06:30:00Z</time>
+      </trkpt>
+      <trkpt lat="22.2810" lon="114.1515">
+        <ele>12.5</ele>
+        <time>2026-09-02T06:30:30Z</time>
+      </trkpt>
+      <trkpt lat="22.2820" lon="114.1530">
+        <ele>15.0</ele>
+        <time>2026-09-02T06:31:00Z</time>
+      </trkpt>
+      <trkpt lat="22.2830" lon="114.1545">
+        <ele>18.0</ele>
+        <time>2026-09-02T06:31:30Z</time>
+      </trkpt>
+      <trkpt lat="22.2840" lon="114.1560">
+        <ele>16.5</ele>
+        <time>2026-09-02T06:32:00Z</time>
+      </trkpt>
+      <trkpt lat="22.2850" lon="114.1575">
+        <ele>14.0</ele>
+        <time>2026-09-02T06:32:30Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="Garmin Connect" version="1.1"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd"
+  xmlns="http://www.topografix.com/GPX/1/1"
+  xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1"
+  xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata>
+    <time>2026-09-01T07:00:00.000Z</time>
+  </metadata>
+  <trk>
+    <name>Central Waterfront Companion Run</name>
+    <type>running</type>
+    <trkseg>
+      <trkpt lat="22.2865" lon="114.1550">
+        <ele>5.2</ele>
+        <time>2026-09-01T07:00:00.000Z</time>
+        <extensions>
+          <gpxtpx:TrackPointExtension>
+            <gpxtpx:hr>142</gpxtpx:hr>
+          </gpxtpx:TrackPointExtension>
+        </extensions>
+      </trkpt>
+      <trkpt lat="22.2870" lon="114.1560">
+        <ele>5.8</ele>
+        <time>2026-09-01T07:00:20.000Z</time>
+        <extensions>
+          <gpxtpx:TrackPointExtension>
+            <gpxtpx:hr>145</gpxtpx:hr>
+          </gpxtpx:TrackPointExtension>
+        </extensions>
+      </trkpt>
+      <trkpt lat="22.2878" lon="114.1575">
+        <ele>6.4</ele>
+        <time>2026-09-01T07:00:45.000Z</time>
+      </trkpt>
+      <trkpt lat="22.2885" lon="114.1590">
+        <ele>7.0</ele>
+        <time>2026-09-01T07:01:10.000Z</time>
+      </trkpt>
+      <trkpt lat="22.2892" lon="114.1610">
+        <ele>6.8</ele>
+        <time>2026-09-01T07:01:40.000Z</time>
+      </trkpt>
+      <trkpt lat="22.2898" lon="114.1630">
+        <ele>8.2</ele>
+        <time>2026-09-01T07:02:10.000Z</time>
+      </trkpt>
+      <trkpt lat="22.2905" lon="114.1650">
+        <ele>9.1</ele>
+        <time>2026-09-01T07:02:40.000Z</time>
+      </trkpt>
+      <trkpt lat="22.2910" lon="114.1670">
+        <ele>8.5</ele>
+        <time>2026-09-01T07:03:10.000Z</time>
+      </trkpt>
+      <trkpt lat="22.2915" lon="114.1690">
+        <ele>7.8</ele>
+        <time>2026-09-01T07:03:40.000Z</time>
+      </trkpt>
+      <trkpt lat="22.2920" lon="114.1710">
+        <ele>7.5</ele>
+        <time>2026-09-01T07:04:10.000Z</time>
+      </trkpt>
+      <trkpt lat="22.2925" lon="114.1730">
+        <ele>8.0</ele>
+        <time>2026-09-01T07:04:40.000Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

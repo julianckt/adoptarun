@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="COROS PACE 3" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata>
+    <name>COROS Running Activity</name>
+    <time>2026-09-04T05:45:00Z</time>
+  </metadata>
+  <trk>
+    <name>Kai Tak Runway Loop</name>
+    <trkseg>
+      <trkpt lat="22.3080" lon="114.2150">
+        <ele>3.0</ele>
+        <time>2026-09-04T05:45:00Z</time>
+      </trkpt>
+      <trkpt lat="22.3090" lon="114.2170">
+        <ele>3.2</ele>
+        <time>2026-09-04T05:45:30Z</time>
+      </trkpt>
+      <trkpt lat="22.3100" lon="114.2190">
+        <ele>3.5</ele>
+        <time>2026-09-04T05:46:00Z</time>
+      </trkpt>
+      <trkpt lat="22.3110" lon="114.2210">
+        <ele>3.8</ele>
+        <time>2026-09-04T05:46:30Z</time>
+      </trkpt>
+      <trkpt lat="22.3120" lon="114.2230">
+        <ele>4.0</ele>
+        <time>2026-09-04T05:47:00Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

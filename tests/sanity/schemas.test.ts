@@ -58,6 +58,12 @@ describe('Sanity CMS Schemas & Configuration', () => {
       const groupRunField = (routeType.fields || []).find((f) => f.name === 'isGroupRun');
       expect(groupRunField?.fieldset).toBe('groupRun');
     });
+
+    it('configures custom GpxUploadInput component on gpxFile field', () => {
+      const gpxField = (routeType.fields || []).find((f) => f.name === 'gpxFile');
+      expect(gpxField).toBeDefined();
+      expect(gpxField?.components?.input).toBeDefined();
+    });
   });
 
   describe('Charity Schema (charityType)', () => {

@@ -1,7 +1,10 @@
 import { DatabaseSync } from 'node:sqlite';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { D1Database, D1PreparedStatement, D1Response, D1Result } from '@cloudflare/workers-types';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export function createMockD1(): D1Database {
   const sqlite = new DatabaseSync(':memory:');

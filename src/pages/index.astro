@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import IslandVerification from '@/components/IslandVerification';
+import RouteCard from '@/components/RouteCard.astro';
 ---
 
 <BaseLayout title="adopt a run — gps art community movement">
@@ -28,8 +29,19 @@ import IslandVerification from '@/components/IslandVerification';
       <h2 class="u-text-display" style="font-size: var(--font-fluid-title); margin-bottom: var(--space-06);">
         lumos component showcase
       </h2>
-      <div class="u-grid-autofit" style="--grid-min: 300px; --grid-gap: var(--space-06);">
-        <!-- Route Card Sample -->
+      <div class="u-grid-autofit" style="--grid-min: 380px; --grid-gap: var(--space-06);">
+        <!-- Signature Route Card Component -->
+        <RouteCard
+          district="Wan Chai"
+          subtitle="Near MTR · Traffic-Free Promenade Run"
+          distanceKm={14}
+          estimatedDurationMin={10}
+          elevationGainM={4}
+          difficulty="Beginner"
+          colorTheme="route-orange"
+        />
+
+        <!-- Route Card Sample (Ad-hoc) -->
         <article class="card-route p-micro-frame">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-04);">
             <span class="badge-group-run">group run</span>

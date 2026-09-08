@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="BrokenGPX" version="1.1">
+  <trk>
+    <name>Corrupted Track</name>
+    <trkseg>
+      <trkpt lat="invalid" lon="none">
+        <ele>abc</ele>
+      </trkpt>
+      <trkpt lat="22.2800">
+      <!-- missing closing tags and lon -->

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="StravaGPX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <time>2026-09-03T08:15:00Z</time>
+  </metadata>
+  <trk>
+    <name>Afternoon Run across Bowen Road</name>
+    <type>9</type>
+    <trkseg>
+      <trkpt lat="22.2720" lon="114.1600">
+        <ele>112.0</ele>
+        <time>2026-09-03T08:15:00Z</time>
+      </trkpt>
+      <trkpt lat="22.2725" lon="114.1620">
+        <ele>113.2</ele>
+        <time>2026-09-03T08:15:25Z</time>
+      </trkpt>
+      <trkpt lat="22.2730" lon="114.1640">
+        <ele>114.0</ele>
+        <time>2026-09-03T08:15:50Z</time>
+      </trkpt>
+      <trkpt lat="22.2735" lon="114.1660">
+        <ele>114.8</ele>
+        <time>2026-09-03T08:16:15Z</time>
+      </trkpt>
+      <trkpt lat="22.2740" lon="114.1680">
+        <ele>115.5</ele>
+        <time>2026-09-03T08:16:40Z</time>
+      </trkpt>
+      <trkpt lat="22.2745" lon="114.1700">
+        <ele>116.0</ele>
+        <time>2026-09-03T08:17:05Z</time>
+      </trkpt>
+      <trkpt lat="22.2750" lon="114.1720">
+        <ele>115.0</ele>
+        <time>2026-09-03T08:17:30Z</time>
+      </trkpt>
+      <trkpt lat="22.2755" lon="114.1740">
+        <ele>114.2</ele>
+        <time>2026-09-03T08:17:55Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

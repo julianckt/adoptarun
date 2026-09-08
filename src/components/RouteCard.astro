@@ -1,0 +1,109 @@
+---
+import { formatRouteDistance, formatRouteDuration, formatRouteElevation, formatRouteDifficulty, formatRouteSubtitle } from '@/utils/formatters';
+
+export interface Props {
+  class?: string;
+  district: string;
+  title?: string;
+  subtitle?: string;
+  tags?: string[];
+  distanceKm: number | string;
+  estimatedDurationMin?: number | string;
+  elevationGainM?: number | string;
+  difficulty?: string;
+  colorTheme?: 'route-orange' | 'route-coral' | 'route-blush' | 'orange' | 'coral' | 'blush';
+  mapImage?: string;
+  miniMapSvg?: string;
+  [key: string]: any;
+}
+
+const {
+  class: className,
+  district,
+  title,
+  subtitle,
+  tags = [],
+  distanceKm,
+  estimatedDurationMin,
+  elevationGainM,
+  difficulty = 'beginner',
+  colorTheme = 'route-orange',
+  mapImage,
+  miniMapSvg,
+  ...restProps
+} = Astro.props;
+
+// Color Theme modifier
+const themeClass =
+  colorTheme === 'route-coral' || colorTheme === 'coral'
+    ? 'route-card--coral'
+    : colorTheme === 'route-blush' || colorTheme === 'blush'
+      ? 'route-card--blush'
+      : 'route-card--orange';
+
+// Telemetry and metadata formatting
+const formattedDistance = formatRouteDistance(distanceKm);
+const formattedDuration = formatRouteDuration(estimatedDurationMin);
+const formattedElevation = formatRouteElevation(elevationGainM);
+const formattedDifficulty = formatRouteDifficulty(difficulty);
+const displaySubtitle = formatRouteSubtitle(subtitle, tags);
+---
+
+<article class:list={['route-card', themeClass, className]} {...restProps}>
+  <!-- Top Minimap Window (356px x 216px) -->
+  <div class="route-card-minimap">
+    <slot name="minimap">
+      {mapImage ? (
+        <img
+          src={mapImage}
+          alt={title || district ? `${title || district} route minimap` : 'route minimap'}
+          class="route-card-minimap-img"
+          loading="lazy"
+        />
+      ) : miniMapSvg ? (
+        <div class="route-card-minimap-svg" set:html={miniMapSvg} />
+      ) : (
+        <div class="media-placeholder route-card-minimap-placeholder" aria-label="Route minimap placeholder">
+          <span class="route-card-placeholder-label">gps trace</span>
+        </div>
+      )}
+    </slot>
+  </div>
+
+  <!-- Bottom Info Container (356px x 240px) -->
+  <div class="route-card-info">
+    <div class="route-card-header">
+      <div class="route-card-heading-group">
+        <h3 class="route-card-district">{district}</h3>
+        {displaySubtitle && (
+          <p class="route-card-blurb">{displaySubtitle}</p>
+        )}
+      </div>
+
+      <!-- Telemetry Readouts -->
+      {
+        (formattedDuration || formattedElevation) && (
+          <div class="route-card-telemetry">
+            {formattedDuration && (
+              <div class="route-card-metric">
+                <span class="route-card-metric-label">est.</span>
+                <span class="route-card-metric-val">{formattedDuration}</span>
+              </div>
+            )}
+            {formattedElevation && (
+              <div class="route-card-metric">
+                <span class="route-card-metric-label">elev.</span>
+                <span class="route-card-metric-val">{formattedElevation}</span>
+              </div>
+            )}
+          </div>
+        )
+      }
+    </div>
+
+    <!-- Bottom Row: Difficulty & Distance -->
+    <div class="route-card-footer"><span class="route-card-difficulty">{formattedDifficulty}</span><span class="route-card-distance">{formattedDistance}</span></div>
+  </div>
+
+  <slot />
+</article>

@@ -1,3 +1,9 @@
 {
-  "buildPath": "code"
+  "buildPath": "code",
+  "detector": {
+    "ignoreFiles": [
+      "src/components/sanity/**",
+      "src/sanity/**"
+    ]
+  }
 }

@@ -58,6 +58,187 @@
     box-shadow: none;
   }
 
+  /* -------------------------------------------------------------
+     Signature Route Card (Standard 380px x 480px Closed View)
+     ------------------------------------------------------------- */
+  .route-card {
+    width: 380px;
+    height: 480px;
+    background-color: var(--color-route-orange);
+    color: var(--color-canvas-black);
+    padding: var(--space-04);
+    border-radius: var(--radius-none) !important;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    box-shadow: none;
+  }
+
+  /* Sanctioned Route Palette Variants */
+  .route-card--orange {
+    background-color: var(--color-route-orange);
+  }
+
+  .route-card--coral {
+    background-color: var(--color-route-coral);
+  }
+
+  .route-card--blush {
+    background-color: var(--color-route-blush);
+  }
+
+  .route-card-minimap {
+    width: 100%;
+    height: 216px;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--color-pure-black);
+    border-radius: var(--radius-none) !important;
+    flex-shrink: 0;
+  }
+
+  .route-card-minimap-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: var(--radius-none) !important;
+  }
+
+  .route-card-minimap-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-placeholder-grey);
+    border-radius: var(--radius-none) !important;
+  }
+
+  .route-card-placeholder-label {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    color: var(--color-canvas-black);
+    text-transform: lowercase;
+    letter-spacing: 0.05em;
+  }
+
+  .route-card-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 240px;
+    padding-top: var(--space-03);
+    box-sizing: border-box;
+    flex-grow: 1;
+  }
+
+  .route-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-03);
+    width: 100%;
+    row-gap: var(--space-06);
+    column-gap: var(--space-06);
+  }
+
+  .route-card-heading-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .route-card-district {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--font-size-wordmark);
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-black);
+    margin: var(--space-00);
+    word-break: break-word;
+  }
+
+  .route-card-blurb {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    color: var(--color-canvas-black);
+    margin: var(--space-02) var(--space-00) var(--space-00) var(--space-00);
+  }
+
+  .route-card-telemetry {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-02);
+    flex-shrink: 0;
+    text-align: right;
+    padding-top: var(--space-02);
+  }
+
+  .route-card-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    line-height: var(--leading-compressed);
+    row-gap: var(--space-01);
+    column-gap: var(--space-01);
+  }
+
+  .route-card-metric-label {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 300;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-black);
+    text-align: right;
+    display: block;
+  }
+
+  .route-card-metric-val {
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    font-weight: 400;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-black);
+    text-align: right;
+    display: block;
+  }
+
+  .route-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: auto;
+    width: 100%;
+  }
+
+  .route-card-difficulty {
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    font-weight: 400;
+    line-height: var(--leading-body);
+    color: var(--color-canvas-black);
+    margin-bottom: var(--space-01);
+  }
+
+  .route-card-distance {
+    font-family: var(--font-body);
+    font-size: var(--font-size-headline);
+    font-weight: 400;
+    line-height: 0.85;
+    color: var(--color-canvas-black);
+    text-align: right;
+    letter-spacing: -0.02em;
+  }
+
   /* Group Run Badge Foundation */
   .badge-group-run {
     display: inline-flex;
