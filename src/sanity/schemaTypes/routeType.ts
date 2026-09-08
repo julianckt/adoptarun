@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity';
 import { PinIcon } from '@sanity/icons/Pin';
+import { GpxUploadInput } from '../../components/sanity/GpxUploadInput';
 
 export const routeType = defineType({
   name: 'route',
@@ -141,6 +142,9 @@ export const routeType = defineType({
       fieldset: 'geo',
       options: {
         accept: '.gpx,application/gpx+xml,application/xml',
+      },
+      components: {
+        input: GpxUploadInput,
       },
       description: 'Official master GPX track file for this artwork.',
     }),
