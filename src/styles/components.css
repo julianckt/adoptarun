@@ -301,6 +301,7 @@
         backdrop-filter: blur(0px);
         -webkit-backdrop-filter: blur(0px);
       }
+
       to {
         background-color: var(--color-header-translucent);
         backdrop-filter: blur(20px);
@@ -648,6 +649,7 @@
     gap: var(--space-03);
     max-width: 550px;
     padding: var(--space-03);
+    margin-top: var(--space-13);
   }
 
   .hero-wordmark {
@@ -721,11 +723,11 @@
 
   .hero-mission {
     font-family: var(--font-body);
-    font-size: var(--font-size-body);
+    font-size: var(--font-size-label);
     font-weight: 400;
     line-height: var(--leading-body);
     color: var(--color-canvas-white);
-    max-width: 999px;
+    max-width: 830px;
     margin: 0;
   }
 
@@ -779,7 +781,7 @@
     }
 
     .hero-tagline {
-      max-width: 100%;
+      max-width: 60%;
     }
 
     .hero-cards {
@@ -817,16 +819,17 @@
 
     .hero-tagline {
       font-size: var(--font-size-metric);
+      max-width: 90%;
     }
 
     /* On small viewports, show only one route card */
     .hero-cards {
       width: 100%;
-      justify-content: center;
+      justify-content: left;
       padding: var(--space-01) 0;
     }
 
-    .hero-cards > :nth-child(n+2) {
+    .hero-cards> :nth-child(n+2) {
       display: none;
     }
 
