@@ -3,39 +3,78 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import IslandVerification from '@/components/IslandVerification';
 import RouteCard from '@/components/RouteCard.astro';
 import { getRoutes } from '@/sanity/queries';
+import type { SanityRoute } from '@/sanity/types';
 
 const routes = await getRoutes();
-const displayRoute = routes[0];
+const fallbackRoute: SanityRoute = {
+  _id: 'sample-wan-chai',
+  _type: 'route',
+  title: 'Wan Chai Promenade',
+  slug: { current: 'wan-chai-promenade' } as any,
+  district: 'Wan Chai',
+  distanceKm: 14,
+  estimatedDurationMin: 10,
+  elevationGain: 4,
+  difficulty: 'beginner',
+  colorTheme: 'route-orange',
+  tags: ['Near MTR', 'Traffic-Free Promenade Run'],
+};
+
+const activeRoute = routes?.[0] || fallbackRoute;
 ---
 
 <BaseLayout title="adopt a run — gps art community movement">
-  <main class="u-container" style="max-width: 1100px; margin: var(--space-09) auto; padding: 0 var(--space-06);">
-    <header style="margin-bottom: var(--space-08);">
+  <main>
+    <!-- Fullscreen Hero Section -->
+    <section class="hero-fullscreen" aria-label="Hero Section">
+      <div class="hero-inner">
+        <!-- Hero Section Main Row -->
+        <div class="hero-main">
+          <!-- Left Column: Wordmark & Tagline -->
+          <div class="hero-header">
+            <h1 class="hero-wordmark">
+              <span class="hero-wordmark-line">adopt</span>
+              <span class="hero-wordmark-line"><span class="hero-wordmark-thin">a</span> <span class="hero-wordmark-strong">run</span></span>
+            </h1>
+            <p class="hero-tagline">
+              the new way to push yourself<br />
+              in training and in giving back
+            </p>
+          </div>
+
+          <!-- Right Column: Route Cards (repeated twice) -->
+          <div class="hero-cards">
+            <RouteCard route={activeRoute} />
+            <RouteCard route={activeRoute} />
+          </div>
+        </div>
+
+        <!-- Hero Bottom Bar -->
+        <div class="hero-bottom">
+          <p class="hero-mission">
+            by bringing people together through long-distance running and community art, our project aims to help champion a kinder city — a city where our shared compassion moves us forward.
+          </p>
+          <a href="#lumos-showcase" class="hero-learn-more" aria-label="Learn more about adopt a run">
+            learn more &darr;
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lumos Component Showcase & Verification (Preserved under Hero) -->
+    <section id="lumos-showcase" class="u-container" style="max-width: 1100px; margin: var(--space-10) auto; padding: 0 var(--space-06);">
       <div style="display: flex; align-items: center; gap: var(--space-04); margin-bottom: var(--space-04);">
         <span class="badge-group-run">system verified</span>
         <span class="u-text-mono" style="font-size: var(--font-fluid-label); color: var(--color-text-secondary);">
           ticket #14 · lumos design system
         </span>
       </div>
-      <h1 class="u-text-display" style="font-size: var(--font-fluid-headline); margin-bottom: var(--space-04);">
-        adopt a run
-      </h1>
-      <p class="u-text-body" style="font-size: var(--font-fluid-body); color: var(--color-text-secondary); max-width: 680px;">
-        an international gps-art community movement debuting in hong kong. bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.
-      </p>
-      <div style="display: flex; gap: var(--space-04); margin-top: var(--space-06); flex-wrap: wrap;">
-        <a href="#demo" class="btn btn-primary">run with us</a>
-        <a href="#routes" class="btn btn-secondary">explore routes</a>
-      </div>
-    </header>
-
-    <section id="demo" style="margin-bottom: var(--space-10);">
       <h2 class="u-text-display" style="font-size: var(--font-fluid-title); margin-bottom: var(--space-06);">
         lumos component showcase
       </h2>
-      <div class="u-grid-autofit" style="--grid-min: 380px; --grid-gap: var(--space-06);">
+      <div class="u-grid-autofit" style="--grid-min: 380px; --grid-gap: var(--space-06); margin-bottom: var(--space-10);">
         <!-- Signature Route Card Component -->
-        {displayRoute && <RouteCard route={displayRoute} />}
+        <RouteCard route={activeRoute} />
 
         <!-- Route Card Sample (Ad-hoc) -->
         <article class="card-route p-micro-frame">

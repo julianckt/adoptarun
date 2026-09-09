@@ -18,9 +18,11 @@ typography:
     label: "16px"
     body: "20px"
     metric: "24px"
+    tagline: "40px"
     wordmark: "48px"
     title: "64px"
     headline: "80px"
+    hero-wordmark: "96px"
     display: "160px"
   display:
     fontFamily: "Degular Display, system-ui, sans-serif"
