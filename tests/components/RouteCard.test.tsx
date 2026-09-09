@@ -124,34 +124,50 @@ describe('RouteCard Behavioral Contracts', () => {
       });
     });
 
-    describe('SanityRoute fixture formatting contract', () => {
-      const sanityTestDoc: SanityRoute = {
-        _id: 'f1eaba7f-c51c-4453-b3db-d2021b42b87a',
-        _type: 'route',
-        title: 'Test 1',
-        animalType: 'Test',
-        district: 'YYC',
-        region: 'Kowloon',
-        city: 'Hong Kong',
-        difficulty: 'easy',
-        colorTheme: 'route-orange',
-        featured: false,
-        distanceKm: 5.18,
-        elevationGain: 42,
-        estimatedDurationMin: 31,
-        description: 'Test run w/ jackie night run',
-        routePolyline: '{}ggC_lzwTVDJBYQGJAHAVCDADA@CBC...',
-        slug: { _type: 'slug', current: 'test-1' },
-        tags: null,
-        isGroupRun: false,
-      };
+    const sanityTestDoc: SanityRoute = {
+      _id: 'f1eaba7f-c51c-4453-b3db-d2021b42b87a',
+      _type: 'route',
+      title: 'Test 1',
+      animalType: 'Test',
+      district: 'YYC',
+      region: 'Kowloon',
+      city: 'Hong Kong',
+      difficulty: 'easy',
+      colorTheme: 'route-orange',
+      featured: false,
+      distanceKm: 5.18,
+      elevationGain: 42,
+      estimatedDurationMin: 31,
+      description: 'Test run w/ jackie night run',
+      routePolyline: '{}ggC_lzwTVDJBYQGJAHAVCDADA@CBC...',
+      slug: { _type: 'slug', current: 'test-1' },
+      tags: null,
+      isGroupRun: false,
+    };
 
+    describe('SanityRoute fixture formatting contract', () => {
       it('correctly formats all telemetry readouts and tags from Sanity test document', () => {
         expect(formatRouteDistance(sanityTestDoc.distanceKm)).toBe('5.2km');
         expect(formatRouteDuration(sanityTestDoc.estimatedDurationMin)).toBe('31min');
         expect(formatRouteElevation(sanityTestDoc.elevationGain)).toBe('+42m');
         expect(formatRouteDifficulty(sanityTestDoc.difficulty)).toBe('Easy');
         expect(formatRouteTags(sanityTestDoc.tags)).toBe('');
+      });
+    });
+
+    describe('Minimap Basemap & Theme Contract', () => {
+      it('supports full-bleed basemap SVG markup with route-trace class', () => {
+        const fullBleedSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 356 216" fill="none"><g class="route-basemap"><path d="M0 0"/></g><path class="route-trace" d="M10 10"/></svg>`;
+        const routeWithBasemap: SanityRoute = {
+          ...sanityTestDoc,
+          miniMapSvg: fullBleedSvg,
+          colorTheme: 'route-coral',
+        };
+
+        expect(routeWithBasemap.miniMapSvg).toContain('viewBox="0 0 356 216"');
+        expect(routeWithBasemap.miniMapSvg).toContain('class="route-basemap"');
+        expect(routeWithBasemap.miniMapSvg).toContain('class="route-trace"');
+        expect(routeWithBasemap.colorTheme).toBe('route-coral');
       });
     });
   });

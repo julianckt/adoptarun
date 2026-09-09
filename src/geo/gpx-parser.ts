@@ -135,8 +135,272 @@ export function decodePolyline(encoded: string): [number, number][] {
   return points;
 }
 
+export interface GeoBoundingBox {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+export interface BasemapData {
+  roads: [number, number][][];
+  water: [number, number][][];
+}
+
 /**
- * Generates an SVG path and scalable markup (<svg viewBox="0 0 100 100">) from coordinate pairs.
+ * Calculates a bounding box expanded to match a target aspect ratio (e.g. 356:216 for RouteCard)
+ * with geographic metric projection scaling (cos(meanLat)) and padding.
+ */
+export function calculateAspectBoundingBox(
+  coordinates: [number, number][],
+  targetAspectRatio = 356 / 216,
+  paddingRatio = 0.1
+): GeoBoundingBox {
+  if (!coordinates || coordinates.length === 0) {
+    return { minLat: 0, maxLat: 0.01, minLng: 0, maxLng: 0.01 * targetAspectRatio };
+  }
+
+  let minLat = Infinity;
+  let maxLat = -Infinity;
+  let minLng = Infinity;
+  let maxLng = -Infinity;
+
+  for (const [lat, lng] of coordinates) {
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+    if (lng < minLng) minLng = lng;
+    if (lng > maxLng) maxLng = lng;
+  }
+
+  const rawLatSpan = Math.max(maxLat - minLat, 0.0005);
+  const rawLngSpan = Math.max(maxLng - minLng, 0.0005);
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLng = (minLng + maxLng) / 2;
+
+  // Metric projection scaling using mean latitude
+  const radLat = (centerLat * Math.PI) / 180;
+  const cosLat = Math.max(0.1, Math.cos(radLat));
+
+  const rawMetricW = rawLngSpan * cosLat;
+  const rawMetricH = rawLatSpan;
+
+  // Add padding
+  const paddedW = rawMetricW * (1 + 2 * paddingRatio);
+  const paddedH = rawMetricH * (1 + 2 * paddingRatio);
+
+  let targetMetricW: number;
+  let targetMetricH: number;
+
+  if (paddedW / paddedH < targetAspectRatio) {
+    // Height is constraining
+    targetMetricH = paddedH;
+    targetMetricW = paddedH * targetAspectRatio;
+  } else {
+    // Width is constraining
+    targetMetricW = paddedW;
+    targetMetricH = paddedW / targetAspectRatio;
+  }
+
+  const finalLngSpan = targetMetricW / cosLat;
+  const finalLatSpan = targetMetricH;
+
+  return {
+    minLat: centerLat - finalLatSpan / 2,
+    maxLat: centerLat + finalLatSpan / 2,
+    minLng: centerLng - finalLngSpan / 2,
+    maxLng: centerLng + finalLngSpan / 2,
+  };
+}
+
+function projectCoordinate(
+  lat: number,
+  lng: number,
+  bbox: GeoBoundingBox,
+  width = 356,
+  height = 216
+): [number, number] {
+  const lngSpan = bbox.maxLng - bbox.minLng;
+  const latSpan = bbox.maxLat - bbox.minLat;
+  const x = Number((((lng - bbox.minLng) / lngSpan) * width).toFixed(1));
+  const y = Number(((1 - (lat - bbox.minLat) / latSpan) * height).toFixed(1));
+  return [x, y];
+}
+
+function coordinatesToPathD(
+  coords: [number, number][],
+  bbox: GeoBoundingBox,
+  width = 356,
+  height = 216
+): string {
+  if (!coords || coords.length === 0) return '';
+  let d = '';
+  for (let i = 0; i < coords.length; i++) {
+    const [x, y] = projectCoordinate(coords[i][0], coords[i][1], bbox, width, height);
+    d += i === 0 ? `M${x} ${y}` : ` L${x} ${y}`;
+  }
+  return d;
+}
+
+/**
+ * Generates full-bleed SVG markup (viewBox="0 0 356 216") embedding OpenStreetMap
+ * simplified road and water ways behind a pure-line route trace.
+ */
+export function generateMiniMapWithBasemapSvg(
+  coordinates: [number, number][],
+  basemap?: BasemapData,
+  width = 356,
+  height = 216
+): string {
+  if (!coordinates || coordinates.length === 0) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" fill="none"><path d=""/></svg>`;
+  }
+
+  const bbox = calculateAspectBoundingBox(coordinates, width / height, 0.12);
+
+  let waterPaths = '';
+  if (basemap?.water && basemap.water.length > 0) {
+    for (const way of basemap.water) {
+      const d = coordinatesToPathD(way, bbox, width, height);
+      if (d) waterPaths += `<path d="${d}"/>`;
+    }
+  }
+
+  let roadPaths = '';
+  if (basemap?.roads && basemap.roads.length > 0) {
+    for (const way of basemap.roads) {
+      const d = coordinatesToPathD(way, bbox, width, height);
+      if (d) roadPaths += `<path d="${d}"/>`;
+    }
+  }
+
+  const traceD = coordinatesToPathD(coordinates, bbox, width, height);
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" fill="none">`,
+    `  <style>`,
+    `    .route-basemap path { stroke: rgba(255, 251, 249, 0.14); stroke-width: 0.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }`,
+    `    .route-water path { stroke: rgba(255, 251, 249, 0.22); fill: rgba(255, 251, 249, 0.05); }`,
+    `    .route-trace { stroke: var(--route-trace-color, rgb(245, 174, 102)); stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }`,
+    `  </style>`,
+    waterPaths ? `  <g class="route-water">${waterPaths}</g>` : '',
+    roadPaths ? `  <g class="route-basemap">${roadPaths}</g>` : '',
+    `  <path class="route-trace" d="${traceD}"/>`,
+    `</svg>`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+const basemapCache = new Map<string, BasemapData>();
+
+export function clearBasemapCache(): void {
+  basemapCache.clear();
+}
+
+export interface FetchOsmBasemapOptions {
+  fetchFn?: typeof fetch;
+  timeoutMs?: number;
+  bypassCache?: boolean;
+}
+
+/**
+ * Queries OpenStreetMap Overpass API for road networks and water boundaries within the bounding box.
+ * Enforces in-memory caching and a strict failure policy.
+ */
+export async function fetchOsmBasemap(
+  bbox: GeoBoundingBox,
+  options: FetchOsmBasemapOptions = {}
+): Promise<BasemapData> {
+  const { fetchFn = fetch, timeoutMs = 8000, bypassCache = false } = options;
+
+  // Round bbox to ~4 decimal places for stable cache keys (~11 meters)
+  const cacheKey = `${bbox.minLat.toFixed(4)},${bbox.minLng.toFixed(4)},${bbox.maxLat.toFixed(4)},${bbox.maxLng.toFixed(4)}`;
+
+  if (!bypassCache && basemapCache.has(cacheKey)) {
+    return basemapCache.get(cacheKey)!;
+  }
+
+  // Overpass QL bounding box format: (south,west,north,east)
+  const bboxStr = `${bbox.minLat.toFixed(6)},${bbox.minLng.toFixed(6)},${bbox.maxLat.toFixed(6)},${bbox.maxLng.toFixed(6)}`;
+
+  const query = `[out:json][timeout:8];(way["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|pedestrian|footway|cycleway|path)$"](${bboxStr});way["natural"="coastline"](${bboxStr});way["waterway"~"^(river|canal|stream)$"](${bboxStr}););out geom;`;
+
+  let signal: any = undefined;
+  let timer: any = null;
+
+  try {
+    if (typeof AbortSignal !== 'undefined' && typeof (AbortSignal as any).timeout === 'function') {
+      signal = (AbortSignal as any).timeout(timeoutMs);
+    } else if (typeof AbortController !== 'undefined') {
+      const controller = new AbortController();
+      timer = setTimeout(() => controller.abort(), timeoutMs);
+      signal = controller.signal;
+    }
+  } catch {
+    // Ignore signal creation errors in non-standard runtimes
+  }
+
+  const requestInit: RequestInit = {
+    method: 'POST',
+    body: `data=${encodeURIComponent(query)}`,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  };
+  if (signal) {
+    requestInit.signal = signal;
+  }
+
+  try {
+    let response: Response;
+    try {
+      response = await fetchFn(OVERPASS_URL, requestInit);
+    } catch (fetchErr: any) {
+      if (fetchErr?.message && fetchErr.message.includes('AbortSignal')) {
+        delete requestInit.signal;
+        response = await fetchFn(OVERPASS_URL, requestInit);
+      } else {
+        throw fetchErr;
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch OpenStreetMap basemap (${response.status} ${response.statusText})`);
+    }
+
+    const data = (await response.json()) as any;
+    const elements = data?.elements || [];
+
+    const roads: [number, number][][] = [];
+    const water: [number, number][][] = [];
+
+    for (const el of elements) {
+      if (el.type === 'way' && Array.isArray(el.geometry) && el.geometry.length > 1) {
+        const wayCoords: [number, number][] = el.geometry.map((pt: any) => [pt.lat, pt.lon]);
+        if (el.tags?.highway) {
+          roads.push(wayCoords);
+        } else if (el.tags?.natural === 'coastline' || el.tags?.waterway) {
+          water.push(wayCoords);
+        }
+      }
+    }
+
+    const result: BasemapData = { roads, water };
+    basemapCache.set(cacheKey, result);
+    return result;
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      throw new Error('Failed to fetch OpenStreetMap basemap (Connection timed out)');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Generates a legacy 100x100 square SVG path markup from coordinate pairs.
  */
 export function generateMiniMapSvg(coordinates: [number, number][]): string {
   if (!coordinates || coordinates.length === 0) {
@@ -189,6 +453,24 @@ export function generateMiniMapSvg(coordinates: [number, number][]): string {
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="${pathD}"/></svg>`;
+}
+
+/**
+ * Parses raw GPX XML and asynchronously enriches it with an OpenStreetMap vector basemap.
+ */
+export async function parseGpxWithBasemap(
+  gpxXml: string,
+  options: ParseGpxOptions & FetchOsmBasemapOptions = {}
+): Promise<ParsedGpxResult> {
+  const baseResult = parseGpx(gpxXml, options);
+  const bbox = calculateAspectBoundingBox(baseResult.coordinates, 356 / 216, 0.12);
+  const basemap = await fetchOsmBasemap(bbox, options);
+  const miniMapSvg = generateMiniMapWithBasemapSvg(baseResult.coordinates, basemap);
+
+  return {
+    ...baseResult,
+    miniMapSvg,
+  };
 }
 
 /**

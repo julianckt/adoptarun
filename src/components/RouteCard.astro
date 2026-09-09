@@ -24,8 +24,9 @@ const {
   elevationGain,
   difficulty = 'beginner',
   colorTheme = 'route-orange',
-  miniMapSvg,
 } = route;
+
+const miniMapSvg = route.miniMapSvg || (route as any).gpxFile?.miniMapSvg;
 
 const themeClass =
   colorTheme === 'route-coral'

@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useContext } from 'react';
 import { type FileInputProps, set, unset, PatchEvent, useFormCallbacks, useClient } from 'sanity';
+import { DocumentPaneContext } from 'sanity/_singletons';
 import { Card, Stack, Flex, Text, Badge, Box, Button, Spinner } from '@sanity/ui';
-import { parseGpx, type ParsedGpxResult } from '../../geo/gpx-parser';
+import { parseGpxWithBasemap, type ParsedGpxResult } from '../../geo/gpx-parser';
 
 export interface GpxUploadInputProps extends Partial<FileInputProps> {
   onParsed?: (result: ParsedGpxResult) => void;
@@ -20,9 +21,10 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
 
   const sanityClient = useClient({ apiVersion: '2025-02-19' });
   const { onChange: rootOnChange } = useFormCallbacks();
+  const documentPane = useContext(DocumentPaneContext);
 
   const activeClient = props.client || sanityClient;
-  const targetDocumentOnChange = props.documentOnChange || rootOnChange;
+  const targetDocumentOnChange = props.documentOnChange || documentPane?.onChange || rootOnChange;
 
   const processGpxFile = useCallback(
     async (file: File) => {
@@ -48,7 +50,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
           throw new Error('Unable to read GPX file contents');
         }
 
-        const result = parseGpx(content);
+        const result = await parseGpxWithBasemap(content);
         setParsed(result);
 
         // Dispatch patches to root document fields to auto-populate metrics
@@ -124,7 +126,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
       }
 
       const content = await response.text();
-      const result = parseGpx(content);
+      const result = await parseGpxWithBasemap(content);
       setParsed(result);
       setFileName(assetDoc.originalFilename || 'Existing GPX Asset');
 
@@ -245,7 +247,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
             <Button
               text={
                 isProcessing
-                  ? 'Parsing GPX...'
+                  ? 'Generating Basemap...'
                   : hasAttachedAsset || parsed
                   ? 'Replace GPX File'
                   : 'Select GPX File to Parse'
@@ -358,12 +360,11 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
                     <div
                       data-testid="gpx-minimap-preview"
                       style={{
-                        width: '120px',
-                        height: '120px',
-                        backgroundColor: 'rgba(24, 19, 17, 0.9)',
-                        color: 'rgb(245, 174, 102)',
-                        borderRadius: '6px',
-                        padding: '8px',
+                        width: '237px',
+                        height: '144px',
+                        backgroundColor: 'rgb(24, 19, 17)',
+                        borderRadius: '0px',
+                        overflow: 'hidden',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

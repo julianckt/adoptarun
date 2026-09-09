@@ -1,12 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   parseGpx,
+  parseGpxWithBasemap,
   encodePolyline,
   decodePolyline,
   haversineDistance,
   generateMiniMapSvg,
+  generateMiniMapWithBasemapSvg,
+  calculateAspectBoundingBox,
+  fetchOsmBasemap,
   extractTrackpointsFromXml,
 } from '../../src/geo/gpx-parser';
 
@@ -280,6 +284,167 @@ describe('GPX Parser & Telemetry Module', () => {
       const result = parseGpx(flatXml);
       expect(result.elevationGain).toBe(0);
       expect(result.elevationProfile.every((p) => p.elevation_m === 5)).toBe(true);
+    });
+  });
+
+  describe('calculateAspectBoundingBox', () => {
+    it('expands coordinates to match target 356:216 aspect ratio with padding', () => {
+      const coordinates: [number, number][] = [
+        [22.28, 114.15],
+        [22.29, 114.16],
+      ];
+      const bbox = calculateAspectBoundingBox(coordinates, 356 / 216, 0.1);
+
+      expect(bbox.minLat).toBeLessThan(22.28);
+      expect(bbox.maxLat).toBeGreaterThan(22.29);
+      expect(bbox.minLng).toBeLessThan(114.15);
+      expect(bbox.maxLng).toBeGreaterThan(114.16);
+
+      // Verify metric aspect ratio matches 356 / 216
+      const meanLat = (bbox.minLat + bbox.maxLat) / 2;
+      const metricW = (bbox.maxLng - bbox.minLng) * Math.cos((meanLat * Math.PI) / 180);
+      const metricH = bbox.maxLat - bbox.minLat;
+      expect(metricW / metricH).toBeCloseTo(356 / 216, 2);
+    });
+  });
+
+  describe('generateMiniMapWithBasemapSvg', () => {
+    it('generates full-bleed SVG with basemap roads and pure trace line', () => {
+      const coordinates: [number, number][] = [
+        [22.28, 114.15],
+        [22.285, 114.155],
+        [22.29, 114.16],
+      ];
+      const basemap = {
+        roads: [
+          [
+            [22.281, 114.149],
+            [22.282, 114.156],
+          ] as [number, number][],
+        ],
+        water: [
+          [
+            [22.292, 114.148],
+            [22.293, 114.162],
+          ] as [number, number][],
+        ],
+      };
+
+      const svg = generateMiniMapWithBasemapSvg(coordinates, basemap);
+      expect(svg).toContain('viewBox="0 0 356 216"');
+      expect(svg).toContain('<g class="route-basemap">');
+      expect(svg).toContain('<g class="route-water">');
+      expect(svg).toContain('class="route-trace"');
+      // Verify pure stroke only (no start/end marker circles)
+      expect(svg).not.toContain('<circle');
+    });
+  });
+
+  describe('fetchOsmBasemap', () => {
+    it('fetches OSM ways from Overpass API and structures roads and water', async () => {
+      const mockOverpassResponse = {
+        elements: [
+          {
+            type: 'way',
+            id: 101,
+            tags: { highway: 'primary' },
+            geometry: [
+              { lat: 22.281, lon: 114.149 },
+              { lat: 22.282, lon: 114.156 },
+            ],
+          },
+          {
+            type: 'way',
+            id: 102,
+            tags: { natural: 'coastline' },
+            geometry: [
+              { lat: 22.292, lon: 114.148 },
+              { lat: 22.293, lon: 114.162 },
+            ],
+          },
+        ],
+      };
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockOverpassResponse,
+      });
+
+      const bbox = {
+        minLat: 22.27,
+        maxLat: 22.3,
+        minLng: 114.14,
+        maxLng: 114.17,
+      };
+
+      const result = await fetchOsmBasemap(bbox, { fetchFn: mockFetch as any });
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.roads.length).toBe(1);
+      expect(result.water.length).toBe(1);
+    });
+
+    it('throws strict error if Overpass API request fails', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 504,
+        statusText: 'Gateway Timeout',
+      });
+
+      const bbox = {
+        minLat: 22.27,
+        maxLat: 22.3,
+        minLng: 114.14,
+        maxLng: 114.17,
+      };
+
+      await expect(
+        fetchOsmBasemap(bbox, { fetchFn: mockFetch as any, bypassCache: true })
+      ).rejects.toThrow('Failed to fetch OpenStreetMap basemap (504 Gateway Timeout)');
+    });
+
+    it('caches response by bounding box and does not re-fetch', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ elements: [] }),
+      });
+
+      const bbox = {
+        minLat: 22.271,
+        maxLat: 22.301,
+        minLng: 114.141,
+        maxLng: 114.171,
+      };
+
+      await fetchOsmBasemap(bbox, { fetchFn: mockFetch as any });
+      await fetchOsmBasemap(bbox, { fetchFn: mockFetch as any });
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('parseGpxWithBasemap', () => {
+    it('parses GPX and integrates basemap SVG markup', async () => {
+      const xml = readFileSync(resolve(FIXTURES_DIR, 'garmin-sample.gpx'), 'utf-8');
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          elements: [
+            {
+              type: 'way',
+              tags: { highway: 'primary' },
+              geometry: [
+                { lat: 22.281, lon: 114.149 },
+                { lat: 22.282, lon: 114.156 },
+              ],
+            },
+          ],
+        }),
+      });
+
+      const result = await parseGpxWithBasemap(xml, { fetchFn: mockFetch as any, bypassCache: true });
+      expect(result.distanceKm).toBeGreaterThan(1.5);
+      expect(result.miniMapSvg).toContain('viewBox="0 0 356 216"');
+      expect(result.miniMapSvg).toContain('<g class="route-basemap">');
+      expect(result.miniMapSvg).toContain('class="route-trace"');
     });
   });
 

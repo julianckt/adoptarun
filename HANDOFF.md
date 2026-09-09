@@ -1,124 +1,222 @@
-# Handoff: Connect Homepage Route Card to Sanity & Enforce 1-Decimal Distance
+# Handoff: RouteCard Mini-Map Trace & GpxUploadInput Root Patching
 
-## 1. Suggested Skills
-The executing agent should invoke:
-1. **`tdd`** (`.agents/skills/tdd/SKILL.md`): Execute test-first updates on the distance formatter seam and behavioral contracts in [tests/components/RouteCard.test.tsx](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/tests/components/RouteCard.test.tsx).
-2. **`impeccable`** (`.agents/skills/impeccable/SKILL.md`): Validate Lumos design system token compliance via `npm run check:design`.
+## 1. Executive Summary & Objective
 
----
+In [src/components/RouteCard.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/RouteCard.astro), the homepage route card currently displays an outdated 100x100 trace instead of the full-bleed 356x216 OpenStreetMap vector basemap trace calculated during GPX ingestion. For newly authored routes in Sanity Studio, it falls back to the placeholder (`<span class="route-card-placeholder-label">gps trace</span>`).
 
-## 2. Objective & Scope
-1. **Sanity Data Connection**: Stop using hardcoded fallback values in [src/pages/index.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/pages/index.astro); bind `<RouteCard />` directly to the live route document from Sanity.
-2. **GPS Trace Display**: In [src/components/RouteCard.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/RouteCard.astro), `miniMapSvg` must be the default and sole graphic. Completely remove all references to `coverImage` and `urlForImage`.
-3. **Drafts Perspective Fix**: In [src/sanity/client.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/sanity/client.ts), ensure unauthenticated public queries use `'published'` perspective so queries do not return empty arrays `[]`.
-4. **Distance Formatting**: In [src/utils/formatters.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/formatters.ts), format distances to exactly one decimal place (`.toFixed(1)`), e.g. `14` -> `'14.0km'`, `5.18` -> `'5.2km'`.
+The next agent must implement the fix so that:
+1. Ingesting or re-parsing GPX files in Sanity Studio patches root document fields directly.
+2. GROQ queries defensively coalesce telemetry data from root or `gpxFile`.
+3. The existing Sanity route document is patched and published with the 356x216 vector basemap SVG.
+4. Unit tests verify the `DocumentPaneContext` seam.
 
 ---
 
-## 3. Targeted Changes
+## 2. Suggested Skills
 
-### Seam 1: Telemetry Formatter & Tests
-- **File**: [src/utils/formatters.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/formatters.ts)
-  - Update `formatRouteDistance(distanceKm: number | string | undefined | null): string`:
-    - If `distanceKm === null || distanceKm === undefined || distanceKm === ''`, return `''`.
-    - Parse numeric value (handles both number types and numeric strings with/without `'km'`).
-    - Format with `val.toFixed(1) + 'km'`.
-    - Return `''` if parsed value is `NaN`.
-- **File**: [tests/components/RouteCard.test.tsx](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/tests/components/RouteCard.test.tsx)
-  - Update assertions in `describe('formatRouteDistance')`:
-    - `14` -> `'14.0km'`
-    - `5.2` -> `'5.2km'`
-    - `0` -> `'0.0km'`
-    - `'14'` -> `'14.0km'`
-    - `'14km'` -> `'14.0km'`
-    - `'  8.5km  '` -> `'8.5km'`
-  - Update `SanityRoute fixture formatting contract`:
-    - Fixture with `distanceKm: 5.18` must expect `'5.2km'`.
-
-### Seam 2: Sanity Client Configuration
-- **File**: [src/sanity/client.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/sanity/client.ts)
-  - Root cause: `perspective: visualEditingEnabled ? 'drafts' : 'published'` caused queries to request drafts. Without an API read token, Sanity returns `[]` for unauthenticated requests.
-  - Apply:
-    ```typescript
-    export const projectId = import.meta.env?.PUBLIC_SANITY_PROJECT_ID || 'huk9xx07';
-    export const dataset = import.meta.env?.PUBLIC_SANITY_DATASET || 'production';
-    export const apiVersion = import.meta.env?.PUBLIC_SANITY_API_VERSION || '2026-03-01';
-    export const visualEditingEnabled =
-      import.meta.env?.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === 'true';
-
-    export const sanityClient: SanityClient = createClient({
-      projectId,
-      dataset,
-      apiVersion,
-      useCdn: false,
-      perspective:
-        visualEditingEnabled && Boolean(import.meta.env?.SANITY_API_READ_TOKEN)
-          ? 'drafts'
-          : 'published',
-      stega: {
-        enabled: visualEditingEnabled,
-        studioUrl: '/studio',
-      },
-    });
-    ```
-
-### Seam 3: RouteCard Component
-- **File**: [src/components/RouteCard.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/RouteCard.astro)
-  - Remove `coverImage` from destructuring and component logic.
-  - Remove `import { urlForImage } from '@/sanity/image';`.
-  - Replace the `<div class="route-card-minimap">` slot content with:
-    ```astro
-    <div class="route-card-minimap">
-      <slot name="minimap">
-        {miniMapSvg ? (
-          <div class="route-card-minimap-svg" set:html={miniMapSvg} />
-        ) : (
-          <div class="media-placeholder route-card-minimap-placeholder" aria-label="Route minimap placeholder">
-            <span class="route-card-placeholder-label">gps trace</span>
-          </div>
-        )}
-      </slot>
-    </div>
-    ```
-
-### Seam 4: Homepage Card Binding
-- **File**: [src/pages/index.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/pages/index.astro)
-  - Delete `fallbackRoute` constant.
-  - Retrieve live routes:
-    ```astro
-    const routes = await getRoutes();
-    const displayRoute = routes[0];
-    ```
-  - Guard the template rendering:
-    ```astro
-    <!-- Signature Route Card Component -->
-    {displayRoute && <RouteCard route={displayRoute} />}
-    ```
+- `tdd` (`.agents/skills/tdd/SKILL.md`): For updating and validating tests for `GpxUploadInput` and `RouteCard`.
+- `impeccable` (`.agents/skills/impeccable/SKILL.md`): Ensure design tokens and layout contracts remain unbroken (`npm run check:design`).
 
 ---
 
-## 4. Verification & Completion Criteria
+## 3. Verified Root Cause
 
-Always run verification commands with `BypassSandbox: true` per repository rules.
+### Field Scoping in Sanity Studio v3 (`MemberField` prefixing)
+1. In [src/sanity/schemaTypes/routeType.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/sanity/schemaTypes/routeType.ts#L138-L150), `GpxUploadInput` is registered as the custom input component for `gpxFile` (`type: 'file'`).
+2. In Sanity Studio's form builder (`node_modules/sanity/lib/PerspectiveProvider-CVaQBlks.js:10623`), `MemberField` wraps child inputs in a nested `FormCallbacksProvider` that applies `PatchEvent.from(event).prefixAll(member.name)`.
+3. In [src/components/sanity/GpxUploadInput.tsx](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/sanity/GpxUploadInput.tsx#L22-L25), calling `useFormCallbacks().onChange` resolves to the innermost `gpxFile` provider.
+4. Consequently, `set(result.miniMapSvg, ['miniMapSvg'])` becomes `set(result.miniMapSvg, ['gpxFile', 'miniMapSvg'])`. Telemetry was saved to `doc.gpxFile.*` instead of root `doc.*`.
+5. On the live route document `f1eaba7f-c51c-4453-b3db-d2021b42b87a`, `gpxFile.miniMapSvg` contains the rich 356x216 vector basemap SVG, while root `miniMapSvg` remained stuck on an older 100x100 trace. On new routes, root `miniMapSvg` is completely missing.
 
-1. **Unit & Design Invariant Tests**:
+---
+
+## 4. Exact File Pointers & Changes Required
+
+### Step 1: Update [src/components/sanity/GpxUploadInput.tsx](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/sanity/GpxUploadInput.tsx)
+**Lines to modify**: 1, 22–26
+
+1. Import `useContext` from React and `DocumentPaneContext` from `'sanity/_singletons'`:
+   ```typescript
+   import React, { useState, useCallback, useRef, useContext } from 'react';
+   import { DocumentPaneContext } from 'sanity/_singletons';
+   ```
+2. Retrieve the top-level pane's un-prefixed `onChange` callback:
+   ```typescript
+   const documentPane = useContext(DocumentPaneContext);
+   const targetDocumentOnChange = props.documentOnChange || documentPane?.onChange || rootOnChange;
+   ```
+   *Rationale*: `DocumentPaneContext` is exported by Sanity Studio's Structure Tool. In Studio, `documentPane?.onChange` dispatches patches directly to root document fields without `MemberField` scoping. In unit tests where `DocumentPaneContext` is omitted, `useContext` returns `undefined` without throwing, cleanly falling back to `props.documentOnChange` or `rootOnChange`.
+
+---
+
+### Step 2: Update GROQ Queries in [src/sanity/queries.ts](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/sanity/queries.ts)
+**Lines to modify**: 5–34 (`ROUTES_QUERY`) and 36–66 (`ROUTE_BY_SLUG_QUERY`)
+
+Add defensive `coalesce` projections for all telemetry fields so existing documents with data under `gpxFile` display immediately:
+
+```groq
+export const ROUTES_QUERY = defineQuery(
+  `*[_type == "route"] | order(isGroupRun desc, featured desc, distanceKm asc) {
+    _id,
+    _type,
+    title,
+    slug,
+    animalType,
+    district,
+    region,
+    city,
+    difficulty,
+    colorTheme,
+    featured,
+    "distanceKm": coalesce(distanceKm, gpxFile.distanceKm),
+    "elevationGain": coalesce(elevationGain, gpxFile.elevationGain),
+    "estimatedDurationMin": coalesce(estimatedDurationMin, gpxFile.estimatedDurationMin),
+    "routePolyline": coalesce(routePolyline, gpxFile.routePolyline),
+    "miniMapSvg": coalesce(miniMapSvg, gpxFile.miniMapSvg),
+    "elevationProfile": coalesce(elevationProfile, gpxFile.elevationProfile),
+    stravaRouteUrl,
+    startPointDescription,
+    description,
+    coverImage,
+    tags,
+    isGroupRun,
+    groupRunDateTime,
+    groupRunMeetupPoint,
+    groupRunNotes
+  }`
+);
+
+export const ROUTE_BY_SLUG_QUERY = defineQuery(
+  `*[_type == "route" && slug.current == $slug][0] {
+    _id,
+    _type,
+    title,
+    slug,
+    animalType,
+    district,
+    region,
+    city,
+    difficulty,
+    colorTheme,
+    featured,
+    "distanceKm": coalesce(distanceKm, gpxFile.distanceKm),
+    "elevationGain": coalesce(elevationGain, gpxFile.elevationGain),
+    "estimatedDurationMin": coalesce(estimatedDurationMin, gpxFile.estimatedDurationMin),
+    gpxFile { asset-> { url, originalFilename } },
+    "routePolyline": coalesce(routePolyline, gpxFile.routePolyline),
+    "miniMapSvg": coalesce(miniMapSvg, gpxFile.miniMapSvg),
+    "elevationProfile": coalesce(elevationProfile, gpxFile.elevationProfile),
+    stravaRouteUrl,
+    startPointDescription,
+    description,
+    coverImage,
+    tags,
+    isGroupRun,
+    groupRunDateTime,
+    groupRunMeetupPoint,
+    groupRunNotes
+  }`
+);
+```
+
+---
+
+### Step 3: Update [src/components/RouteCard.astro](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/RouteCard.astro)
+**Lines to modify**: 27–29, 48–54
+
+Add defensive extraction in frontmatter:
+```astro
+const miniMapSvg = route.miniMapSvg || (route as any).gpxFile?.miniMapSvg;
+```
+Ensure `<div class="route-card-minimap-svg" set:html={miniMapSvg} />` continues to render `miniMapSvg`.
+
+---
+
+### Step 4: Patch & Publish Sanity Document via Sanity MCP
+**Tool**: `call_mcp_tool` (`ServerName: "Sanity"`)
+- **Project ID**: `huk9xx07`
+- **Dataset**: `production`
+- **Document ID**: `f1eaba7f-c51c-4453-b3db-d2021b42b87a`
+
+1. First, fetch `gpxFile.miniMapSvg` and `gpxFile.routePolyline` from `f1eaba7f-c51c-4453-b3db-d2021b42b87a` using `query_documents`.
+2. Apply `patch_documents` to copy the 356x216 `gpxFile.miniMapSvg` to root `miniMapSvg`, and `gpxFile.routePolyline` to root `routePolyline`:
+   ```json
+   {
+     "resource": { "projectId": "huk9xx07", "dataset": "production" },
+     "documents": {
+       "f1eaba7f-c51c-4453-b3db-d2021b42b87a": {
+         "patches": [
+           {
+             "set": {
+               "miniMapSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 356 216\" fill=\"none\">...</svg>",
+               "routePolyline": "..."
+             }
+           }
+         ]
+       }
+     }
+   }
+   ```
+3. Call `publish_documents` on `f1eaba7f-c51c-4453-b3db-d2021b42b87a`:
+   ```json
+   {
+     "resource": { "projectId": "huk9xx07", "dataset": "production" },
+     "ids": ["f1eaba7f-c51c-4453-b3db-d2021b42b87a"]
+   }
+   ```
+
+---
+
+### Step 5: Add Unit Test in [tests/components/GpxUploadInput.test.tsx](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/tests/components/GpxUploadInput.test.tsx)
+**Lines to inspect**: 137–170
+
+Add a unit test verifying dispatch via `DocumentPaneContext`:
+```tsx
+import { DocumentPaneContext } from 'sanity/_singletons';
+
+it('dispatches patches to root document fields via DocumentPaneContext when documentOnChange is omitted', async () => {
+  const paneOnChange = vi.fn();
+  renderWithTheme(
+    <DocumentPaneContext.Provider value={{ onChange: paneOnChange } as any}>
+      <GpxUploadInput />
+    </DocumentPaneContext.Provider>
+  );
+
+  const file = new File([sampleGpx], 'test-route.gpx', { type: 'application/gpx+xml' });
+  const fileInput = screen.getByTestId('gpx-file-input');
+
+  fireEvent.change(fileInput, { target: { files: [file] } });
+
+  await waitFor(() => {
+    expect(paneOnChange).toHaveBeenCalledTimes(1);
+  });
+
+  const patchEvent = paneOnChange.mock.calls[0][0];
+  const paths = patchEvent.patches.map((p: any) => p.path[0]);
+  expect(paths).toContain('miniMapSvg');
+  expect(paths).toContain('distanceKm');
+  expect(paths).toContain('routePolyline');
+});
+```
+
+---
+
+## 5. Verification Commands (Always run with `BypassSandbox: true`)
+
+1. **Unit Tests**:
    ```bash
    npm test
    ```
-   - Must pass all tests in Vitest.
-   - `npm run check:design` must report **0 anti-patterns**.
+   Must pass all 14 test files and 173+ tests.
 
-2. **Typecheck**:
+2. **Design System Token Audit**:
    ```bash
-   npm run typecheck
+   npm run check:design
    ```
-   - Astro check & TypeScript validation must report **0 errors**.
+   Must report 0 anti-patterns.
 
 3. **Production Build & Markup Verification**:
    ```bash
    npm run build
    ```
-   - Confirm [dist/client/index.html](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/dist/client/index.html) contains:
-     - The inline `<svg ...>` element inside `.route-card-minimap-svg`.
-     - Distance formatted as `5.2km`.
-     - Zero instances of `<div class="media-placeholder route-card-minimap-placeholder">` on the signature card.
+   Inspect [dist/client/index.html](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/dist/client/index.html) and verify that `.route-card-minimap-svg` contains the 356x216 SVG (`viewBox="0 0 356 216"` with `<g class="route-basemap">`) rather than the legacy 100x100 SVG or placeholder.

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { ThemeProvider, studioTheme } from '@sanity/ui';
@@ -18,6 +18,8 @@ vi.mock('sanity', async (importOriginal) => {
 });
 
 import { GpxUploadInput } from '../../src/components/sanity/GpxUploadInput';
+import { clearBasemapCache } from '../../src/geo/gpx-parser';
+import { DocumentPaneContext } from 'sanity/_singletons';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(<ThemeProvider theme={studioTheme}>{ui}</ThemeProvider>);
@@ -41,6 +43,57 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     </trkpt>
   </trkseg></trk>
 </gpx>`;
+
+  const mockOverpassData = {
+    elements: [
+      {
+        type: 'way',
+        tags: { highway: 'primary' },
+        geometry: [
+          { lat: 22.2865, lon: 114.155 },
+          { lat: 22.2875, lon: 114.1565 },
+          { lat: 22.2885, lon: 114.158 },
+        ],
+      },
+    ],
+  };
+
+  let originalFetch: typeof global.fetch;
+
+  beforeEach(() => {
+    clearBasemapCache();
+    originalFetch = global.fetch;
+    global.fetch = vi.fn(async (url: any) => {
+      const urlStr = String(url);
+      if (urlStr.includes('overpass-api.de')) {
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: async () => mockOverpassData,
+        } as any;
+      }
+      if (urlStr.includes('cdn.sanity.io')) {
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => sampleGpx,
+        } as any;
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({ elements: [] }),
+        text: async () => '',
+      } as any;
+    });
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
 
   it('renders the component with select button and description', () => {
     renderWithTheme(<GpxUploadInput />);
@@ -116,6 +169,30 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     expect(elevationPatch.value).toBe(13);
   });
 
+  it('dispatches patches to root document fields via DocumentPaneContext when documentOnChange is omitted', async () => {
+    const paneOnChange = vi.fn();
+    renderWithTheme(
+      <DocumentPaneContext.Provider value={{ onChange: paneOnChange } as any}>
+        <GpxUploadInput />
+      </DocumentPaneContext.Provider>
+    );
+
+    const file = new File([sampleGpx], 'test-route.gpx', { type: 'application/gpx+xml' });
+    const fileInput = screen.getByTestId('gpx-file-input');
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(paneOnChange).toHaveBeenCalledTimes(1);
+    });
+
+    const patchEvent = paneOnChange.mock.calls[0][0];
+    const paths = patchEvent.patches.map((p: any) => p.path[0]);
+    expect(paths).toContain('miniMapSvg');
+    expect(paths).toContain('distanceKm');
+    expect(paths).toContain('routePolyline');
+  });
+
   it('uploads asset to Sanity CDN when client and onChange are provided', async () => {
     const mockUpload = vi.fn().mockResolvedValue({
       _id: 'file-asset-123',
@@ -189,46 +266,59 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     };
     const documentOnChange = vi.fn();
 
-    // Mock global fetch for downloading remote GPX text
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      text: async () => sampleGpx,
-    }) as any;
+    renderWithTheme(
+      <GpxUploadInput
+        value={{
+          _type: 'file',
+          asset: { _type: 'reference', _ref: 'file-asset-456' },
+        } as any}
+        client={mockClient}
+        documentOnChange={documentOnChange}
+      />
+    );
 
-    try {
-      renderWithTheme(
-        <GpxUploadInput
-          value={{
-            _type: 'file',
-            asset: { _type: 'reference', _ref: 'file-asset-456' },
-          } as any}
-          client={mockClient}
-          documentOnChange={documentOnChange}
-        />
+    expect(screen.getByText('Asset Attached')).toBeDefined();
+    expect(screen.getByTestId('gpx-reparse-button')).toBeDefined();
+    expect(screen.getByTestId('gpx-remove-button')).toBeDefined();
+
+    // Click Re-parse
+    fireEvent.click(screen.getByTestId('gpx-reparse-button'));
+
+    await waitFor(() => {
+      expect(mockGetDocument).toHaveBeenCalledWith('file-asset-456');
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://cdn.sanity.io/files/project/dataset/remote.gpx'
       );
+      expect(documentOnChange).toHaveBeenCalled();
+    });
 
-      expect(screen.getByText('Asset Attached')).toBeDefined();
-      expect(screen.getByTestId('gpx-reparse-button')).toBeDefined();
-      expect(screen.getByTestId('gpx-remove-button')).toBeDefined();
+    expect(await screen.findByTestId('gpx-telemetry-preview')).toBeDefined();
+    expect(screen.getByText('Fields Populated')).toBeDefined();
+  });
 
-      // Click Re-parse
-      fireEvent.click(screen.getByTestId('gpx-reparse-button'));
+  it('displays strict error in UI when Overpass basemap fetch fails', async () => {
+    clearBasemapCache();
+    global.fetch = vi.fn(async (url: any) => {
+      const urlStr = String(url);
+      if (urlStr.includes('overpass-api.de')) {
+        return {
+          ok: false,
+          status: 503,
+          statusText: 'Service Unavailable',
+        } as any;
+      }
+      return { ok: true, text: async () => sampleGpx } as any;
+    });
 
-      await waitFor(() => {
-        expect(mockGetDocument).toHaveBeenCalledWith('file-asset-456');
-        expect(global.fetch).toHaveBeenCalledWith(
-          'https://cdn.sanity.io/files/project/dataset/remote.gpx'
-        );
-        expect(documentOnChange).toHaveBeenCalled();
-      });
+    renderWithTheme(<GpxUploadInput />);
+    const file = new File([sampleGpx], 'route.gpx', { type: 'application/gpx+xml' });
+    const fileInput = screen.getByTestId('gpx-file-input');
 
-      expect(await screen.findByTestId('gpx-telemetry-preview')).toBeDefined();
-      expect(screen.getByText('Fields Populated')).toBeDefined();
-    } finally {
-      global.fetch = originalFetch;
-    }
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to fetch OpenStreetMap basemap/)).toBeDefined();
+    });
   });
 
   it('clears state and calls onChange with unset on remove', () => {
