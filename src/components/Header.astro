@@ -70,4 +70,20 @@ const {
       }
     });
   }
+
+  // Sticky state detection on scroll
+  const initHeaderSticky = () => {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+
+    const handleScroll = () => {
+      header.classList.toggle('is-sticky', window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+  };
+
+  initHeaderSticky();
+  document.addEventListener('astro:page-load', initHeaderSticky);
 </script>

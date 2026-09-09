@@ -2,7 +2,7 @@
 
 ### Design system enforcement
 All UI, layout, and style code must strictly comply with `DESIGN.md` using defined tokens from `src/styles/tokens.css` (never arbitrary `px` or `rem` font sizes).
-**Completion criterion**: Before declaring any frontend task complete, run `npm run check:design` and ensure 0 anti-patterns are reported.
+**Completion criterion**: Before declaring any frontend task complete, run `npm run check:design` and ensure 0 anti-patterns are reported. Carry this out at end of task execution - do not check test details before implementation.
 
 ### UI/UX testing & seam boundaries
 When using `/tdd` or `/implement` on frontend components, test behavioral contracts at public seams: dynamic data and telemetry formatting (e.g. distance, elevation, duration), conditional rendering, interactive state transitions, form/event actions, and accessibility attributes (`aria-*`, `role`).

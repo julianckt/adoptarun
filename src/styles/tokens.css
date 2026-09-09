@@ -23,6 +23,7 @@
     --color-surface-card: var(--color-route-orange);
     --color-surface-card-text: var(--color-canvas-black);
     --color-surface-overlay: rgba(24, 19, 17, 0.88);
+    --color-header-translucent: rgba(24, 19, 17, 0.60);
     --color-border-subtle: var(--color-border-hairline);
     --color-border-strong: rgba(255, 251, 249, 0.40);
     --color-accent: var(--color-route-orange);
@@ -112,6 +113,8 @@
     /* Action / CTA alias (80%) */
     --leading-wordmark: 0.75;
     /* Scale VF & Runda paired with wordmark (75%) */
+    --leading-hero-wordmark: calc(66 / 96);
+    /* Scale VF hero wordmark line-height 66px at 96px (~0.6875) */
 
     /* Architectural Constraints */
     --radius-none: 0px;

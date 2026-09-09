@@ -62,6 +62,10 @@
     line-height: var(--leading-wordmark) !important;
   }
 
+  .u-leading-hero-wordmark {
+    line-height: var(--leading-hero-wordmark) !important;
+  }
+
   /* Visual Utilities */
   .u-border-hairline {
     border: 1px solid var(--color-border-subtle);

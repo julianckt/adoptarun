@@ -55,6 +55,7 @@ typography:
     compressed: 0.8
     action: 0.8
     wordmark: 0.75
+    hero-wordmark: 0.6875
 rounded:
   none: "0px"
 spacing:
@@ -166,6 +167,7 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 - **Degular Display**: Always set at `0.8` (80%) (`--leading-compressed`).
 - **Runda**: Always set at `1.0` (100%) (`--leading-body`) for standard body and metadata.
 - **Wordmark & Brand Lockup**: Scale VF and Runda paired with the wordmark must be set at `0.75` (75%) (`--leading-wordmark`).
+- **Hero Wordmark**: Scale VF hero wordmark set at line-height 66px / font-size 96px (~0.6875) (`--leading-hero-wordmark`).
 - **CTAs & Clickables**: All buttons, links, dismissal buttons, and interactive elements must be set at `0.8` (80%) (`--leading-action`).
 - **Global Baseline**: All other text defaults to `1.0` (100%) (`--leading-default`).
 **The Runda Weight Ceiling Rule.** No text set in Runda should ever exceed Medium width/weight (500). Bold and Black weights are prohibited in general UI copy; H4 is rendered as Runda Medium all-caps.
@@ -225,7 +227,8 @@ The signature object of the brand, representing an adoptable route.
 
 ### Brand Wordmark
 - **Form**: Two-line stacked lowercase wordmark (`adopt` / `a run`).
-- **Type**: Scale VF, weight 200, width axis 125 (`font-variation-settings: 'wdth' 125, 'wght' 200`), line-height ~0.69em, color Pure White (`#ffffff`).
+- **Hero Wordmark**: Two-line stacked wordmark at font size 96px (`--font-size-hero-wordmark`), line-height 66px (~0.6875 / `--leading-hero-wordmark`), color Canvas White (`rgb(255, 251, 249)`). Scale VF variable font axes: `adopt` (`'wdth' 135, 'wght' 245`), `a` (`'wdth' 100, 'wght' 300`), space (`'wdth' 75, 'wght' 245`), `run` (`'wdth' 175, 'wght' 900`).
+- **Header Wordmark**: Scale VF, weight 200, width axis 125 (`font-variation-settings: 'wdth' 125, 'wght' 200`), font size 48px, line-height 0.75 (`--leading-wordmark`), color Pure White (`#ffffff`).
 - **Rule**: Never drawn, traced, or exported as an SVG icon/logo. Always rendered inline as living type.
 
 ### Buttons & CTAs
@@ -236,6 +239,7 @@ The signature object of the brand, representing an adoptable route.
 - **Press State**: `transform: scale(0.985)` with a subtle darkening wash.
 
 ### Navigation
+- **Header Shell**: Starts transparent with no background fill at scroll 0, resting over the hero canvas. On scroll/sticky, transitions to translucent Canvas Black at 60% opacity (`--color-header-translucent`: `rgba(24, 19, 17, 0.60)`) with 20px backdrop blur.
 - **Style**: Horizontal inline list of lowercase links (`routes`, `charities`, `donate`, `log a run`) set in Runda Medium 20px, line-height 1.0.
 - **States**: Underline animates in smoothly from left to right on hover. Active links retain full opacity; inactive links dim slightly on hover.
 

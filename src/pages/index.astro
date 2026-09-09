@@ -10,13 +10,20 @@ const fallbackRoute: SanityRoute = {
   _id: 'sample-wan-chai',
   _type: 'route',
   title: 'Wan Chai Promenade',
-  slug: { current: 'wan-chai-promenade' } as any,
+  slug: { _type: 'slug', current: 'wan-chai-promenade' },
+  animalType: 'dog',
   district: 'Wan Chai',
+  region: 'Hong Kong Island',
+  city: 'Hong Kong',
   distanceKm: 14,
   estimatedDurationMin: 10,
   elevationGain: 4,
   difficulty: 'beginner',
   colorTheme: 'route-orange',
+  featured: true,
+  routePolyline: '',
+  description: 'Scenic flat route along Wan Chai Promenade',
+  isGroupRun: false,
   tags: ['Near MTR', 'Traffic-Free Promenade Run'],
 };
 
@@ -33,8 +40,8 @@ const activeRoute = routes?.[0] || fallbackRoute;
           <!-- Left Column: Wordmark & Tagline -->
           <div class="hero-header">
             <h1 class="hero-wordmark">
-              <span class="hero-wordmark-line">adopt</span>
-              <span class="hero-wordmark-line"><span class="hero-wordmark-thin">a</span> <span class="hero-wordmark-strong">run</span></span>
+              <span class="hero-wordmark-line"><span class="hero-wordmark-adopt">adopt</span></span>
+              <span class="hero-wordmark-line"><span class="hero-wordmark-thin hero-wordmark-a">a</span><span class="hero-wordmark-space">&nbsp;</span><span class="hero-wordmark-strong hero-wordmark-run">run</span></span>
             </h1>
             <p class="hero-tagline">
               the new way to push yourself<br />
