@@ -3,11 +3,12 @@
  * CharitySection.astro
  *
  * Section 05: Partner Charities Spotlight (SPCA Feature) (Issue #6):
- * - Canvas black background with canvas white typography.
- * - Sticky scroll track (220vh) driving a tactile scroll-linked animation.
- * - Staged choreography: Text fades in on entrance, then continuous scroll scrub expands
- *   the central SPCA puppy photo while splitting the massive "SP" and "CA" letters apart.
- * - Sourced from Sanity getCharities() with graceful static fallback.
+ * - Natural unpinned document flow with standard Lumos section footprint.
+ * - Center-weighted scroll scrub: Animation runs smoothly as the section travels from viewport
+ *   entrance to screen center.
+ * - Overlapping layout: Central photo sits on top (z-index: 2), overlapping the inner edges
+ *   of "SP" and "CA".
+ * - Differential dynamics: Photo scales up faster than the letters move aside.
  * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
  */
 import { getCharities } from '@/sanity/queries';
@@ -30,87 +31,73 @@ const charityDescription =
   'The Society for the Prevention of Cruelty to Animals (SPCA) champions the welfare of all animals in Hong Kong. By adopting our animal-shaped GPS art routes, every kilometer you run raises awareness, rescue funds, and compassionate community support for shelter animals in need.';
 ---
 
-<section id="charity-spotlight" class="charity-track" aria-label="Partner Charities Spotlight - SPCA">
-  <div class="charity-sticky" id="charity-sticky">
-    <div class="charity-container">
-      <!-- Section Header -->
-      <header class="charity-header charity-fade-element">
-        <h2 class="charity-subtitle">{charityTitle}</h2>
-      </header>
+<section id="charity-spotlight" class="charity-section" aria-label="Partner Charities Spotlight - SPCA">
+  <div class="charity-container">
+    <!-- Section Header -->
+    <header class="charity-header charity-fade-element">
+      <h2 class="charity-subtitle">{charityTitle}</h2>
+    </header>
 
-      <!-- Centerpiece: Split SPCA typography with expanding central framed photo -->
-      <div class="charity-centerpiece" aria-label={`${charityName} Spotlight`}>
-        <!-- Left letter block: SP -->
-        <span class="charity-letter charity-letter--left" aria-hidden="true">SP</span>
+    <!-- Centerpiece: Overlapping SPCA typography with expanding central framed photo -->
+    <div class="charity-centerpiece" aria-label={`${charityName} Spotlight`}>
+      <!-- Left letter block: SP -->
+      <span class="charity-letter charity-letter--left" aria-hidden="true">SP</span>
 
-        <!-- Expanding central photo frame -->
-        <div class="charity-photo-frame" role="img" aria-label="SPCA rescue puppy resting head gently in human hand">
-          <img
-            src="/images/charity/spca-puppy.jpg"
-            alt="SPCA rescue puppy resting head in human hand"
-            class="charity-photo-img"
-            width="568"
-            height="379"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-
-        <!-- Right letter block: CA -->
-        <span class="charity-letter charity-letter--right" aria-hidden="true">CA</span>
+      <!-- Expanding central photo frame overlapping SP and CA -->
+      <div class="charity-photo-frame" role="img" aria-label="SPCA rescue puppy resting head gently in human hand">
+        <img
+          src="/images/charity/spca-puppy.jpg"
+          alt="SPCA rescue puppy resting head in human hand"
+          class="charity-photo-img"
+          width="568"
+          height="379"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
 
-      <!-- Bottom Mission Copy & Action Link -->
-      <footer class="charity-footer charity-fade-element">
-        <p class="charity-description">
-          {charityDescription}
-        </p>
-        <div class="charity-actions">
-          <a href="/charities" class="charity-cta-link" aria-label="View all partner charities">
-            view all partner charities &rarr;
-          </a>
-        </div>
-      </footer>
+      <!-- Right letter block: CA -->
+      <span class="charity-letter charity-letter--right" aria-hidden="true">CA</span>
     </div>
+
+    <!-- Bottom Mission Copy & Action Link -->
+    <footer class="charity-footer charity-fade-element">
+      <p class="charity-description">
+        {charityDescription}
+      </p>
+      <div class="charity-actions">
+        <a href="/charities" class="charity-cta-link" aria-label="View all partner charities">
+          view all partner charities &rarr;
+        </a>
+      </div>
+    </footer>
   </div>
 </section>
 
 <style>
-  .charity-track {
+  .charity-section {
     width: 100%;
-    height: 220vh;
     background-color: var(--color-canvas-black);
     position: relative;
-    box-sizing: border-box;
-    /* CSS variables driven by JavaScript scroll scrub */
-    --charity-progress: 0;
-    --fade-progress: 0;
-    --split-progress: 0;
-  }
-
-  .charity-sticky {
-    position: sticky;
-    top: 0;
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
-    background-color: var(--color-canvas-black);
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-12);
     box-sizing: border-box;
+    /* CSS variables driven by JavaScript natural scroll scrub */
+    --scroll-progress: 0;
+    --fade-progress: 0;
+    --photo-scale: 0.72;
+    --letter-split: 0px;
   }
 
   .charity-container {
     width: 100%;
     max-width: 1512px;
-    height: 100%;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding-top: var(--space-10);
-    padding-bottom: var(--space-10);
+    justify-content: center;
     padding-left: var(--space-06);
     padding-right: var(--space-06);
     box-sizing: border-box;
@@ -121,7 +108,7 @@ const charityDescription =
   .charity-header {
     width: 100%;
     text-align: center;
-    margin-bottom: auto;
+    margin-bottom: var(--space-08);
   }
 
   .charity-subtitle {
@@ -135,15 +122,15 @@ const charityDescription =
     letter-spacing: -0.02em;
   }
 
-  /* Split Centerpiece */
+  /* Overlapping Split Centerpiece */
   .charity-centerpiece {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    margin: auto 0;
     user-select: none;
+    margin-bottom: var(--space-08);
   }
 
   .charity-letter {
@@ -153,32 +140,39 @@ const charityDescription =
     line-height: var(--leading-default);
     color: var(--color-canvas-white);
     display: inline-block;
+    position: relative;
+    z-index: 1;
     will-change: transform, opacity;
-    opacity: calc(0.15 + 0.85 * var(--fade-progress, 0));
+    opacity: calc(0.2 + 0.8 * var(--fade-progress, 0));
     transition: transform 0.05s linear;
   }
 
   .charity-letter--left {
-    transform: translateX(calc(-1 * var(--split-progress, 0) * clamp(24px, 4vw, 64px)));
+    transform: translateX(calc(-1 * var(--letter-split, 0px)));
   }
 
   .charity-letter--right {
-    transform: translateX(calc(var(--split-progress, 0) * clamp(24px, 4vw, 64px)));
+    transform: translateX(var(--letter-split, 0px));
   }
 
-  /* Expanding Photo Frame */
+  /* Expanding Overlapping Photo Frame */
   .charity-photo-frame {
-    /* Interpolates between compact width (180px) and full expanded width (568px) */
-    width: calc(180px + var(--split-progress, 0) * (min(568px, 42vw) - 180px));
-    height: calc(240px + var(--split-progress, 0) * (min(379px, 28vw) - 240px));
-    overflow: hidden;
+    width: min(568px, 38vw);
+    height: min(379px, 25.3vw);
     position: relative;
+    z-index: 2;
     flex-shrink: 0;
+    overflow: hidden;
     border-radius: var(--radius-none);
     background-color: var(--color-surface-canvas);
-    will-change: width, height, opacity;
-    opacity: calc(0.2 + 0.8 * var(--fade-progress, 0));
-    box-shadow: 0 var(--space-06) var(--space-12) rgba(0, 0, 0, 0.6);
+    /* Negative horizontal margin creates the authentic overlap across SP and CA */
+    margin-left: calc(-1 * clamp(24px, 3.5vw, 56px));
+    margin-right: calc(-1 * clamp(24px, 3.5vw, 56px));
+    box-shadow: 0 var(--space-06) var(--space-12) rgba(0, 0, 0, 0.7);
+    will-change: transform, opacity;
+    transform: scale(var(--photo-scale, 0.72));
+    opacity: calc(0.25 + 0.75 * var(--fade-progress, 0));
+    transition: transform 0.05s linear;
   }
 
   .charity-photo-img {
@@ -187,8 +181,8 @@ const charityDescription =
     object-fit: cover;
     object-position: center 30%;
     display: block;
-    /* Subtle counter-scale to enhance depth */
-    transform: scale(calc(1.15 - var(--split-progress, 0) * 0.15));
+    /* Subtle counter-zoom to deepen parallax inside frame */
+    transform: scale(calc(1.12 - (var(--photo-scale, 0.72) - 0.72) * 0.25));
     transition: transform 0.05s linear;
   }
 
@@ -200,7 +194,6 @@ const charityDescription =
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-top: auto;
   }
 
   .charity-description {
@@ -250,18 +243,11 @@ const charityDescription =
 
   /* Reduced Motion Accessibility */
   @media (prefers-reduced-motion: reduce) {
-    .charity-track {
-      height: auto;
-      --charity-progress: 1 !important;
+    .charity-section {
+      --scroll-progress: 1 !important;
       --fade-progress: 1 !important;
-      --split-progress: 1 !important;
-    }
-
-    .charity-sticky {
-      position: relative;
-      height: auto;
-      padding-top: var(--space-10);
-      padding-bottom: var(--space-10);
+      --photo-scale: 1 !important;
+      --letter-split: 40px !important;
     }
 
     .charity-letter,
@@ -274,51 +260,58 @@ const charityDescription =
     }
 
     .charity-photo-frame {
-      width: min(568px, 42vw) !important;
-      height: min(379px, 28vw) !important;
+      transform: scale(1) !important;
     }
   }
 </style>
 
 <script>
-  function initCharityScroll() {
-    const track = document.getElementById('charity-spotlight');
-    if (!track) return;
+  function initCharityNaturalScroll() {
+    const section = document.getElementById('charity-spotlight');
+    if (!section) return;
 
-    // If reduced motion is requested, keep full progress
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      track.style.setProperty('--charity-progress', '1');
-      track.style.setProperty('--fade-progress', '1');
-      track.style.setProperty('--split-progress', '1');
+      section.style.setProperty('--scroll-progress', '1');
+      section.style.setProperty('--fade-progress', '1');
+      section.style.setProperty('--photo-scale', '1');
+      section.style.setProperty('--letter-split', '40px');
       return;
     }
 
     let isTicking = false;
 
     function updateProgress() {
-      if (!track) return;
-      const rect = track.getBoundingClientRect();
-      const scrollDistance = rect.height - window.innerHeight;
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
 
-      if (scrollDistance <= 0) {
-        track.style.setProperty('--fade-progress', '1');
-        track.style.setProperty('--split-progress', '1');
-        return;
-      }
+      // Centerpiece target: reaches 100% when section center arrives near viewport center
+      const sectionCenter = rect.top + rect.height * 0.5;
+      const startY = viewportHeight * 1.1; // starts slightly before entering bottom
+      const targetCenterY = viewportHeight * 0.55; // full expansion at eye-level center
 
-      // Progress ranges from 0 (track top reaches viewport top) to 1 (track bottom reaches viewport bottom)
-      const rawProgress = -rect.top / scrollDistance;
+      const distance = startY - targetCenterY;
+      const current = startY - sectionCenter;
+      const rawProgress = current / distance;
       const progress = Math.max(0, Math.min(1, rawProgress));
 
-      // Staged timing:
-      // Fade in text: 0% to 20%
-      const fadeProgress = Math.max(0, Math.min(1, progress / 0.20));
-      // Photo expansion & letter split: 20% to 85%
-      const splitProgress = Math.max(0, Math.min(1, (progress - 0.20) / 0.65));
+      // 1. Text fade-in: fast entrance over first 35% of progress
+      const fadeProgress = Math.max(0, Math.min(1, progress / 0.35));
 
-      track.style.setProperty('--charity-progress', progress.toFixed(4));
-      track.style.setProperty('--fade-progress', fadeProgress.toFixed(4));
-      track.style.setProperty('--split-progress', splitProgress.toFixed(4));
+      // 2. Photo scaling: accelerated power curve (0.65 exponent) for faster scaling
+      const photoCurve = Math.pow(progress, 0.65);
+      const photoScale = 0.72 + photoCurve * 0.38; // scales from 0.72 to 1.10
+
+      // 3. Letter split: steadier rate (1.2 exponent)
+      const letterCurve = Math.pow(progress, 1.2);
+      // Maximum split in pixels (capped proportionally)
+      const maxSplitPx = Math.min(56, Math.max(24, window.innerWidth * 0.035));
+      const letterSplit = (letterCurve * maxSplitPx).toFixed(2) + 'px';
+
+      section.style.setProperty('--scroll-progress', progress.toFixed(4));
+      section.style.setProperty('--fade-progress', fadeProgress.toFixed(4));
+      section.style.setProperty('--photo-scale', photoScale.toFixed(4));
+      section.style.setProperty('--letter-split', letterSplit);
 
       isTicking = false;
     }
@@ -336,8 +329,8 @@ const charityDescription =
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCharityScroll);
+    document.addEventListener('DOMContentLoaded', initCharityNaturalScroll);
   } else {
-    initCharityScroll();
+    initCharityNaturalScroll();
   }
 </script>
