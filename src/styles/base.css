@@ -34,6 +34,10 @@
     min-height: 100%;
   }
 
+  html:has(body.has-shader-bg) {
+    background-color: var(--color-canvas-black);
+  }
+
   /* Link Resets */
   a {
     color: inherit;

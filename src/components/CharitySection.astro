@@ -4,11 +4,11 @@
  *
  * Section 05: Partner Charities Spotlight (SPCA Feature) (Issue #6):
  * - Natural unpinned document flow with standard Lumos section footprint.
- * - Center-weighted scroll scrub: Animation runs smoothly as the section travels from viewport
- *   entrance to screen center.
- * - Overlapping layout: Central photo sits on top (z-index: 2), overlapping the inner edges
- *   of "SP" and "CA".
- * - Differential dynamics: Photo scales up faster than the letters move aside.
+ * - Decoupled trigger-once animations for header ("Proudly Supporting") and footer text/CTA
+ *   using authentic AboutSection drift curve (600ms cubic-bezier(0.16, 1, 0.3, 1)).
+ * - Centerpiece retains real-time natural scroll scrub: Overlapping photo frame scales up
+ *   faster than letters part.
+ * - Sourced from Sanity getCharities() with graceful static fallback.
  * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
  */
 import { getCharities } from '@/sanity/queries';
@@ -33,8 +33,8 @@ const charityDescription =
 
 <section id="charity-spotlight" class="charity-section" aria-label="Partner Charities Spotlight - SPCA">
   <div class="charity-container">
-    <!-- Section Header -->
-    <header class="charity-header charity-fade-element">
+    <!-- Section Header (Trigger-Once Entrance) -->
+    <header id="charity-header" class="charity-header">
       <h2 class="charity-subtitle">{charityTitle}</h2>
     </header>
 
@@ -60,8 +60,8 @@ const charityDescription =
       <span class="charity-letter charity-letter--right" aria-hidden="true">CA</span>
     </div>
 
-    <!-- Bottom Mission Copy & Action Link -->
-    <footer class="charity-footer charity-fade-element">
+    <!-- Bottom Mission Copy & Action Link (Trigger-Once Entrance) -->
+    <footer id="charity-footer" class="charity-footer">
       <p class="charity-description">
         {charityDescription}
       </p>
@@ -85,7 +85,6 @@ const charityDescription =
     box-sizing: border-box;
     /* CSS variables driven by JavaScript natural scroll scrub */
     --scroll-progress: 0;
-    --fade-progress: 0;
     --photo-scale: 0.72;
     --letter-split: 0px;
   }
@@ -104,11 +103,20 @@ const charityDescription =
     position: relative;
   }
 
-  /* Section Header */
+  /* Section Header: Trigger-once fade and upward drift (AboutSection curve) */
   .charity-header {
     width: 100%;
     text-align: center;
     margin-bottom: var(--space-08);
+    opacity: 0;
+    transform: translateY(var(--space-06));
+    transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .charity-header.is-triggered {
+    opacity: 1;
+    transform: translateY(var(--space-00));
   }
 
   .charity-subtitle {
@@ -142,8 +150,7 @@ const charityDescription =
     display: inline-block;
     position: relative;
     z-index: 1;
-    will-change: transform, opacity;
-    opacity: calc(0.2 + 0.8 * var(--fade-progress, 0));
+    will-change: transform;
     transition: transform 0.05s linear;
   }
 
@@ -165,13 +172,12 @@ const charityDescription =
     overflow: hidden;
     border-radius: var(--radius-none);
     background-color: var(--color-surface-canvas);
-    /* Negative horizontal margin creates the authentic overlap across SP and CA */
+    /* Negative horizontal margin creates authentic overlap across SP and CA */
     margin-left: calc(-1 * clamp(24px, 3.5vw, 56px));
     margin-right: calc(-1 * clamp(24px, 3.5vw, 56px));
     box-shadow: 0 var(--space-06) var(--space-12) rgba(0, 0, 0, 0.7);
-    will-change: transform, opacity;
+    will-change: transform;
     transform: scale(var(--photo-scale, 0.72));
-    opacity: calc(0.25 + 0.75 * var(--fade-progress, 0));
     transition: transform 0.05s linear;
   }
 
@@ -186,7 +192,7 @@ const charityDescription =
     transition: transform 0.05s linear;
   }
 
-  /* Bottom Copy & Link */
+  /* Bottom Copy & Link: Trigger-once fade and upward drift (AboutSection curve) */
   .charity-footer {
     width: 100%;
     max-width: 960px;
@@ -205,6 +211,10 @@ const charityDescription =
     margin: 0 0 var(--space-04) 0;
     padding: 0;
     max-width: 880px;
+    opacity: 0;
+    transform: translateY(var(--space-06));
+    transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .charity-actions {
@@ -224,37 +234,51 @@ const charityDescription =
     gap: var(--space-02);
     padding: var(--space-02) var(--space-04);
     border-radius: var(--radius-none);
-    transition: color 0.2s ease, transform 0.2s ease;
+    opacity: 0;
+    transform: translateY(var(--space-06));
+    transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 600ms cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.2s ease;
+    transition-delay: 150ms;
+  }
+
+  /* Triggered state for footer description and action link */
+  .charity-footer.is-triggered .charity-description {
+    opacity: 1;
+    transform: translateY(var(--space-00));
+  }
+
+  .charity-footer.is-triggered .charity-cta-link {
+    opacity: 1;
+    transform: translateY(var(--space-00));
   }
 
   .charity-cta-link:hover,
   .charity-cta-link:focus-visible {
     color: var(--color-pure-white);
-    transform: translateX(var(--space-01));
+    transform: translateY(var(--space-00)) translateX(var(--space-01));
     outline: none;
-  }
-
-  /* Fade Element Staging */
-  .charity-fade-element {
-    will-change: opacity, transform;
-    opacity: calc(0.1 + 0.9 * var(--fade-progress, 0));
-    transform: translateY(calc((1 - var(--fade-progress, 0)) * 16px));
   }
 
   /* Reduced Motion Accessibility */
   @media (prefers-reduced-motion: reduce) {
     .charity-section {
       --scroll-progress: 1 !important;
-      --fade-progress: 1 !important;
       --photo-scale: 1 !important;
       --letter-split: 40px !important;
     }
 
+    .charity-header,
+    .charity-description,
+    .charity-cta-link {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
     .charity-letter,
     .charity-photo-frame,
-    .charity-photo-img,
-    .charity-fade-element {
-      opacity: 1 !important;
+    .charity-photo-img {
       transform: none !important;
       transition: none !important;
     }
@@ -266,50 +290,90 @@ const charityDescription =
 </style>
 
 <script>
-  function initCharityNaturalScroll() {
+  function initCharityComponent() {
     const section = document.getElementById('charity-spotlight');
+    const header = document.getElementById('charity-header');
+    const footer = document.getElementById('charity-footer');
+
     if (!section) return;
 
+    // Reduced motion shortcut
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      header?.classList.add('is-triggered');
+      footer?.classList.add('is-triggered');
       section.style.setProperty('--scroll-progress', '1');
-      section.style.setProperty('--fade-progress', '1');
       section.style.setProperty('--photo-scale', '1');
       section.style.setProperty('--letter-split', '40px');
       return;
     }
 
+    // 1. Trigger-once entrance for Header & Footer via IntersectionObserver
+    if ('IntersectionObserver' in window) {
+      const headerObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              header?.classList.add('is-triggered');
+              headerObserver.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.05,
+          rootMargin: '0px 0px -40px 0px',
+        }
+      );
+
+      const footerObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              footer?.classList.add('is-triggered');
+              footerObserver.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+          rootMargin: '0px 0px -40px 0px',
+        }
+      );
+
+      if (header) headerObserver.observe(header);
+      if (footer) footerObserver.observe(footer);
+    } else {
+      header?.classList.add('is-triggered');
+      footer?.classList.add('is-triggered');
+    }
+
+    // 2. Real-time natural scroll scrub for Centerpiece (photo expansion & letter split)
     let isTicking = false;
 
-    function updateProgress() {
+    function updateCenterpieceScrub() {
       if (!section) return;
       const rect = section.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
-      // Centerpiece target: reaches 100% when section center arrives near viewport center
+      // Progress from entrance to center of viewport
       const sectionCenter = rect.top + rect.height * 0.5;
-      const startY = viewportHeight * 1.1; // starts slightly before entering bottom
-      const targetCenterY = viewportHeight * 0.55; // full expansion at eye-level center
+      const startY = viewportHeight * 1.1;
+      const targetCenterY = viewportHeight * 0.55;
 
       const distance = startY - targetCenterY;
       const current = startY - sectionCenter;
       const rawProgress = current / distance;
       const progress = Math.max(0, Math.min(1, rawProgress));
 
-      // 1. Text fade-in: fast entrance over first 35% of progress
-      const fadeProgress = Math.max(0, Math.min(1, progress / 0.35));
-
-      // 2. Photo scaling: accelerated power curve (0.65 exponent) for faster scaling
+      // Accelerated power curve (0.65) for photo scaling
       const photoCurve = Math.pow(progress, 0.65);
-      const photoScale = 0.72 + photoCurve * 0.38; // scales from 0.72 to 1.10
+      const photoScale = 0.72 + photoCurve * 0.38;
 
-      // 3. Letter split: steadier rate (1.2 exponent)
+      // Steadier curve (1.2) for letter split
       const letterCurve = Math.pow(progress, 1.2);
-      // Maximum split in pixels (capped proportionally)
       const maxSplitPx = Math.min(56, Math.max(24, window.innerWidth * 0.035));
       const letterSplit = (letterCurve * maxSplitPx).toFixed(2) + 'px';
 
       section.style.setProperty('--scroll-progress', progress.toFixed(4));
-      section.style.setProperty('--fade-progress', fadeProgress.toFixed(4));
       section.style.setProperty('--photo-scale', photoScale.toFixed(4));
       section.style.setProperty('--letter-split', letterSplit);
 
@@ -318,19 +382,19 @@ const charityDescription =
 
     function onScroll() {
       if (!isTicking) {
-        requestAnimationFrame(updateProgress);
+        requestAnimationFrame(updateCenterpieceScrub);
         isTicking = true;
       }
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
-    updateProgress();
+    updateCenterpieceScrub();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCharityNaturalScroll);
+    document.addEventListener('DOMContentLoaded', initCharityComponent);
   } else {
-    initCharityNaturalScroll();
+    initCharityComponent();
   }
 </script>

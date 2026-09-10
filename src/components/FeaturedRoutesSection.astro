@@ -1,0 +1,170 @@
+---
+/**
+ * FeaturedRoutesSection.astro
+ *
+ * Section 04: Featured GPS Art Routes (Issue #6):
+ * - Displays 3 curated route cards with diverse color themes (Route Orange, Route Coral, Route Blush).
+ * - "featured routes" headline in Degular Display (compressed 0.8 line-height, all-lowercase).
+ * - Desktop: 3-column row layout.
+ * - Mobile/Tablet: Horizontal swipe carousel with edge-peek and touch snapping.
+ * - Bottom-right textlink "for more routes ->" linking to /routes.
+ * - Canvas White background (ready for future Shader Gradient activation).
+ *
+ * All styles strictly comply with DESIGN.md and Lumos tokens.
+ */
+import RouteCard from '@/components/RouteCard.astro';
+import { selectFeaturedRoutes } from '@/utils/featured-routes';
+import type { SanityRoute } from '@/sanity/types';
+
+export interface Props {
+  routes?: SanityRoute[] | null;
+  class?: string;
+  [key: string]: any;
+}
+
+const { routes, class: className, ...restProps } = Astro.props;
+const displayRoutes = selectFeaturedRoutes(routes, 3);
+---
+
+<section
+  id="routes-featured"
+  class:list={['featured-routes-section', className]}
+  aria-label="Featured Routes"
+  {...restProps}
+>
+  <div class="featured-routes-container">
+    <!-- Section Header (Top-Left) -->
+    <header class="featured-routes-header">
+      <h2 class="featured-routes-title">featured routes</h2>
+    </header>
+
+    <!-- 3 Featured Route Cards (Desktop 3-col row / Mobile swipe runway) -->
+    <div
+      class="featured-routes-grid"
+      role="region"
+      aria-label="Featured routes preview"
+    >
+      {
+        displayRoutes.map((route) => (
+          <div class="featured-routes-item">
+            <RouteCard route={route} />
+          </div>
+        ))
+      }
+    </div>
+
+    <!-- Section Footer (Bottom-Right Link) -->
+    <footer class="featured-routes-footer"><a href="/routes" class="featured-routes-more"> more routes → </a></footer>
+  </div>
+</section>
+
+<style>
+  .featured-routes-section {
+    position: relative;
+    width: 100%;
+    background-color: transparent;
+    color: var(--color-canvas-black);
+    padding-block: var(--space-12) var(--space-10);
+    padding-inline: var(--space-06);
+    box-sizing: border-box;
+  }
+
+  .featured-routes-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .featured-routes-header {
+    margin-bottom: var(--space-08);
+    text-align: left;
+  }
+
+  .featured-routes-title {
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-headline);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    letter-spacing: normal;
+    color: var(--color-canvas-black);
+    margin: 0;
+  }
+
+  .featured-routes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 380px));
+    gap: var(--space-06);
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .featured-routes-item {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .featured-routes-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-08);
+  }
+
+  .featured-routes-more {
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 400;
+    line-height: var(--leading-action);
+    color: var(--color-canvas-black);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-02);
+    border-radius: var(--radius-none);
+    transition: opacity 0.2s ease;
+  }
+
+  .featured-routes-more:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* Responsive Adaptation: Horizontal swipe carousel on tablet & mobile */
+  @media (max-width: 1199px) {
+    .featured-routes-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      gap: var(--space-06);
+      padding-bottom: var(--space-04);
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      margin-inline: calc(-1 * var(--space-06));
+      padding-inline: var(--space-06);
+    }
+
+    .featured-routes-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .featured-routes-item {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      width: auto;
+    }
+  }
+
+  @media (max-width: 440px) {
+    .featured-routes-grid :global(.route-card) {
+      width: 82vw;
+    }
+  }
+</style>

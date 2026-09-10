@@ -1,0 +1,277 @@
+---
+/**
+ * BottomCtaSection.astro
+ *
+ * Section 06: Action Banner CTA (Issue #6):
+ * - Monumental full-stage reveal staged over living WebGL shader background (Shader Preset A).
+ * - Outside the curtain with transparent background and ambient vertical dusk scrim.
+ * - Element id="bottom-cta" triggers ShaderBackground.tsx IntersectionObserver for Preset A.
+ * - 3-line stacked rhythmic cadence in Degular Display ("adopt the run. / complete the route. / own the impact.").
+ * - Primary CTA: [run with us] linking to /signup.
+ * - Secondary CTA: "pass the torch →" with Smart Web Share & zero-library clipboard fallback.
+ *
+ * All styles strictly comply with DESIGN.md, Lumos tokens, and zero-radius architecture.
+ */
+export interface Props {
+  class?: string;
+  [key: string]: any;
+}
+
+const { class: className, ...restProps } = Astro.props;
+---
+
+<section
+  id="bottom-cta"
+  class:list={['bottom-cta-section', className]}
+  aria-label="Action Banner — Run With Us"
+  {...restProps}
+>
+  <!-- Ambient Directional Vignette Scrim (Complies with Scrim Protection Rule in DESIGN.md) -->
+  <div class="bottom-cta-scrim" aria-hidden="true"></div>
+
+  <div class="bottom-cta-container">
+    <!-- Eyebrow / Kicker in Runda Medium -->
+    <div class="bottom-cta-kicker">
+      <span class="bottom-cta-tag">the finish line is just the start &middot; movement dispatch</span>
+    </div>
+
+    <!-- 3-Line Stacked Monumental Cadence in Degular Display -->
+    <h2 class="bottom-cta-headline">
+      <span class="cta-line">adopt the run.</span>
+      <span class="cta-line">complete the route.</span>
+      <span class="cta-line">own the impact.</span>
+    </h2>
+
+    <!-- Grounding Movement Micro-Narrative in Runda -->
+    <p class="bottom-cta-subtext">
+      every kilometer drawn on the city's pavement raises rescue funds and champions a kinder city.
+    </p>
+
+    <!-- Dual Action Cluster -->
+    <div class="bottom-cta-actions">
+      <!-- Primary Conversion CTA -->
+      <a href="/signup" class="btn btn-primary bottom-cta-btn-primary" aria-label="Run with us — sign up to adopt a route">
+        [run with us]
+      </a>
+
+      <!-- Secondary Community Referral Action -->
+      <button
+        type="button"
+        id="pass-torch-btn"
+        class="bottom-cta-btn-torch"
+        aria-live="polite"
+        aria-label="Pass the torch — share or copy invite link"
+      >
+        pass the torch &rarr;
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  function setupPassTorch() {
+    const passTorchBtn = document.getElementById('pass-torch-btn');
+    if (!passTorchBtn) return;
+
+    let resetTimer: ReturnType<typeof setTimeout> | null = null;
+
+    passTorchBtn.addEventListener('click', async () => {
+      const shareData = {
+        title: 'adopt a run — gps art community movement',
+        text: 'join me in adopting a gps art run with adopt a run — the new way to push yourself in training and in giving back.',
+        url: window.location.origin || 'https://adoptarun.org',
+      };
+
+      // 1. Try Native Web Share API (mobile devices / supported browsers)
+      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (err: unknown) {
+          // User cancelled / dismissed the native share sheet
+          if (err instanceof Error && err.name === 'AbortError') {
+            return;
+          }
+        }
+      }
+
+      // 2. Clipboard Fallback with Inline Micro-Feedback
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(shareData.url);
+          if (resetTimer) clearTimeout(resetTimer);
+          passTorchBtn.textContent = 'link copied to clipboard \u2713';
+          resetTimer = setTimeout(() => {
+            passTorchBtn.innerHTML = 'pass the torch &rarr;';
+          }, 2500);
+          return;
+        }
+      } catch {
+        // Fallback for restricted clipboard permissions
+      }
+
+      // 3. Fallback prompt
+      window.prompt('Copy invite link to pass the torch:', shareData.url);
+    });
+  }
+
+  // Initialize on initial page load and on Astro view transitions
+  setupPassTorch();
+  document.addEventListener('astro:page-load', setupPassTorch);
+</script>
+
+<style>
+  .bottom-cta-section {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-height: 85vh;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-13);
+    padding-left: var(--space-06);
+    padding-right: var(--space-06);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* Directional Ambient Vignette Scrim (No solid boxes, preserves WebGL energy) */
+  .bottom-cta-scrim {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(24, 19, 17, 0.4) 0%,
+      rgba(24, 19, 17, 0.1) 45%,
+      rgba(24, 19, 17, 0.5) 100%
+    );
+    z-index: 1;
+  }
+
+  .bottom-cta-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  /* Eyebrow kicker */
+  .bottom-cta-kicker {
+    margin-bottom: var(--space-06);
+  }
+
+  .bottom-cta-tag {
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-body);
+    color: var(--color-text-secondary);
+    text-transform: lowercase;
+    letter-spacing: normal;
+  }
+
+  /* Monumental 3-Line Degular Display headline */
+  .bottom-cta-headline {
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-display);
+    font-weight: 600;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: var(--space-00);
+    margin-bottom: var(--space-07);
+    letter-spacing: normal;
+  }
+
+  .cta-line {
+    display: block;
+    white-space: normal;
+  }
+
+  /* Micro-mission subtext */
+  .bottom-cta-subtext {
+    font-family: var(--font-body);
+    font-size: var(--font-fluid-body);
+    font-weight: 400;
+    line-height: var(--leading-body);
+    color: var(--color-text-secondary);
+    max-width: 640px;
+    margin-top: var(--space-00);
+    margin-bottom: var(--space-09);
+    letter-spacing: normal;
+  }
+
+  /* Dual Action Row */
+  .bottom-cta-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-06);
+    flex-wrap: wrap;
+  }
+
+  /* Primary Button overrides */
+  .bottom-cta-btn-primary {
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    padding-top: var(--space-05);
+    padding-bottom: var(--space-05);
+    padding-left: var(--space-07);
+    padding-right: var(--space-07);
+    border-radius: var(--radius-none) !important;
+  }
+
+  /* Secondary Referral Button */
+  .bottom-cta-btn-torch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--color-canvas-white);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-action);
+    text-transform: lowercase;
+    border: none;
+    border-radius: var(--radius-none) !important;
+    padding-top: var(--space-05);
+    padding-bottom: var(--space-05);
+    padding-left: var(--space-04);
+    padding-right: var(--space-04);
+    cursor: pointer;
+    text-decoration: none;
+    letter-spacing: normal;
+    transition: color 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+  }
+
+  .bottom-cta-btn-torch:hover {
+    color: var(--color-pure-white);
+    text-decoration: underline;
+    text-underline-offset: var(--space-02);
+  }
+
+  .bottom-cta-btn-torch:active {
+    transform: scale(0.985);
+  }
+
+  .bottom-cta-btn-torch:focus-visible {
+    outline: 1px solid var(--color-canvas-white);
+    outline-offset: var(--space-02);
+  }
+</style>

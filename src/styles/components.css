@@ -551,6 +551,17 @@
     border-top: 1px solid var(--color-border-subtle);
     padding: var(--space-08) var(--space-06);
     margin-top: auto;
+    position: relative;
+    /* Footer backing extension: occludes fixed backgrounds during bounce overscroll without creating scrollable overflow */
+    box-shadow:
+      0 80px 0 0 var(--color-surface-canvas),
+      0 160px 0 0 var(--color-surface-canvas),
+      0 240px 0 0 var(--color-surface-canvas),
+      0 320px 0 0 var(--color-surface-canvas),
+      0 400px 0 0 var(--color-surface-canvas),
+      0 480px 0 0 var(--color-surface-canvas),
+      0 560px 0 0 var(--color-surface-canvas),
+      0 640px 0 0 var(--color-surface-canvas);
   }
 
   .site-footer-inner {
@@ -610,10 +621,7 @@
     padding-bottom: var(--space-09);
     padding-left: var(--space-09);
     padding-right: var(--space-09);
-    background-image: url('/images/hero-sample-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: transparent;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -652,7 +660,8 @@
     margin-top: var(--space-13);
   }
 
-  .hero-wordmark {
+  .hero-wordmark,
+  .c-wordmark {
     display: flex;
     flex-direction: column;
     font-family: var(--font-wordmark);
@@ -664,30 +673,40 @@
     padding: 0;
   }
 
-  .hero-wordmark-line {
+  .c-wordmark--headline {
+    font-size: var(--font-size-headline);
+    line-height: var(--leading-hero-wordmark);
+  }
+
+  .hero-wordmark-line,
+  .c-wordmark-line {
     display: block;
     line-height: var(--leading-hero-wordmark);
   }
 
-  .hero-wordmark-adopt {
+  .hero-wordmark-adopt,
+  .c-wordmark-adopt {
     font-weight: 245;
     font-variation-settings: 'wdth' 135, 'wght' 245;
   }
 
   .hero-wordmark-thin,
-  .hero-wordmark-a {
+  .hero-wordmark-a,
+  .c-wordmark-a {
     font-weight: 300;
     font-variation-settings: 'wdth' 100, 'wght' 300;
   }
 
-  .hero-wordmark-space {
+  .hero-wordmark-space,
+  .c-wordmark-space {
     font-weight: 245;
     font-variation-settings: 'wdth' 75, 'wght' 245;
     white-space: pre;
   }
 
   .hero-wordmark-strong,
-  .hero-wordmark-run {
+  .hero-wordmark-run,
+  .c-wordmark-run {
     font-weight: 900;
     font-variation-settings: 'wdth' 175, 'wght' 900;
   }
@@ -870,5 +889,20 @@
     .hero-tagline {
       font-size: var(--font-size-body);
     }
+  }
+
+  /* -------------------------------------------------------------
+     Homepage Curtain Reveal & Shader Integration
+     ------------------------------------------------------------- */
+  body.has-shader-bg {
+    background-color: transparent;
+  }
+
+  .homepage-curtain {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    background-color: var(--color-surface-canvas);
+    border-top: 1px solid var(--color-border-subtle);
   }
 }

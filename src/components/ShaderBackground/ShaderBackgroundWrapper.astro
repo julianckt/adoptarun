@@ -1,0 +1,26 @@
+---
+import ShaderBackground from './ShaderBackground';
+
+export interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['shader-background-viewport', className]} aria-hidden="true">
+  <ShaderBackground client:only="react" />
+</div>
+
+<style>
+  .shader-background-viewport {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+    background-color: transparent;
+    overflow: hidden;
+  }
+</style>
