@@ -10,6 +10,8 @@ colors:
   group-run-green: "rgb(91, 190, 73)"
   route-coral: "rgb(255, 132, 132)"
   route-blush: "rgb(229, 153, 158)"
+  exercise-pink: "rgb(231, 122, 226)"
+  art-cyan: "rgb(66, 190, 224)"
   placeholder-grey: "rgb(217, 217, 217)"
   placeholder-grey-mid: "rgb(191, 191, 191)"
 typography:
@@ -23,7 +25,10 @@ typography:
     title: "64px"
     headline: "80px"
     hero-wordmark: "96px"
+    feature: "96px"
     display: "160px"
+    giant: "240px"
+    colossal: "400px"
   display:
     fontFamily: "Degular Display, system-ui, sans-serif"
     fontSize: "clamp(4rem, 8vw, 10rem)"
@@ -132,6 +137,8 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 - **Group Run Green** (`rgb(91, 190, 73)` / `#5bbe49`): The sanctioned badge fill for scheduled group runs. A vivid athletic meadow green signaling collective community action.
 - **Route Coral** (`rgb(255, 132, 132)` / `#ff8484`): Sanctioned route card fill variant for featured, endurance, or landmark runs.
 - **Route Blush** (`rgb(229, 153, 158)` / `#e5999e`): Sanctioned route card fill variant for beginner-friendly, promenade, or scenic community routes.
+- **Exercise Pink** (`rgb(231, 122, 226)` / `#e77ae2`): Sanctioned highlight accent for the Exercise pillar within the About movement typography.
+- **Art Cyan** (`rgb(66, 190, 224)` / `#42bee0`): Sanctioned highlight accent for the Art pillar within the About movement typography.
 
 ### Neutral
 - **Pure White** (`rgb(255, 255, 255)` / `#ffffff`): Reserved strictly for the Scale VF brand wordmark (`adopt / a run`) and high-impact CTA hover states.
@@ -172,6 +179,7 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 - **Global Baseline**: All other text defaults to `1.0` (100%) (`--leading-default`).
 **The Runda Weight Ceiling Rule.** No text set in Runda should ever exceed Medium width/weight (500). Bold and Black weights are prohibited in general UI copy; H4 is rendered as Runda Medium all-caps.
 **The Scale VF Restraint Rule.** Scale VF is strictly reserved for the two-line wordmark `adopt / a run` and the hero CTA `run with us`. It must never be applied to general headings, body, or standard navigation links.
+**The Natural Letter-Spacing Rule (No Custom Tracking).** Degular Display already features built-in tight optical letter-spacing. Do not apply custom `letter-spacing` (such as `-0.02em` or negative tracking) to headings, display type, or copy across the website; allow all fonts to render at their natural tracking (`letter-spacing: normal` / `0`).
 **The Lowercase Identity Rule.** Navigation links, primary buttons, taglines, metric abbreviations, and the wordmark are strictly lowercase (`routes`, `charities`, `donate`, `log a run`, `run with us`). Editorial titles alone use Title Case.
 
 ## Layout
@@ -267,3 +275,4 @@ The signature object of the brand, representing an adoptable route.
 - **Don't** set Runda in weights exceeding Medium (500).
 - **Don't** use Scale VF for standard body text, section headings, or general navigation.
 - **Don't** use Title Case or UPPERCASE for buttons, navigation links, or action labels.
+- **Don't** apply custom letter-spacing (especially negative tracking like `-0.02em`); Degular Display already features built-in tight letter-spacing, and extra negative tracking causes glyphs to collide.

@@ -1,0 +1,343 @@
+---
+/**
+ * CharitySection.astro
+ *
+ * Section 05: Partner Charities Spotlight (SPCA Feature) (Issue #6):
+ * - Canvas black background with canvas white typography.
+ * - Sticky scroll track (220vh) driving a tactile scroll-linked animation.
+ * - Staged choreography: Text fades in on entrance, then continuous scroll scrub expands
+ *   the central SPCA puppy photo while splitting the massive "SP" and "CA" letters apart.
+ * - Sourced from Sanity getCharities() with graceful static fallback.
+ * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
+ */
+import { getCharities } from '@/sanity/queries';
+import type { SanityCharity } from '@/sanity/types';
+
+let spcaCharity: SanityCharity | undefined;
+try {
+  const charities = await getCharities();
+  spcaCharity = charities?.find(
+    (c) => c.slug?.current?.includes('spca') || c.name?.toLowerCase().includes('spca')
+  ) || charities?.[0];
+} catch {
+  // Graceful fallback if network or Sanity client unavailable
+}
+
+const charityTitle = 'Proudly Supporting';
+const charityName = spcaCharity?.name || 'SPCA';
+const charityDescription =
+  spcaCharity?.charityDescription ||
+  'The Society for the Prevention of Cruelty to Animals (SPCA) champions the welfare of all animals in Hong Kong. By adopting our animal-shaped GPS art routes, every kilometer you run raises awareness, rescue funds, and compassionate community support for shelter animals in need.';
+---
+
+<section id="charity-spotlight" class="charity-track" aria-label="Partner Charities Spotlight - SPCA">
+  <div class="charity-sticky" id="charity-sticky">
+    <div class="charity-container">
+      <!-- Section Header -->
+      <header class="charity-header charity-fade-element">
+        <h2 class="charity-subtitle">{charityTitle}</h2>
+      </header>
+
+      <!-- Centerpiece: Split SPCA typography with expanding central framed photo -->
+      <div class="charity-centerpiece" aria-label={`${charityName} Spotlight`}>
+        <!-- Left letter block: SP -->
+        <span class="charity-letter charity-letter--left" aria-hidden="true">SP</span>
+
+        <!-- Expanding central photo frame -->
+        <div class="charity-photo-frame" role="img" aria-label="SPCA rescue puppy resting head gently in human hand">
+          <img
+            src="/images/charity/spca-puppy.jpg"
+            alt="SPCA rescue puppy resting head in human hand"
+            class="charity-photo-img"
+            width="568"
+            height="379"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <!-- Right letter block: CA -->
+        <span class="charity-letter charity-letter--right" aria-hidden="true">CA</span>
+      </div>
+
+      <!-- Bottom Mission Copy & Action Link -->
+      <footer class="charity-footer charity-fade-element">
+        <p class="charity-description">
+          {charityDescription}
+        </p>
+        <div class="charity-actions">
+          <a href="/charities" class="charity-cta-link" aria-label="View all partner charities">
+            view all partner charities &rarr;
+          </a>
+        </div>
+      </footer>
+    </div>
+  </div>
+</section>
+
+<style>
+  .charity-track {
+    width: 100%;
+    height: 220vh;
+    background-color: var(--color-canvas-black);
+    position: relative;
+    box-sizing: border-box;
+    /* CSS variables driven by JavaScript scroll scrub */
+    --charity-progress: 0;
+    --fade-progress: 0;
+    --split-progress: 0;
+  }
+
+  .charity-sticky {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--color-canvas-black);
+    box-sizing: border-box;
+  }
+
+  .charity-container {
+    width: 100%;
+    max-width: 1512px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-10);
+    padding-left: var(--space-06);
+    padding-right: var(--space-06);
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  /* Section Header */
+  .charity-header {
+    width: 100%;
+    text-align: center;
+    margin-bottom: auto;
+  }
+
+  .charity-subtitle {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--font-size-hero-wordmark);
+    line-height: var(--leading-default);
+    color: var(--color-canvas-white);
+    margin: 0;
+    padding: 0;
+    letter-spacing: -0.02em;
+  }
+
+  /* Split Centerpiece */
+  .charity-centerpiece {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: auto 0;
+    user-select: none;
+  }
+
+  .charity-letter {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--font-fluid-colossal);
+    line-height: var(--leading-default);
+    color: var(--color-canvas-white);
+    display: inline-block;
+    will-change: transform, opacity;
+    opacity: calc(0.15 + 0.85 * var(--fade-progress, 0));
+    transition: transform 0.05s linear;
+  }
+
+  .charity-letter--left {
+    transform: translateX(calc(-1 * var(--split-progress, 0) * clamp(24px, 4vw, 64px)));
+  }
+
+  .charity-letter--right {
+    transform: translateX(calc(var(--split-progress, 0) * clamp(24px, 4vw, 64px)));
+  }
+
+  /* Expanding Photo Frame */
+  .charity-photo-frame {
+    /* Interpolates between compact width (180px) and full expanded width (568px) */
+    width: calc(180px + var(--split-progress, 0) * (min(568px, 42vw) - 180px));
+    height: calc(240px + var(--split-progress, 0) * (min(379px, 28vw) - 240px));
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    border-radius: var(--radius-none);
+    background-color: var(--color-surface-canvas);
+    will-change: width, height, opacity;
+    opacity: calc(0.2 + 0.8 * var(--fade-progress, 0));
+    box-shadow: 0 var(--space-06) var(--space-12) rgba(0, 0, 0, 0.6);
+  }
+
+  .charity-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    display: block;
+    /* Subtle counter-scale to enhance depth */
+    transform: scale(calc(1.15 - var(--split-progress, 0) * 0.15));
+    transition: transform 0.05s linear;
+  }
+
+  /* Bottom Copy & Link */
+  .charity-footer {
+    width: 100%;
+    max-width: 960px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: auto;
+  }
+
+  .charity-description {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    color: var(--color-canvas-white);
+    margin: 0 0 var(--space-04) 0;
+    padding: 0;
+    max-width: 880px;
+  }
+
+  .charity-actions {
+    display: flex;
+    justify-content: center;
+  }
+
+  .charity-cta-link {
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+    font-weight: 500;
+    color: var(--color-route-orange);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-02);
+    padding: var(--space-02) var(--space-04);
+    border-radius: var(--radius-none);
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+
+  .charity-cta-link:hover,
+  .charity-cta-link:focus-visible {
+    color: var(--color-pure-white);
+    transform: translateX(var(--space-01));
+    outline: none;
+  }
+
+  /* Fade Element Staging */
+  .charity-fade-element {
+    will-change: opacity, transform;
+    opacity: calc(0.1 + 0.9 * var(--fade-progress, 0));
+    transform: translateY(calc((1 - var(--fade-progress, 0)) * 16px));
+  }
+
+  /* Reduced Motion Accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .charity-track {
+      height: auto;
+      --charity-progress: 1 !important;
+      --fade-progress: 1 !important;
+      --split-progress: 1 !important;
+    }
+
+    .charity-sticky {
+      position: relative;
+      height: auto;
+      padding-top: var(--space-10);
+      padding-bottom: var(--space-10);
+    }
+
+    .charity-letter,
+    .charity-photo-frame,
+    .charity-photo-img,
+    .charity-fade-element {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    .charity-photo-frame {
+      width: min(568px, 42vw) !important;
+      height: min(379px, 28vw) !important;
+    }
+  }
+</style>
+
+<script>
+  function initCharityScroll() {
+    const track = document.getElementById('charity-spotlight');
+    if (!track) return;
+
+    // If reduced motion is requested, keep full progress
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      track.style.setProperty('--charity-progress', '1');
+      track.style.setProperty('--fade-progress', '1');
+      track.style.setProperty('--split-progress', '1');
+      return;
+    }
+
+    let isTicking = false;
+
+    function updateProgress() {
+      if (!track) return;
+      const rect = track.getBoundingClientRect();
+      const scrollDistance = rect.height - window.innerHeight;
+
+      if (scrollDistance <= 0) {
+        track.style.setProperty('--fade-progress', '1');
+        track.style.setProperty('--split-progress', '1');
+        return;
+      }
+
+      // Progress ranges from 0 (track top reaches viewport top) to 1 (track bottom reaches viewport bottom)
+      const rawProgress = -rect.top / scrollDistance;
+      const progress = Math.max(0, Math.min(1, rawProgress));
+
+      // Staged timing:
+      // Fade in text: 0% to 20%
+      const fadeProgress = Math.max(0, Math.min(1, progress / 0.20));
+      // Photo expansion & letter split: 20% to 85%
+      const splitProgress = Math.max(0, Math.min(1, (progress - 0.20) / 0.65));
+
+      track.style.setProperty('--charity-progress', progress.toFixed(4));
+      track.style.setProperty('--fade-progress', fadeProgress.toFixed(4));
+      track.style.setProperty('--split-progress', splitProgress.toFixed(4));
+
+      isTicking = false;
+    }
+
+    function onScroll() {
+      if (!isTicking) {
+        requestAnimationFrame(updateProgress);
+        isTicking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    updateProgress();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCharityScroll);
+  } else {
+    initCharityScroll();
+  }
+</script>

@@ -1,7 +1,13 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import AboutSection from '@/components/AboutSection.astro';
+import StatsSection from '@/components/StatsSection.astro';
+import JourneySection from '@/components/JourneySection.astro';
+import FeaturedRoutesSection from '@/components/FeaturedRoutesSection.astro';
+import CharitySection from '@/components/CharitySection.astro';
 import IslandVerification from '@/components/IslandVerification';
 import RouteCard from '@/components/RouteCard.astro';
+import ShaderBackgroundWrapper from '@/components/ShaderBackground/ShaderBackgroundWrapper.astro';
 import { getRoutes } from '@/sanity/queries';
 import type { SanityRoute } from '@/sanity/types';
 
@@ -30,7 +36,8 @@ const fallbackRoute: SanityRoute = {
 const activeRoute = routes?.[0] || fallbackRoute;
 ---
 
-<BaseLayout title="adopt a run — gps art community movement">
+<BaseLayout title="adopt a run — gps art community movement" class="has-shader-bg">
+  <ShaderBackgroundWrapper />
   <main>
     <!-- Fullscreen Hero Section -->
     <section class="hero-fullscreen" aria-label="Hero Section">
@@ -65,49 +72,74 @@ const activeRoute = routes?.[0] || fallbackRoute;
       </div>
     </section>
 
-    <!-- Lumos Component Showcase & Verification (Preserved under Hero) -->
-    <section id="lumos-showcase" class="u-container" style="max-width: 1100px; margin: var(--space-10) auto; padding: 0 var(--space-06);">
-      <div style="display: flex; align-items: center; gap: var(--space-04); margin-bottom: var(--space-04);">
-        <span class="badge-group-run">system verified</span>
-        <span class="u-text-mono" style="font-size: var(--font-fluid-label); color: var(--color-text-secondary);">
-          ticket #14 · lumos design system
-        </span>
-      </div>
-      <h2 class="u-text-display" style="font-size: var(--font-fluid-title); margin-bottom: var(--space-06);">
-        lumos component showcase
-      </h2>
-      <div class="u-grid-autofit" style="--grid-min: 380px; --grid-gap: var(--space-06); margin-bottom: var(--space-10);">
-        <!-- Signature Route Card Component -->
-        <RouteCard route={activeRoute} />
+    <!-- Observer Seam: Future Routes Feature Section will activate Shader Preset B (add id="routes-featured") -->
 
-        <!-- Route Card Sample (Ad-hoc) -->
-        <article class="card-route p-micro-frame">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-04);">
-            <span class="badge-group-run">group run</span>
-            <span class="u-text-mono" style="font-size: var(--font-size-label); font-weight: 500;">14km</span>
-          </div>
-          <h3 style="font-family: var(--font-body); font-size: var(--font-size-body); font-weight: 500; margin-bottom: var(--space-02);">
-            happy valley boar
-          </h3>
-          <p style="font-family: var(--font-body); font-size: var(--font-size-label); line-height: var(--leading-body); margin-bottom: var(--space-06);">
-            winding ridgeline loop tracing the northern contours through wanchai gap and bowen road.
-          </p>
-          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto;">
-            <span style="font-family: var(--font-body); font-size: var(--font-size-micro); font-weight: 500;">est. 85 min</span>
-            <span style="font-family: var(--font-body); font-size: var(--font-size-micro); font-weight: 500;">elev. +320m</span>
-          </div>
-        </article>
+    <!-- Homepage Curtain: Opaque container that reveals shader on transparent sections -->
+    <div class="homepage-curtain">
+      <!-- Homepage About Section -->
+      <AboutSection />
 
-        <!-- Island Verification Panel -->
-        <div class="p-panel-floating" style="padding: var(--space-06);">
-          <div style="margin-bottom: var(--space-04);">
-            <span class="u-text-mono" style="font-size: var(--font-fluid-label); color: var(--color-text-muted);">
-              interactive island
-            </span>
-          </div>
-          <IslandVerification client:load title="interactive island smoke test" initialCount={1200} />
+      <!-- Section 02: Live Community Movement Counters -->
+      <StatsSection />
+
+      <!-- Section 03: 3-Step Caretaker Journey -->
+      <JourneySection />
+    </div>
+
+    <!-- Section 04: Featured GPS Art Routes (Outside Curtain on Canvas White) -->
+    <FeaturedRoutesSection routes={routes} />
+
+    <!-- Secondary Curtain: Preserves Lumos Showcase below Featured Routes -->
+    <div class="homepage-curtain">
+      <!-- Section 05: Partner Charities Spotlight (SPCA Feature) -->
+      <CharitySection />
+
+      <!-- Lumos Component Showcase & Verification (Preserved under Hero) -->
+      <section id="lumos-showcase" class="u-container" style="max-width: 1100px; margin: 0 auto; padding: var(--space-10) var(--space-06);">
+        <div style="display: flex; align-items: center; gap: var(--space-04); margin-bottom: var(--space-04);">
+          <span class="badge-group-run">system verified</span>
+          <span class="u-text-mono" style="font-size: var(--font-fluid-label); color: var(--color-text-secondary);">
+            ticket #14 · lumos design system
+          </span>
         </div>
-      </div>
-    </section>
+        <h2 class="u-text-display" style="font-size: var(--font-fluid-title); margin-bottom: var(--space-06);">
+          lumos component showcase
+        </h2>
+        <div class="u-grid-autofit" style="--grid-min: 380px; --grid-gap: var(--space-06); margin-bottom: var(--space-10);">
+          <!-- Signature Route Card Component -->
+          <RouteCard route={activeRoute} />
+
+          <!-- Route Card Sample (Ad-hoc) -->
+          <article class="card-route p-micro-frame">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-04);">
+              <span class="badge-group-run">group run</span>
+              <span class="u-text-mono" style="font-size: var(--font-size-label); font-weight: 500;">14km</span>
+            </div>
+            <h3 style="font-family: var(--font-body); font-size: var(--font-size-body); font-weight: 500; margin-bottom: var(--space-02);">
+              happy valley boar
+            </h3>
+            <p style="font-family: var(--font-body); font-size: var(--font-size-label); line-height: var(--leading-body); margin-bottom: var(--space-06);">
+              winding ridgeline loop tracing the northern contours through wanchai gap and bowen road.
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto;">
+              <span style="font-family: var(--font-body); font-size: var(--font-size-micro); font-weight: 500;">est. 85 min</span>
+              <span style="font-family: var(--font-body); font-size: var(--font-size-micro); font-weight: 500;">elev. +320m</span>
+            </div>
+          </article>
+
+          <!-- Island Verification Panel -->
+          <div class="p-panel-floating" style="padding: var(--space-06);">
+            <div style="margin-bottom: var(--space-04);">
+              <span class="u-text-mono" style="font-size: var(--font-fluid-label); color: var(--color-text-muted);">
+                interactive island
+              </span>
+            </div>
+            <IslandVerification client:load title="interactive island smoke test" initialCount={1200} />
+          </div>
+        </div>
+      </section>
+
+      <!-- Observer Seam: Future Bottom CTA Section will activate Shader Preset A (add id="bottom-cta") -->
+    </div>
   </main>
 </BaseLayout>

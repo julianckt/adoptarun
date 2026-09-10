@@ -9,6 +9,8 @@
     --color-group-run-green: rgb(91, 190, 73);
     --color-route-coral: rgb(255, 132, 132);
     --color-route-blush: rgb(229, 153, 158);
+    --color-exercise-pink: rgb(231, 122, 226);
+    --color-art-cyan: rgb(66, 190, 224);
     --color-placeholder-grey: rgb(217, 217, 217);
     --color-placeholder-grey-mid: rgb(191, 191, 191);
     --color-border-hairline: rgba(255, 251, 249, 0.16);
@@ -74,7 +76,11 @@
     --font-size-title: 64px;
     --font-size-headline: 80px;
     --font-size-hero-wordmark: 96px;
+    --font-size-feature: 96px;
     --font-size-display: 160px;
+    --font-size-giant: 240px;
+    --font-size-colossal: 400px;
+    --font-fluid-colossal: clamp(240px, 25vw, 400px);
 
     /* Layout Seam & Header Tokens */
     --header-height: var(--space-10);
