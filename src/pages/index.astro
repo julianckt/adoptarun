@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import AboutSection from '@/components/AboutSection.astro';
-import StatsSection from '@/components/StatsSection.astro';
 import JourneySection from '@/components/JourneySection.astro';
 import FeaturedRoutesSection from '@/components/FeaturedRoutesSection.astro';
 import CharitySection from '@/components/CharitySection.astro';
@@ -76,11 +75,8 @@ const activeRoute = routes?.[0] || fallbackRoute;
 
     <!-- Homepage Curtain: Opaque container that reveals shader on transparent sections -->
     <div class="homepage-curtain">
-      <!-- Homepage About Section -->
+      <!-- Homepage About Section (includes live community movement counters) -->
       <AboutSection />
-
-      <!-- Section 02: Live Community Movement Counters -->
-      <StatsSection />
 
       <!-- Section 03: 3-Step Caretaker Journey -->
       <JourneySection />

@@ -2,97 +2,82 @@
 /**
  * AboutSection.astro
  *
- * Homepage About section implementing the 4-stage scroll-triggered interactive storytelling:
- * - Stage 0: Compact 3-line text ("Your next run collective — Merging Community with Exercise and Art.")
- * - Trigger 1: Expands Community image ribbon (0 -> 96px)
- * - Trigger 2: Expands Exercise image ribbon (0 -> 96px), shifting "and Art." down to its own right-aligned line
- * - Trigger 3: Expands Art image ribbon (0 -> 96px)
- * - Trigger 4: Chinese calligraphy and English description fade and drift up
+ * Homepage About section, merged with the live community movement counters:
+ * - One display sentence with photographs set inline beside each movement pillar
+ * - Mission paragraph (left) paired with a right-aligned tally sentence (right)
+ * - Tally figures carry a route-colour underscore; values are props for future Sanity integration
+ *
+ * Scroll storytelling (progressive enhancement, fully visible without JS):
+ * - Triggers 1–3 wipe open the Community, Exercise and Art photographs inside the sentence
+ * - Trigger 4 lifts in the paragraph and the tally
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
+interface Props {
+  totalKmCovered?: number | string;
+  totalRunsCompleted?: number | string;
+  totalParticipantsCount?: number | string;
+  totalAmountRaised?: number | string;
+}
+
+const {
+  totalKmCovered = '00',
+  totalRunsCompleted = '00',
+  totalParticipantsCount = '00',
+  totalAmountRaised = '00',
+} = Astro.props;
 ---
 
 <section id="about-section" class="about-container" aria-label="About adopt a run">
   <div class="about-content">
+    <h2 class="about-sentence">
+      <span class="about-lead">Your next run collective —</span> merging
+      <span class="about-pic pic-community" aria-hidden="true"><img
+          src="/images/about/community-puppy.jpg"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        /></span>
+      <b class="accent-community">Community</b> with
+      <span class="about-pic pic-exercise" aria-hidden="true"><img
+          src="/images/about/exercise-runners.jpg"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        /></span>
+      <b class="accent-exercise">Exercise</b> and
+      <span class="about-pic pic-art" aria-hidden="true"><img
+          src="/images/about/art-artlane.jpg"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        /></span>
+      <b class="accent-art">Art.</b>
+    </h2>
+
     <div class="about-row">
-      <!-- Left Column: Interactive Movement Pillars & Expanding Media Ribbons -->
-      <div class="about-feature">
-        <!-- Leading Headline -->
-        <h2 class="about-lead">Your next run collective —</h2>
+      <p class="about-description">
+        We are a budding community project, trying to bring together runners across Hong Kong. Seeking to infuse fun and flair into running all the whilst doing good for the community around us. Get involved in our growing movement and turn your compassion into action!
+      </p>
 
-        <!-- Pillar 1: Merging Community -->
-        <div class="phrase-line line-community">
-          Merging <span class="accent-community">Community</span>
-        </div>
-
-        <!-- Image Slot 1: Community Puppy -->
-        <div class="image-slot slot-community" aria-hidden="true">
-          <div class="image-slot-inner">
-            <img
-              src="/images/about/community-puppy.jpg"
-              alt="SPCA rescued puppy representing our animal welfare community"
-              class="slot-media media-puppy"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        </div>
-
-        <!-- Exercise & Art Group: Wraps together initially, breaks when Exercise image expands -->
-        <div class="exercise-art-flow">
-          <div class="phrase-line line-exercise">
-            with&nbsp;<span class="accent-exercise">Exercise</span>
-          </div>
-
-          <!-- Image Slot 2: Exercise Runners -->
-          <div class="image-slot slot-exercise" aria-hidden="true">
-            <div class="image-slot-inner">
-              <img
-                src="/images/about/exercise-runners.jpg"
-                alt="Community group runners along the Victoria Harbour promenade"
-                class="slot-media media-runners"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          </div>
-
-          <div class="phrase-line line-art">
-            and&nbsp;<span class="accent-art">Art.</span>
-          </div>
-
-          <!-- Image Slot 3: Artlane Street Murals -->
-          <div class="image-slot slot-art" aria-hidden="true">
-            <div class="image-slot-inner">
-              <img
-                src="/images/about/art-artlane.jpg"
-                alt="Artlane vibrant urban street art and rainbow staircase in Hong Kong"
-                class="slot-media media-art"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Chinese Calligraphy & Mission Description -->
-      <div class="about-text">
-        <h3 class="about-chinese">
-          千里之行<br />始于足下
-        </h3>
-        <p class="about-description">
-          We are a budding community project, trying to bring together runners across Hong Kong. Seeking to infuse fun and flair into running all the whilst doing good for the community around us. Get involved in our growing movement and turn your compassion into action!
-        </p>
-      </div>
+      <p class="about-tally" aria-label="Live community movement counters">
+        together we’ve run
+        <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&nbsp;km</span>
+        across
+        <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&nbsp;runs</span>
+        —
+        <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&nbsp;runners</span>
+        raising
+        <span class="tally-mark mark-raised">HK$<span class="tally-value">{totalAmountRaised}</span></span>
+        <span class="tally-end">and counting.</span>
+      </p>
     </div>
   </div>
 </section>
 
 <style>
-  /* Outer Container: Solid Canvas Black, Desktop Frame 1512px */
   .about-container {
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
     width: 100%;
     background-color: var(--color-canvas-black);
     position: relative;
@@ -101,220 +86,173 @@
 
   .about-content {
     max-width: 1512px;
-    min-height: 982px;
     margin: 0 auto;
-    padding: var(--space-09);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-03);
+    padding: var(--space-fluid-3xl) var(--space-fluid-xl);
     box-sizing: border-box;
-  }
-
-  .about-row {
-    width: 100%;
-    max-width: 1416px;
-    min-height: 650px;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: var(--space-03);
-    gap: var(--space-03);
-    box-sizing: border-box;
-  }
-
-  /* Left Column: 816px wide Feature Column */
-  .about-feature {
-    width: 816px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-03);
-    flex-shrink: 0;
-  }
-
-  /* Lead Line */
-  .about-lead {
-    font-family: var(--font-display);
-    font-size: var(--font-size-title);
-    font-weight: 600;
-    line-height: var(--leading-compressed);
     color: var(--color-canvas-white);
-    margin: var(--space-00);
   }
 
-  /* Phrase Lines */
-  .phrase-line {
+  /* One sentence, photographs set into the line */
+  .about-sentence {
+    margin: var(--space-00);
     font-family: var(--font-display);
-    font-size: var(--font-size-hero-wordmark);
+    font-size: var(--font-fluid-headline);
     font-weight: 400;
-    line-height: var(--leading-compressed);
-    color: var(--color-canvas-white);
-    margin: var(--space-00);
-    white-space: nowrap;
+    line-height: 0.92;
+    text-wrap: balance;
   }
 
-  /* Movement Pillar Accent Colors */
+  .about-lead,
+  .about-sentence b {
+    font-weight: 600;
+  }
+
   .accent-community {
     color: var(--color-route-orange);
-    font-weight: 600;
   }
 
   .accent-exercise {
     color: var(--color-exercise-pink);
-    font-weight: 600;
   }
 
   .accent-art {
     color: var(--color-art-cyan);
-    font-weight: 600;
   }
 
-  /* Exercise and Art Flow Wrapper */
-  .exercise-art-flow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    width: 800px;
-  }
-
-  .line-exercise {
-    display: inline-flex;
-    align-items: baseline;
-  }
-
-  .line-art {
-    display: inline-flex;
-    align-items: baseline;
-    margin-left: 0.35em;
-  }
-
-  /* When Trigger 2 fires, "and Art." shifts to right alignment on its own line */
-  :global(.about-container.is-triggered-2) .line-art {
-    margin-left: auto;
-  }
-
-  /* Image Slots: Expandable panoramic letterbox strips (800px x 96px) using CSS grid-template-rows */
-  .image-slot {
-    width: 800px;
-    display: grid;
-    grid-template-rows: 0fr;
-    opacity: 0;
-    border-radius: var(--radius-none);
-    background-color: var(--color-placeholder-grey);
-    transition: grid-template-rows 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-                opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    box-sizing: border-box;
-  }
-
-  .image-slot-inner {
-    min-height: 0;
+  .about-pic {
+    display: inline-block;
+    width: 1.5em;
+    height: 0.72em;
+    margin-inline: 0.08em;
+    vertical-align: -0.02em;
     overflow: hidden;
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 900ms var(--ease-out-expo),
+                opacity 600ms var(--ease-out-expo);
   }
 
-  .slot-media {
-    width: 100%;
-    height: var(--space-12);
+  .about-pic img {
     display: block;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
   }
 
-  .media-puppy {
+  .pic-community img {
     object-position: center 35%;
   }
 
-  .media-runners {
+  .pic-exercise img {
     object-position: center 45%;
   }
 
-  .media-art {
-    object-position: center 50%;
-  }
-
-  /* Slot 1: Community Expansion */
-  :global(.about-container.is-triggered-1) .slot-community {
-    grid-template-rows: 1fr;
-    opacity: 1;
-    margin-top: var(--space-03);
-    margin-bottom: var(--space-03);
-  }
-
-  /* Slot 2: Exercise Expansion */
-  .slot-exercise {
-    flex: 0 0 0px;
-    width: var(--space-00);
-  }
-
-  :global(.about-container.is-triggered-2) .slot-exercise {
-    flex: 0 0 800px;
-    width: 800px;
-    grid-template-rows: 1fr;
-    opacity: 1;
-    margin-top: var(--space-03);
-    margin-bottom: var(--space-03);
-  }
-
-  /* Slot 3: Art Expansion */
-  :global(.about-container.is-triggered-3) .slot-art {
-    flex: 0 0 800px;
-    width: 800px;
-    grid-template-rows: 1fr;
-    opacity: 1;
-    margin-top: var(--space-03);
-  }
-
-  /* Right Column: 576px wide, aligned to flex-end */
-  .about-text {
-    width: 576px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    align-self: flex-end;
-    gap: var(--space-06);
-    flex-shrink: 0;
-    box-sizing: border-box;
-  }
-
-  .about-chinese {
-    font-family: var(--font-chinese);
-    font-size: var(--font-size-title);
-    font-weight: 400;
-    line-height: var(--leading-default);
-    text-align: right;
-    color: var(--color-canvas-white);
-    margin: var(--space-00);
-    opacity: 0;
-    transform: translateY(var(--space-06));
-    transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
-                transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Paragraph left, tally sentence right — tucked under the sentence */
+  .about-row {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: var(--space-fluid-2xl);
+    align-items: end;
+    padding-top: var(--space-fluid-xl);
   }
 
   .about-description {
-    font-family: var(--font-body);
-    font-size: var(--font-size-metric);
-    font-weight: 400;
-    line-height: var(--leading-body);
-    text-align: right;
-    color: var(--color-canvas-white);
-    max-width: 300px;
     margin: var(--space-00);
+    max-width: 34ch;
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: 1.3;
+    color: var(--color-text-secondary);
+    text-wrap: pretty;
+  }
+
+  .about-tally {
+    justify-self: end;
+    margin: var(--space-00);
+    max-width: 22ch;
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-title);
+    font-weight: 400;
+    line-height: 1.12;
+    text-align: right;
+    color: var(--color-text-secondary);
+    text-wrap: balance;
+  }
+
+  .tally-mark {
+    --mark-hue: var(--color-route-orange);
+    padding-inline: 0.04em;
+    font-weight: 600;
+    color: var(--color-canvas-white);
+    white-space: nowrap;
+    text-decoration-line: underline;
+    text-decoration-color: var(--mark-hue);
+    text-decoration-thickness: 0.17em;
+    text-underline-offset: 0.06em;
+    text-decoration-skip-ink: none;
+  }
+
+  .mark-runs {
+    --mark-hue: var(--color-route-coral);
+  }
+
+  .mark-runners {
+    --mark-hue: var(--color-art-cyan);
+  }
+
+  .mark-raised {
+    --mark-hue: var(--color-group-run-green);
+  }
+
+  .tally-value {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .tally-end {
+    color: var(--color-canvas-white);
+  }
+
+  .about-description,
+  .about-tally {
+    transition: opacity 600ms var(--ease-out-expo),
+                transform 600ms var(--ease-out-expo);
+  }
+
+  /* Scroll storytelling: only armed once the script runs, so no-JS shows everything */
+  :global(.about-container.is-armed:not(.is-triggered-1)) .pic-community,
+  :global(.about-container.is-armed:not(.is-triggered-2)) .pic-exercise,
+  :global(.about-container.is-armed:not(.is-triggered-3)) .pic-art {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+
+  :global(.about-container.is-armed:not(.is-triggered-4)) .about-description,
+  :global(.about-container.is-armed:not(.is-triggered-4)) .about-tally {
     opacity: 0;
     transform: translateY(var(--space-06));
-    transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
-                transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Trigger 4: Chinese fades & drifts up first; English paragraph follows ~150ms later */
-  :global(.about-container.is-triggered-4) .about-chinese {
-    opacity: 1;
-    transform: translateY(var(--space-00));
-  }
-
-  :global(.about-container.is-triggered-4) .about-description {
-    opacity: 1;
-    transform: translateY(var(--space-00));
+  :global(.about-container.is-triggered-4) .about-tally {
     transition-delay: 150ms;
+  }
+
+  @media (max-width: 1024px) {
+    .about-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-fluid-xl);
+    }
+
+    .about-tally {
+      justify-self: start;
+      text-align: left;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about-pic,
+    .about-description,
+    .about-tally {
+      transition: none;
+    }
   }
 </style>
 
@@ -323,42 +261,25 @@
     const section = document.getElementById('about-section');
     if (!section) return;
 
-    let triggered1 = false;
-    let triggered2 = false;
-    let triggered3 = false;
-    let triggered4 = false;
+    // Thresholds are fractions of viewport height the section top must pass
+    const stages = [0.4, 0.25, 0.1, 0];
+    const fired = stages.map(() => false);
 
     const onScroll = () => {
-      if (triggered1 && triggered2 && triggered3 && triggered4) {
-        window.removeEventListener('scroll', onScroll);
-        return;
-      }
-
-      const rect = section.getBoundingClientRect();
+      const top = section.getBoundingClientRect().top;
       const vh = window.innerHeight;
 
-      // Trigger 1: Section top reaches ~65% of viewport
-      if (!triggered1 && rect.top <= vh * 0.4) {
-        triggered1 = true;
-        section.classList.add('is-triggered-1');
-      }
-      // Trigger 2: Section top reaches ~45% of viewport
-      if (!triggered2 && rect.top <= vh * 0.25) {
-        triggered2 = true;
-        section.classList.add('is-triggered-2');
-      }
-      // Trigger 3: Section top reaches ~25% of viewport
-      if (!triggered3 && rect.top <= vh * 0.1) {
-        triggered3 = true;
-        section.classList.add('is-triggered-3');
-      }
-      // Trigger 4: Section top reaches ~5% of viewport (about halfway into section)
-      if (!triggered4 && rect.top <= vh * 0) {
-        triggered4 = true;
-        section.classList.add('is-triggered-4');
-      }
+      stages.forEach((threshold, i) => {
+        if (!fired[i] && top <= vh * threshold) {
+          fired[i] = true;
+          section.classList.add(`is-triggered-${i + 1}`);
+        }
+      });
+
+      if (fired.every(Boolean)) window.removeEventListener('scroll', onScroll);
     };
 
+    section.classList.add('is-armed');
     window.addEventListener('scroll', onScroll, { passive: true });
     // Check immediately in case page loaded partway down
     onScroll();
