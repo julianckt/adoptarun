@@ -3,11 +3,12 @@
  * BottomCtaSection.astro
  *
  * Section 06: Action Banner CTA (Issue #6):
- * - Monumental full-stage reveal staged over living WebGL shader background (Shader Preset A).
- * - Outside the curtain with transparent background and ambient vertical dusk scrim.
+ * - Full-stage finale staged over living WebGL shader background (Shader Preset A).
+ * - Outside the curtain with transparent background; a seam scrim dissolves out of the
+ *   charity curtain above and into the footer below so the shader breathes through the middle.
  * - Element id="bottom-cta" triggers ShaderBackground.tsx IntersectionObserver for Preset A.
  * - 3-line stacked rhythmic cadence in Degular Display ("adopt the run. / complete the route. / own the impact.").
- * - Primary CTA: [run with us] linking to /signup.
+ * - Primary CTA: "run with us →" (with "run" in Scale VF) linking to /signup.
  * - Secondary CTA: "pass the torch →" with Smart Web Share & zero-library clipboard fallback.
  *
  * All styles strictly comply with DESIGN.md, Lumos tokens, and zero-radius architecture.
@@ -20,48 +21,27 @@ export interface Props {
 const { class: className, ...restProps } = Astro.props;
 ---
 
-<section
-  id="bottom-cta"
-  class:list={['bottom-cta-section', className]}
-  aria-label="Action Banner — Run With Us"
-  {...restProps}
->
-  <!-- Ambient Directional Vignette Scrim (Complies with Scrim Protection Rule in DESIGN.md) -->
-  <div class="bottom-cta-scrim" aria-hidden="true"></div>
+<section id="bottom-cta" class:list={['finale', className]} aria-labelledby="finale-heading" {...restProps}>
+  <!-- Seam Scrim (Complies with Scrim Protection Rule in DESIGN.md) -->
+  <div class="finale-scrim" aria-hidden="true"></div>
 
-  <div class="bottom-cta-container">
-    <!-- Eyebrow / Kicker in Runda Medium -->
-    <div class="bottom-cta-kicker">
-      <span class="bottom-cta-tag">the finish line is just the start &middot; movement dispatch</span>
-    </div>
-
-    <!-- 3-Line Stacked Monumental Cadence in Degular Display -->
-    <h2 class="bottom-cta-headline">
-      <span class="cta-line">adopt the run.</span>
-      <span class="cta-line">complete the route.</span>
-      <span class="cta-line">own the impact.</span>
+  <div class="finale-inner">
+    <h2 id="finale-heading" class="finale-headline">
+      <span class="finale-line">adopt the run.</span>
+      <span class="finale-line">complete the route.</span>
+      <span class="finale-line">own the impact.</span>
     </h2>
 
-    <!-- Grounding Movement Micro-Narrative in Runda -->
-    <p class="bottom-cta-subtext">
+    <p class="finale-subtext">
       every kilometer drawn on the city's pavement raises rescue funds and champions a kinder city.
     </p>
 
-    <!-- Dual Action Cluster -->
-    <div class="bottom-cta-actions">
-      <!-- Primary Conversion CTA -->
-      <a href="/signup" class="btn btn-primary bottom-cta-btn-primary" aria-label="Run with us — sign up to adopt a route">
-        [run with us]
+    <div class="finale-actions">
+      <a href="/signup" class="finale-cta">
+        <span class="finale-cta-run">run</span> with us <span class="finale-cta-arrow" aria-hidden="true">&rarr;</span>
       </a>
 
-      <!-- Secondary Community Referral Action -->
-      <button
-        type="button"
-        id="pass-torch-btn"
-        class="bottom-cta-btn-torch"
-        aria-live="polite"
-        aria-label="Pass the torch — share or copy invite link"
-      >
+      <button type="button" id="pass-torch-btn" class="finale-torch" aria-live="polite">
         pass the torch &rarr;
       </button>
     </div>
@@ -100,7 +80,7 @@ const { class: className, ...restProps } = Astro.props;
         if (navigator.clipboard && navigator.clipboard.writeText) {
           await navigator.clipboard.writeText(shareData.url);
           if (resetTimer) clearTimeout(resetTimer);
-          passTorchBtn.textContent = 'link copied to clipboard \u2713';
+          passTorchBtn.textContent = 'link copied to clipboard ✓';
           resetTimer = setTimeout(() => {
             passTorchBtn.innerHTML = 'pass the torch &rarr;';
           }, 2500);
@@ -121,157 +101,216 @@ const { class: className, ...restProps } = Astro.props;
 </script>
 
 <style>
-  .bottom-cta-section {
+  .finale {
     position: relative;
     z-index: 1;
+    isolation: isolate;
     width: 100%;
-    min-height: 85vh;
-    background-color: transparent;
+    min-height: 100svh;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: var(--space-12);
-    padding-bottom: var(--space-13);
-    padding-left: var(--space-06);
-    padding-right: var(--space-06);
-    box-sizing: border-box;
+    padding-block: var(--space-13);
+    padding-inline: var(--space-09);
+    background-color: transparent;
     overflow: hidden;
   }
 
-  /* Directional Ambient Vignette Scrim (No solid boxes, preserves WebGL energy) */
-  .bottom-cta-scrim {
+  /* Seam scrim: long eased fades from solid Canvas Black at both edges, near-clear middle */
+  .finale-scrim {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
+    z-index: -1;
     pointer-events: none;
     background: linear-gradient(
       to bottom,
-      rgba(24, 19, 17, 0.4) 0%,
-      rgba(24, 19, 17, 0.1) 45%,
-      rgba(24, 19, 17, 0.5) 100%
+      var(--color-canvas-black) 0%,
+      color-mix(in srgb, var(--color-canvas-black) 64%, transparent) 7%,
+      color-mix(in srgb, var(--color-canvas-black) 31%, transparent) 17.6%,
+      color-mix(in srgb, var(--color-canvas-black) 4%, transparent) 32%,
+      color-mix(in srgb, var(--color-canvas-black) 4%, transparent) 68%,
+      color-mix(in srgb, var(--color-canvas-black) 31%, transparent) 82.4%,
+      color-mix(in srgb, var(--color-canvas-black) 64%, transparent) 93%,
+      var(--color-canvas-black) 100%
     );
-    z-index: 1;
   }
 
-  .bottom-cta-container {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    max-width: 1100px;
-    margin-left: auto;
-    margin-right: auto;
+  .finale-inner {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    box-sizing: border-box;
   }
 
-  /* Eyebrow kicker */
-  .bottom-cta-kicker {
-    margin-bottom: var(--space-06);
-  }
-
-  .bottom-cta-tag {
-    font-family: var(--font-body);
-    font-size: var(--font-size-label);
-    font-weight: 500;
-    line-height: var(--leading-body);
-    color: var(--color-text-secondary);
-    text-transform: lowercase;
-    letter-spacing: normal;
-  }
-
-  /* Monumental 3-Line Degular Display headline */
-  .bottom-cta-headline {
+  .finale-headline {
+    margin: 0;
     font-family: var(--font-display);
     font-size: var(--font-fluid-display);
     font-weight: 600;
     line-height: var(--leading-compressed);
-    color: var(--color-canvas-white);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: var(--space-00);
-    margin-bottom: var(--space-07);
     letter-spacing: normal;
+    color: var(--color-canvas-white);
+    text-wrap: balance;
   }
 
-  .cta-line {
+  .finale-line {
     display: block;
-    white-space: normal;
   }
 
-  /* Micro-mission subtext */
-  .bottom-cta-subtext {
+  .finale-subtext {
+    max-width: 40ch;
+    margin: var(--space-08) 0 0;
     font-family: var(--font-body);
     font-size: var(--font-fluid-body);
     font-weight: 400;
     line-height: var(--leading-body);
-    color: var(--color-text-secondary);
-    max-width: 640px;
-    margin-top: var(--space-00);
-    margin-bottom: var(--space-09);
     letter-spacing: normal;
+    color: var(--color-text-secondary);
+    text-wrap: pretty;
   }
 
-  /* Dual Action Row */
-  .bottom-cta-actions {
+  .finale-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: var(--space-06);
-    flex-wrap: wrap;
+    margin-top: var(--space-09);
   }
 
-  /* Primary Button overrides */
-  .bottom-cta-btn-primary {
-    font-size: var(--font-size-label);
-    font-weight: 500;
-    padding-top: var(--space-05);
-    padding-bottom: var(--space-05);
-    padding-left: var(--space-07);
-    padding-right: var(--space-07);
-    border-radius: var(--radius-none) !important;
-  }
-
-  /* Secondary Referral Button */
-  .bottom-cta-btn-torch {
+  /* Primary CTA: "run" isolated in Scale VF, the sanctioned hero-CTA voice */
+  .finale-cta {
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background-color: transparent;
-    color: var(--color-canvas-white);
+    align-items: baseline;
+    gap: var(--space-03);
+    padding-block: var(--space-05);
+    padding-inline: var(--space-07);
+    background-color: var(--color-action-primary);
+    color: var(--color-action-primary-text);
     font-family: var(--font-body);
-    font-size: var(--font-size-label);
+    font-size: var(--font-size-body);
     font-weight: 500;
     line-height: var(--leading-action);
-    text-transform: lowercase;
-    border: none;
-    border-radius: var(--radius-none) !important;
-    padding-top: var(--space-05);
-    padding-bottom: var(--space-05);
-    padding-left: var(--space-04);
-    padding-right: var(--space-04);
-    cursor: pointer;
-    text-decoration: none;
     letter-spacing: normal;
-    transition: color 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+    text-transform: lowercase;
+    text-decoration: none;
+    border-radius: var(--radius-none);
+    transition:
+      background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.1s ease;
   }
 
-  .bottom-cta-btn-torch:hover {
-    color: var(--color-pure-white);
-    text-decoration: underline;
-    text-underline-offset: var(--space-02);
+  .finale-cta-run {
+    font-family: var(--font-wordmark);
+    font-variation-settings: 'wdth' 150, 'wght' 900;
+    font-weight: 900;
+    line-height: var(--leading-wordmark);
   }
 
-  .bottom-cta-btn-torch:active {
+  .finale-cta-arrow {
+    display: inline-block;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .finale-cta:hover {
+    background-color: var(--color-action-primary-hover);
+    box-shadow: 0 var(--space-03) var(--space-08) color-mix(in srgb, var(--color-route-orange) 32%, transparent);
+  }
+
+  .finale-cta:hover .finale-cta-arrow {
+    transform: translateX(var(--space-02));
+  }
+
+  .finale-cta:active {
     transform: scale(0.985);
   }
 
-  .bottom-cta-btn-torch:focus-visible {
+  /* Secondary: resting hairline underline; full-strength stroke draws in left to right on hover */
+  .finale-torch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding-block: var(--space-05);
+    padding-inline: var(--space-01);
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--radius-none);
+    color: var(--color-canvas-white);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 300;
+    line-height: var(--leading-action);
+    letter-spacing: normal;
+    text-transform: lowercase;
+    cursor: pointer;
+  }
+
+  .finale-torch::before,
+  .finale-torch::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--space-01);
+    bottom: var(--space-04);
+    height: 1px;
+  }
+
+  .finale-torch::before {
+    background-color: var(--color-border-strong);
+  }
+
+  .finale-torch::after {
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .finale-torch:hover {
+    color: var(--color-pure-white);
+  }
+
+  .finale-torch:hover::after {
+    transform: scaleX(1);
+  }
+
+  .finale-torch:active {
+    transform: scale(0.985);
+  }
+
+  .finale-cta:focus-visible,
+  .finale-torch:focus-visible {
     outline: 1px solid var(--color-canvas-white);
     outline-offset: var(--space-02);
+  }
+
+  @media (max-width: 768px) {
+    .finale {
+      min-height: auto;
+      padding-block: var(--space-12);
+      padding-inline: var(--space-05);
+    }
+
+    .finale-actions {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      gap: var(--space-03);
+    }
+
+    .finale-cta,
+    .finale-torch {
+      justify-content: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .finale-cta,
+    .finale-cta-arrow,
+    .finale-torch,
+    .finale-torch::after {
+      transition: none;
+    }
   }
 </style>
