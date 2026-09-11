@@ -117,7 +117,7 @@ const { class: className, ...restProps } = Astro.props;
     overflow: hidden;
   }
 
-  /* Seam scrim: solid Canvas Black at both edges, thin through the middle */
+  /* Seam scrim: long eased fades from solid Canvas Black at both edges, near-clear middle */
   .finale-scrim {
     position: absolute;
     inset: 0;
@@ -126,8 +126,12 @@ const { class: className, ...restProps } = Astro.props;
     background: linear-gradient(
       to bottom,
       var(--color-canvas-black) 0%,
-      color-mix(in srgb, var(--color-canvas-black) 25%, transparent) 26%,
-      color-mix(in srgb, var(--color-canvas-black) 15%, transparent) 58%,
+      color-mix(in srgb, var(--color-canvas-black) 64%, transparent) 7%,
+      color-mix(in srgb, var(--color-canvas-black) 31%, transparent) 17.6%,
+      color-mix(in srgb, var(--color-canvas-black) 4%, transparent) 32%,
+      color-mix(in srgb, var(--color-canvas-black) 4%, transparent) 68%,
+      color-mix(in srgb, var(--color-canvas-black) 31%, transparent) 82.4%,
+      color-mix(in srgb, var(--color-canvas-black) 64%, transparent) 93%,
       var(--color-canvas-black) 100%
     );
   }
@@ -155,7 +159,7 @@ const { class: className, ...restProps } = Astro.props;
   }
 
   .finale-subtext {
-    max-width: 34ch;
+    max-width: 40ch;
     margin: var(--space-08) 0 0;
     font-family: var(--font-body);
     font-size: var(--font-fluid-body);
@@ -235,8 +239,8 @@ const { class: className, ...restProps } = Astro.props;
     border-radius: var(--radius-none);
     color: var(--color-canvas-white);
     font-family: var(--font-body);
-    font-size: var(--font-size-body);
-    font-weight: 500;
+    font-size: var(--font-size-label);
+    font-weight: 300;
     line-height: var(--leading-action);
     letter-spacing: normal;
     text-transform: lowercase;
@@ -248,7 +252,7 @@ const { class: className, ...restProps } = Astro.props;
     content: '';
     position: absolute;
     inset-inline: var(--space-01);
-    bottom: var(--space-03);
+    bottom: var(--space-04);
     height: 1px;
   }
 
