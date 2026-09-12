@@ -321,7 +321,7 @@ export interface ShaderGradientConfig {
 // =============================================================================
 export const SHADER_PRESET_A: ShaderGradientConfig = {
   // 1. Geometry
-  type: 'waterPlane',
+  type: 'plane',
   wireframe: false,
   shader: 'defaults',
 
@@ -335,9 +335,9 @@ export const SHADER_PRESET_A: ShaderGradientConfig = {
   uAmplitude: 0.0,
 
   // 3. Colors (Adopt a Run Brand Tokens)
-  color1: '#89a8deff',     // var(--color-route-orange)
-  color2: '#ff8484',     // var(--color-route-coral)
-  color3: '#4e579eff',     // var(--color-canvas-black) / deep dusk base
+  color1: 'rgb(79, 60, 13)',     // var(--color-route-orange)
+  color2: '#6174b3',     // var(--color-route-coral)
+  color3: 'rgb(232, 233, 245)',     // var(--color-canvas-black) / deep dusk base
   reflection: 0.12,
 
   // 4. Position & Rotation
@@ -372,7 +372,7 @@ export const SHADER_PRESET_A: ShaderGradientConfig = {
 
   // 9. Advanced Controls
   control: 'props',
-  enableTransition: true,
+  enableTransition: false,
   smoothTime: 0.8,
   enableCameraUpdate: true,
   toggleAxis: false,

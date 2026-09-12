@@ -26,9 +26,32 @@ export default function ShaderBackground({
   const [activePresetKey, setActivePresetKey] = useState<'presetA' | 'presetB'>(
     forcedPreset ?? 'presetA'
   );
+  const [presetFadeOpacity, setPresetFadeOpacity] = useState<number>(1);
   const [isSuspended, setIsSuspended] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
+
+  const activePresetKeyRef = useRef<'presetA' | 'presetB'>(forcedPreset ?? 'presetA');
+  const prefersReducedMotionRef = useRef<boolean>(false);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    activePresetKeyRef.current = activePresetKey;
+  }, [activePresetKey]);
+
+  useEffect(() => {
+    prefersReducedMotionRef.current = prefersReducedMotion;
+  }, [prefersReducedMotion]);
+
+  // Clean up transition timer on unmount
+  useEffect(() => {
+    return () => {
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+      }
+    };
+  }, []);
 
   // Tilt offsets smoothly interpolated via lerp
   const [cameraTilt, setCameraTilt] = useState<{ azimuth: number; polar: number }>({
@@ -59,9 +82,11 @@ export default function ShaderBackground({
     if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
+    prefersReducedMotionRef.current = mediaQuery.matches;
 
     const handler = (e: MediaQueryListEvent) => {
       setPrefersReducedMotion(e.matches);
+      prefersReducedMotionRef.current = e.matches;
     };
 
     mediaQuery.addEventListener('change', handler);
@@ -69,12 +94,38 @@ export default function ShaderBackground({
   }, []);
 
   // ---------------------------------------------------------------------------
-  // 3. Observer-Ready Section Seams (Hero, Routes, Bottom CTA)
+  // 3. Smooth Preset Change with Opacity Dip
+  // ---------------------------------------------------------------------------
+  const handlePresetChange = (nextPreset: 'presetA' | 'presetB') => {
+    if (prefersReducedMotionRef.current) {
+      setActivePresetKey(nextPreset);
+      activePresetKeyRef.current = nextPreset;
+      return;
+    }
+
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+    }
+
+    // 1. Dip opacity to 0.3
+    setPresetFadeOpacity(0.3);
+
+    // 2. Swap preset at midpoint and restore opacity
+    transitionTimerRef.current = setTimeout(() => {
+      setActivePresetKey(nextPreset);
+      activePresetKeyRef.current = nextPreset;
+      setPresetFadeOpacity(1);
+    }, 250);
+  };
+
+  // ---------------------------------------------------------------------------
+  // 4. Observer-Ready Section Seams (Hero, Routes, Bottom CTA)
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (forcedPreset) {
       setActivePresetKey(forcedPreset);
+      activePresetKeyRef.current = forcedPreset;
       return;
     }
 
@@ -98,7 +149,7 @@ export default function ShaderBackground({
       return;
     }
 
-    const activeElements = new Map<Element, { preset: 'presetA' | 'presetB'; ratio: number }>();
+    const activeElements = new Map<Element, { preset: 'presetA' | 'presetB'; visibleHeight: number }>();
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -107,34 +158,41 @@ export default function ShaderBackground({
           const match = observedElements.find((item) => item.element === target);
           if (!match) return;
 
-          if (entry.isIntersecting && entry.intersectionRatio > 0) {
-            activeElements.set(target, { preset: match.preset, ratio: entry.intersectionRatio });
+          if (entry.isIntersecting) {
+            activeElements.set(target, {
+              preset: match.preset,
+              visibleHeight: entry.intersectionRect.height,
+            });
           } else {
             activeElements.delete(target);
           }
         });
 
         // Determine active preset & suspension state
-        if (activeElements.size === 0) {
+        let maxVisibleHeight = 0;
+        let dominantPreset: 'presetA' | 'presetB' = activePresetKeyRef.current;
+
+        activeElements.forEach(({ preset, visibleHeight }) => {
+          if (visibleHeight > maxVisibleHeight) {
+            maxVisibleHeight = visibleHeight;
+            dominantPreset = preset;
+          }
+        });
+
+        if (maxVisibleHeight === 0 || activeElements.size === 0) {
           // Opaque curtain sections cover the viewport: suspend rendering to save GPU/battery
           setIsSuspended(true);
         } else {
           setIsSuspended(false);
-          // Prioritize section with dominant visibility in viewport
-          let dominantPreset: 'presetA' | 'presetB' = 'presetA';
-          let highestRatio = -1;
-          activeElements.forEach(({ preset, ratio }) => {
-            if (ratio > highestRatio) {
-              highestRatio = ratio;
-              dominantPreset = preset;
-            }
-          });
-          setActivePresetKey(dominantPreset);
+          // Trigger smooth preset transition if preset changed
+          if (dominantPreset !== activePresetKeyRef.current) {
+            handlePresetChange(dominantPreset);
+          }
         }
       },
       {
-        threshold: [0, 0.05, 0.1, 0.25, 0.5],
-        rootMargin: '50px 0px 50px 0px',
+        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        rootMargin: '30px 0px 30px 0px',
       }
     );
 
@@ -235,8 +293,10 @@ export default function ShaderBackground({
         height: '100vh',
         pointerEvents: 'none',
         zIndex: -1,
-        opacity: isLoaded ? 1 : 0,
-        transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        opacity: isLoaded ? presetFadeOpacity : 0,
+        transition: isLoaded
+          ? 'opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
+          : 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)',
         overflow: 'hidden',
       }}
       aria-hidden="true"
