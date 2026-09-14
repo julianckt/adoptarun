@@ -12,7 +12,8 @@
     "test": "vitest run && npm run check:design",
     "test:watch": "vitest",
     "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro check && tsc --noEmit",
-    "check:design": "node .agents/skills/impeccable/scripts/detect.mjs src/"
+    "check:design": "node .agents/skills/impeccable/scripts/detect.mjs src/",
+    "deploy": "ASTRO_TELEMETRY_DISABLED=1 astro build && wrangler deploy"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.0",
@@ -44,7 +45,8 @@
     "@types/three": "^0.185.4",
     "jsdom": "^26.0.0",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.7"
+    "vitest": "^3.0.7",
+    "wrangler": "^4.129.0"
   },
   "allowScripts": {
     "esbuild@0.28.1": true,

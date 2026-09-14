@@ -17,9 +17,10 @@ const isBuildOrPreview = process.argv.some((arg) => ['build', 'preview'].include
 export default defineConfig({
   site: 'https://adoptarun.org',
   output: 'static',
+  session: false,
   adapter: isBuildOrPreview
     ? cloudflare({
-        imageService: 'cloudflare',
+        imageService: 'passthrough',
       })
     : undefined,
   integrations: [

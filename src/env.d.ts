@@ -7,9 +7,6 @@ type Env = {
 
 declare namespace App {
   interface Locals {
-    runtime?: {
-      env: Env;
-      cfContext?: import('@cloudflare/workers-types').ExecutionContext;
-    };
+    cfContext?: import('@cloudflare/workers-types').ExecutionContext;
   }
 }
