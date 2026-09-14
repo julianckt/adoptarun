@@ -371,13 +371,12 @@
     visibility: hidden;
   }
 
-  /* Veil: a tinted, saturated blur that runs past the header's bottom edge
-     and feathers out, so content dissolves beneath it instead of meeting
-     a hard line. Only opacity animates; the blur itself stays static. */
+  /* Veil: a tinted, saturated blur closed off by a hairline.
+     Only opacity animates; the blur itself stays static. */
   .site-header::before {
     content: '';
     position: absolute;
-    inset: 0 0 calc(-1 * var(--header-feather)) 0;
+    inset: 0;
     z-index: -1;
     pointer-events: none;
     background: linear-gradient(to bottom,
@@ -385,8 +384,7 @@
         var(--color-header-veil-bottom) 100%);
     backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
-    mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
+    border-bottom: 1px solid var(--color-border-subtle);
     opacity: 0;
     transition: opacity 0.5s var(--ease-out-expo);
   }
@@ -452,7 +450,14 @@
     transition: transform 0.5s var(--ease-out-expo), color 0.3s var(--ease-out-expo);
   }
 
-  /* Hover: "run" leans into a stride while a route trail draws beneath
+  /* "with us" follows a beat behind, like the trailing leg of a stride */
+  .nav-brand-cta .brand-with {
+    display: inline-block;
+    transform-origin: left bottom;
+    transition: transform 0.5s var(--ease-out-expo) 0.04s;
+  }
+
+  /* Hover: the phrase leans into a stride while a route trail draws beneath
      the phrase, fading in from behind like a GPS track being laid down. */
   .nav-brand-cta::after {
     content: '';
@@ -473,12 +478,18 @@
     color: var(--color-accent);
   }
 
+  .nav-brand-cta:hover .brand-with,
+  .nav-brand-cta:focus-visible .brand-with {
+    transform: skewX(-10deg) translateX(var(--space-01));
+  }
+
   .nav-brand-cta:hover::after,
   .nav-brand-cta:focus-visible::after {
     clip-path: inset(0 0 0 0);
   }
 
-  .nav-brand-cta:active .brand-run {
+  .nav-brand-cta:active .brand-run,
+  .nav-brand-cta:active .brand-with {
     transform: skewX(-14deg) translateX(var(--space-02));
     transition-duration: 0.15s;
   }
@@ -490,15 +501,16 @@
 
   @media (prefers-reduced-motion: reduce) {
     .nav-brand-cta .brand-run,
+    .nav-brand-cta .brand-with,
     .nav-brand-cta::after,
     .site-header::before,
     .site-header::after {
       transition-duration: 0.01ms;
     }
 
-    .nav-brand-cta:hover .brand-run,
-    .nav-brand-cta:focus-visible .brand-run,
-    .nav-brand-cta:active .brand-run {
+    .nav-brand-cta:hover :is(.brand-run, .brand-with),
+    .nav-brand-cta:focus-visible :is(.brand-run, .brand-with),
+    .nav-brand-cta:active :is(.brand-run, .brand-with) {
       transform: none;
     }
   }

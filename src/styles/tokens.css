@@ -88,8 +88,6 @@
 
     /* Layout Seam & Header Tokens */
     --header-height: var(--space-10);
-    --header-feather: var(--space-07);
-    /* Veil extends past the header edge and tapers out (progressive blur) */
     --header-blur: 28px;
     --header-saturate: 170%;
 
