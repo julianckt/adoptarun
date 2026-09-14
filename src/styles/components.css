@@ -1087,6 +1087,13 @@
     background-color: transparent;
   }
 
+  /* Confine the fixed shader layer to <main>'s box: clip-path clips fixed descendants, so the
+     elastic overscroll beyond the footer shows canvas instead of shader. The top edge is
+     extended a full viewport so overscroll above the hero still reveals the shader. */
+  body.has-shader-bg > main {
+    clip-path: inset(-100vh 0 0 0);
+  }
+
   .homepage-curtain {
     position: relative;
     z-index: 1;
