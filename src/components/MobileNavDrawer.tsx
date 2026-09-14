@@ -93,6 +93,7 @@ export const MobileNavDrawer: React.FC = () => {
       onClick={closeNav}
       data-testid="mobile-nav-backdrop"
     >
+      <div className="mobile-nav-veil" aria-hidden="true" />
       <div
         ref={dialogRef}
         id="mobile-nav"

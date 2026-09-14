@@ -739,16 +739,26 @@
     }
   }
 
-  /* Full-screen sheet in the stuck header's veil: tinted gradient, saturated blur */
-  .mobile-nav-drawer {
-    flex: 1;
+  /* Full-screen veil matching the stuck header: tinted gradient, saturated
+     blur. It only ever animates opacity. Animating clip-path on a blurred
+     surface makes the browser re-rasterise the blur when the animation
+     hands off, flashing the page through for a frame. */
+  .mobile-nav-veil {
+    position: absolute;
+    inset: 0;
     background: linear-gradient(to bottom,
         var(--color-header-veil-top) 0%,
         var(--color-header-veil-bottom) 100%);
     backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    animation: nav-veil-in 0.5s var(--ease-out-expo) both;
+  }
+
+  /* Content sits on the veil; transparent and unclipped */
+  .mobile-nav-drawer {
+    position: relative;
+    flex: 1;
     border-radius: var(--radius-none);
-    animation: nav-panel-in 0.7s var(--ease-out-expo) both;
   }
 
   .mobile-nav-header {
@@ -791,8 +801,8 @@
 
   .mobile-nav-list li {
     position: relative;
-    animation: nav-item-in 0.7s var(--ease-out-expo) both;
-    animation-delay: calc(0.16s + var(--i, 0) * 0.05s);
+    animation: nav-item-in 0.6s var(--ease-out-expo) both;
+    animation-delay: calc(0.12s + var(--i, 0) * 0.045s);
   }
 
   /* Hairlines only between rows; the edges stay open */
@@ -866,31 +876,26 @@
     pointer-events: none;
   }
 
-  .mobile-nav-backdrop[data-state='closing'] .mobile-nav-drawer {
-    animation: nav-panel-out 0.4s var(--ease-in-expo) both;
+  /* Close: content clears first, then the veil lifts while the header row
+     fades back in beneath it, so the X appears to settle into the hamburger. */
+  .mobile-nav-backdrop[data-state='closing'] .mobile-nav-veil {
+    animation: nav-veil-out 0.3s var(--ease-in-expo) 0.08s both;
   }
 
+  .mobile-nav-backdrop[data-state='closing'] .mobile-nav-header,
   .mobile-nav-backdrop[data-state='closing'] .mobile-nav-list li {
-    animation: nav-item-out 0.2s var(--ease-in-expo) both;
+    animation: nav-item-out 0.18s var(--ease-in-expo) both;
   }
 
-  @keyframes nav-panel-in {
+  @keyframes nav-veil-in {
     from {
-      clip-path: inset(0 0 100% 0);
-    }
-
-    to {
-      clip-path: inset(0 0 0 0);
+      opacity: 0;
     }
   }
 
-  @keyframes nav-panel-out {
-    from {
-      clip-path: inset(0 0 0 0);
-    }
-
+  @keyframes nav-veil-out {
     to {
-      clip-path: inset(0 0 100% 0);
+      opacity: 0;
     }
   }
 
