@@ -724,9 +724,11 @@
     position: fixed;
     inset: 0;
     z-index: 200;
-    background-color: var(--color-surface-overlay);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    /* Light scrim: the page stays legible beneath, so the menu reads as a
+       layer over it rather than a separate screen */
+    background-color: var(--color-surface-scrim);
+    backdrop-filter: blur(var(--scrim-blur));
+    -webkit-backdrop-filter: blur(var(--scrim-blur));
     display: flex;
     flex-direction: column;
     animation: nav-fade-in 0.5s var(--ease-out-expo) both;
@@ -769,8 +771,9 @@
     display: grid;
   }
 
+  /* The top-row hairline is the list's upper rule, so rows sit close to it */
   .mobile-nav-links {
-    padding: var(--space-07) var(--space-06) var(--space-08);
+    padding: var(--space-02) var(--space-06) var(--space-03);
   }
 
   .mobile-nav-list {
@@ -785,10 +788,11 @@
     animation-delay: calc(0.16s + var(--i, 0) * 0.05s);
   }
 
-  .mobile-nav-list li::before,
-  .mobile-nav-list li:last-child::after {
+  /* Hairlines only between rows; the edges stay open */
+  .mobile-nav-list li + li::before {
     content: '';
     position: absolute;
+    top: 0;
     left: 0;
     right: 0;
     height: 1px;
@@ -796,14 +800,6 @@
     transform-origin: left;
     animation: nav-rule-in 0.9s var(--ease-out-expo) both;
     animation-delay: inherit;
-  }
-
-  .mobile-nav-list li::before {
-    top: 0;
-  }
-
-  .mobile-nav-list li:last-child::after {
-    bottom: 0;
   }
 
   /* Rows mirror the footer list: Degular, hairline-ruled, arrow at the end */
