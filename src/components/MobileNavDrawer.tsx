@@ -144,7 +144,6 @@ export const MobileNavDrawer: React.FC = () => {
           </ul>
         </nav>
       </div>
-      <div className="mobile-nav-scrim" aria-hidden="true" />
     </div>
   );
 };

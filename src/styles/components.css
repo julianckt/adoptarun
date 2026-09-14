@@ -733,30 +733,20 @@
     flex-direction: column;
   }
 
-  /* Light scrim below the drawer only, so the drawer's own veil samples the
-     page directly and matches the sticky header. */
-  .mobile-nav-scrim {
-    flex: 1;
-    background-color: var(--color-surface-scrim);
-    backdrop-filter: blur(var(--scrim-blur));
-    -webkit-backdrop-filter: blur(var(--scrim-blur));
-    animation: nav-fade-in 0.5s var(--ease-out-expo) both;
-  }
-
   @media (min-width: 769px) {
     .mobile-nav-backdrop {
       display: none;
     }
   }
 
-  /* Same veil as the stuck header: tinted gradient, saturated blur */
+  /* Full-screen sheet in the stuck header's veil: tinted gradient, saturated blur */
   .mobile-nav-drawer {
+    flex: 1;
     background: linear-gradient(to bottom,
         var(--color-header-veil-top) 0%,
         var(--color-header-veil-bottom) 100%);
     backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
-    border-bottom: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-none);
     animation: nav-panel-in 0.7s var(--ease-out-expo) both;
   }
@@ -876,28 +866,12 @@
     pointer-events: none;
   }
 
-  .mobile-nav-backdrop[data-state='closing'] .mobile-nav-scrim {
-    animation: nav-fade-out 0.4s var(--ease-in-expo) both;
-  }
-
   .mobile-nav-backdrop[data-state='closing'] .mobile-nav-drawer {
     animation: nav-panel-out 0.4s var(--ease-in-expo) both;
   }
 
   .mobile-nav-backdrop[data-state='closing'] .mobile-nav-list li {
     animation: nav-item-out 0.2s var(--ease-in-expo) both;
-  }
-
-  @keyframes nav-fade-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes nav-fade-out {
-    to {
-      opacity: 0;
-    }
   }
 
   @keyframes nav-panel-in {
