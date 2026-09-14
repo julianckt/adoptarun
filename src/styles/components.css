@@ -47,6 +47,84 @@
     color: var(--color-pure-white);
   }
 
+  /* Hairline Action Link / Button: Resting subtle hairline underline with left-to-right fill on hover */
+  .hairline-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding-block: var(--space-05);
+    padding-inline: var(--space-01);
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--radius-none) !important;
+    color: inherit;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 300;
+    line-height: var(--leading-action);
+    letter-spacing: normal;
+    text-transform: lowercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+
+  .hairline-link::before,
+  .hairline-link::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--space-01);
+    bottom: var(--space-04);
+    height: 1px;
+  }
+
+  /* Resting hairline underline (40% opacity of current text color) */
+  .hairline-link::before {
+    background-color: currentColor;
+    opacity: 0.4;
+  }
+
+  /* Animated hover stroke (wipes in left-to-right) */
+  .hairline-link::after {
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hairline-link:hover::after {
+    transform: scaleX(1);
+  }
+
+  .hairline-link:active {
+    transform: scale(0.985);
+  }
+
+  .hairline-link:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: var(--space-02);
+  }
+
+  /* Hairline Link Color Modifiers */
+  .hairline-link--black {
+    color: var(--color-canvas-black);
+  }
+
+  .hairline-link--orange {
+    color: var(--color-route-orange);
+  }
+
+  .hairline-link--white {
+    color: var(--color-canvas-white);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hairline-link,
+    .hairline-link::after {
+      transition: none;
+    }
+  }
+
   /* Signature Route Card Foundation */
   .card-route {
     background-color: var(--color-route-orange);
@@ -741,7 +819,7 @@
 
   .hero-learn-more {
     font-family: var(--font-body);
-    font-size: var(--font-size-metric);
+    font-size: var(--font-size-label);
     font-weight: 400;
     line-height: var(--leading-body);
     color: var(--color-canvas-white);

@@ -3,12 +3,13 @@
   "name": "adopt-a-run",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "adoptarun-d1",
-      "database_id": "adoptarun-d1-local",
-      "migrations_dir": "migrations"
-    }
-  ]
+  // D1 Database binding deferred until MVP requires persistent storage
+  // "d1_databases": [
+  //   {
+  //     "binding": "DB",
+  //     "database_name": "adoptarun-d1",
+  //     "database_id": "adoptarun-d1-local",
+  //     "migrations_dir": "migrations"
+  //   }
+  // ]
 }

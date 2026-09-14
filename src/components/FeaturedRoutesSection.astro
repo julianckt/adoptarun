@@ -54,7 +54,11 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
     </div>
 
     <!-- Section Footer (Bottom-Right Link) -->
-    <footer class="featured-routes-footer"><a href="/routes" class="featured-routes-more"> more routes → </a></footer>
+    <footer class="featured-routes-footer">
+      <a href="/routes" class="hairline-link hairline-link--black featured-routes-more">
+        more routes &rarr;
+      </a>
+    </footer>
   </div>
 </section>
 
@@ -112,26 +116,6 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
     display: flex;
     justify-content: flex-end;
     margin-top: var(--space-08);
-  }
-
-  .featured-routes-more {
-    font-family: var(--font-body);
-    font-size: var(--font-size-label);
-    font-weight: 400;
-    line-height: var(--leading-action);
-    color: var(--color-canvas-black);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-02);
-    border-radius: var(--radius-none);
-    transition: opacity 0.2s ease;
-  }
-
-  .featured-routes-more:hover {
-    opacity: 0.7;
-    text-decoration: underline;
-    text-underline-offset: 4px;
   }
 
   /* Responsive Adaptation: Horizontal swipe carousel on tablet & mobile */

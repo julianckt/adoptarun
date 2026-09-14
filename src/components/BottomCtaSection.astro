@@ -35,13 +35,13 @@ const { class: className, ...restProps } = Astro.props;
     <p class="finale-subtext">
       every kilometer drawn on the city's pavement raises rescue funds and champions a kinder city.
     </p>
-
+    
     <div class="finale-actions">
-      <a href="/signup" class="finale-cta">
-        <span class="finale-cta-run">run</span> with us <span class="finale-cta-arrow" aria-hidden="true">&rarr;</span>
+      <a href="/signup" class="btn btn-primary finale-cta">
+        <span class="brand-run">run</span> with us <span class="finale-cta-arrow" aria-hidden="true">&rarr;</span>
       </a>
 
-      <button type="button" id="pass-torch-btn" class="finale-torch" aria-live="polite">
+      <button type="button" id="pass-torch-btn" class="hairline-link hairline-link--white finale-torch" aria-live="polite">
         pass the torch &rarr;
       </button>
     </div>
@@ -179,104 +179,24 @@ const { class: className, ...restProps } = Astro.props;
     margin-top: var(--space-09);
   }
 
-  /* Primary CTA: "run" isolated in Scale VF, the sanctioned hero-CTA voice */
+  /* Primary CTA: Specific finale overrides on top of .btn.btn-primary */
   .finale-cta {
-    display: inline-flex;
     align-items: baseline;
     gap: var(--space-03);
-    padding-block: var(--space-05);
-    padding-inline: var(--space-07);
-    background-color: var(--color-action-primary);
-    color: var(--color-action-primary-text);
-    font-family: var(--font-body);
     font-size: var(--font-size-body);
-    font-weight: 500;
-    line-height: var(--leading-action);
-    letter-spacing: normal;
-    text-transform: lowercase;
-    text-decoration: none;
-    border-radius: var(--radius-none);
-    transition:
-      background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.1s ease;
-  }
-
-  .finale-cta-run {
-    font-family: var(--font-wordmark);
-    font-variation-settings: 'wdth' 150, 'wght' 900;
-    font-weight: 900;
-    line-height: var(--leading-wordmark);
   }
 
   .finale-cta-arrow {
     display: inline-block;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.4s var(--ease-out-expo);
   }
 
   .finale-cta:hover {
-    background-color: var(--color-action-primary-hover);
     box-shadow: 0 var(--space-03) var(--space-08) color-mix(in srgb, var(--color-route-orange) 32%, transparent);
   }
 
   .finale-cta:hover .finale-cta-arrow {
     transform: translateX(var(--space-02));
-  }
-
-  .finale-cta:active {
-    transform: scale(0.985);
-  }
-
-  /* Secondary: resting hairline underline; full-strength stroke draws in left to right on hover */
-  .finale-torch {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    padding-block: var(--space-05);
-    padding-inline: var(--space-01);
-    background-color: transparent;
-    border: 0;
-    border-radius: var(--radius-none);
-    color: var(--color-canvas-white);
-    font-family: var(--font-body);
-    font-size: var(--font-size-label);
-    font-weight: 300;
-    line-height: var(--leading-action);
-    letter-spacing: normal;
-    text-transform: lowercase;
-    cursor: pointer;
-  }
-
-  .finale-torch::before,
-  .finale-torch::after {
-    content: '';
-    position: absolute;
-    inset-inline: var(--space-01);
-    bottom: var(--space-04);
-    height: 1px;
-  }
-
-  .finale-torch::before {
-    background-color: var(--color-border-strong);
-  }
-
-  .finale-torch::after {
-    background-color: currentColor;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .finale-torch:hover {
-    color: var(--color-pure-white);
-  }
-
-  .finale-torch:hover::after {
-    transform: scaleX(1);
-  }
-
-  .finale-torch:active {
-    transform: scale(0.985);
   }
 
   .finale-cta:focus-visible,
@@ -308,8 +228,7 @@ const { class: className, ...restProps } = Astro.props;
   @media (prefers-reduced-motion: reduce) {
     .finale-cta,
     .finale-cta-arrow,
-    .finale-torch,
-    .finale-torch::after {
+    .finale-torch {
       transition: none;
     }
   }

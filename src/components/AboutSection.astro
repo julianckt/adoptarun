@@ -31,27 +31,36 @@ const {
 <section id="about-section" class="about-container" aria-label="About adopt a run">
   <div class="about-content">
     <h2 class="about-sentence">
-      <span class="about-lead">Your next run collective —</span> merging
-      <span class="about-pic pic-community" aria-hidden="true"><img
+      <span class="about-lead">Your next run collective —</span>
+      merging
+      <span class="about-pic pic-community" aria-hidden="true">
+        <img
           src="/images/about/community-puppy.jpg"
           alt=""
           loading="lazy"
           decoding="async"
-        /></span>
-      <b class="accent-community">Community</b> with
-      <span class="about-pic pic-exercise" aria-hidden="true"><img
+        />
+      </span>
+      <b class="accent-community">Community</b>
+      with
+      <span class="about-pic pic-exercise" aria-hidden="true">
+        <img
           src="/images/about/exercise-runners.jpg"
           alt=""
           loading="lazy"
           decoding="async"
-        /></span>
-      <b class="accent-exercise">Exercise</b> and
-      <span class="about-pic pic-art" aria-hidden="true"><img
+        />
+      </span>
+      <b class="accent-exercise">Exercise</b>
+      and
+      <span class="about-pic pic-art" aria-hidden="true">
+        <img
           src="/images/about/art-artlane.jpg"
           alt=""
           loading="lazy"
           decoding="async"
-        /></span>
+        />
+      </span>
       <b class="accent-art">Art.</b>
     </h2>
 
@@ -60,24 +69,13 @@ const {
         We are a budding community project, trying to bring together runners across Hong Kong. Seeking to infuse fun and flair into running all the whilst doing good for the community around us. Get involved in our growing movement and turn your compassion into action!
       </p>
 
-      <p class="about-tally" aria-label="Live community movement counters">
-        together we’ve run
-        <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&nbsp;km</span>
-        across
-        <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&nbsp;runs</span>
-        —
-        <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&nbsp;runners</span>
-        raising
-        <span class="tally-mark mark-raised">HK$<span class="tally-value">{totalAmountRaised}</span></span>
-        <span class="tally-end">and counting.</span>
-      </p>
+      <p class="about-tally" aria-label="Live community movement counters">together we’ve run <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised">HK$<span class="tally-value">{totalAmountRaised}</span></span> <span class="tally-end">and counting.</span></p>
     </div>
   </div>
 </section>
 
 <style>
   .about-container {
-    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
     width: 100%;
     background-color: var(--color-canvas-black);
     position: relative;
@@ -98,7 +96,7 @@ const {
     font-family: var(--font-display);
     font-size: var(--font-fluid-headline);
     font-weight: 400;
-    line-height: 0.92;
+    line-height: 0.9;
     text-wrap: balance;
   }
 
@@ -121,8 +119,8 @@ const {
 
   .about-pic {
     display: inline-block;
-    width: 1.5em;
-    height: 0.72em;
+    width: 2.5em;
+    height: 0.66em;
     margin-inline: 0.08em;
     vertical-align: -0.02em;
     overflow: hidden;
@@ -152,27 +150,27 @@ const {
     grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
     gap: var(--space-fluid-2xl);
     align-items: end;
-    padding-top: var(--space-fluid-xl);
+    padding-top: var(--space-fluid-2xl);
   }
 
   .about-description {
     margin: var(--space-00);
-    max-width: 34ch;
+    max-width: 31ch;
     font-family: var(--font-body);
     font-size: var(--font-size-body);
-    line-height: 1.3;
+    line-height: var(--leading-body);
     color: var(--color-text-secondary);
     text-wrap: pretty;
   }
 
   .about-tally {
-    justify-self: end;
+    justify-self: start;
     margin: var(--space-00);
-    max-width: 22ch;
+    max-width: 40ch;
     font-family: var(--font-display);
     font-size: var(--font-fluid-title);
     font-weight: 400;
-    line-height: 1.12;
+    line-height: var(--leading-body);
     text-align: right;
     color: var(--color-text-secondary);
     text-wrap: balance;
@@ -186,7 +184,7 @@ const {
     white-space: nowrap;
     text-decoration-line: underline;
     text-decoration-color: var(--mark-hue);
-    text-decoration-thickness: 0.17em;
+    text-decoration-thickness: 0.1em;
     text-underline-offset: 0.06em;
     text-decoration-skip-ink: none;
   }
