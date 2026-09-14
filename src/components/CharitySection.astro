@@ -11,27 +11,24 @@
  * - Sourced from Sanity getCharities() with graceful static fallback.
  * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
  */
-import { getCharities } from '@/sanity/queries';
 import type { SanityCharity } from '@/sanity/types';
 
-let spcaCharity: SanityCharity | undefined;
-try {
-  const charities = await getCharities();
-  spcaCharity = charities?.find(
-    (c) => c.slug?.current?.includes('spca') || c.name?.toLowerCase().includes('spca')
-  ) || charities?.[0];
-} catch {
-  // Graceful fallback if network or Sanity client unavailable
+export interface Props {
+  charity?: SanityCharity | null;
+  class?: string;
+  [key: string]: any;
 }
 
+const { charity, class: className, ...restProps } = Astro.props;
+
 const charityTitle = 'Proudly Supporting';
-const charityName = spcaCharity?.name || 'SPCA';
+const charityName = charity?.name || 'SPCA';
 const charityDescription =
-  spcaCharity?.charityDescription ||
+  charity?.charityDescription ||
   'The Society for the Prevention of Cruelty to Animals (SPCA) champions the welfare of all animals in Hong Kong. By adopting our animal-shaped GPS art routes, every kilometer you run raises awareness, rescue funds, and compassionate community support for shelter animals in need.';
 ---
 
-<section id="charity-spotlight" class="charity-section" aria-label="Partner Charities Spotlight - SPCA">
+<section id="charity-spotlight" class:list={['charity-section', className]} aria-label="Partner Charities Spotlight - SPCA" {...restProps}>
   <div class="charity-container">
     <!-- Section Header (Trigger-Once Entrance) -->
     <header id="charity-header" class="charity-header">

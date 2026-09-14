@@ -7,10 +7,14 @@ import CharitySection from '@/components/CharitySection.astro';
 import BottomCtaSection from '@/components/BottomCtaSection.astro';
 import RouteCard from '@/components/RouteCard.astro';
 import ShaderBackgroundWrapper from '@/components/ShaderBackground/ShaderBackgroundWrapper.astro';
-import { getRoutes } from '@/sanity/queries';
-import type { SanityRoute } from '@/sanity/types';
+import { getRoutes, getCharities } from '@/sanity/queries';
+import type { SanityRoute, SanityCharity } from '@/sanity/types';
 
-const routes = await getRoutes();
+const [routes, charities] = await Promise.all([
+  getRoutes().catch(() => null),
+  getCharities().catch(() => null),
+]);
+
 const fallbackRoute: SanityRoute = {
   _id: 'sample-wan-chai',
   _type: 'route',
@@ -33,6 +37,9 @@ const fallbackRoute: SanityRoute = {
 };
 
 const activeRoute = routes?.[0] || fallbackRoute;
+const spcaCharity = charities?.find(
+  (c) => c.slug?.current?.includes('spca') || c.name?.toLowerCase().includes('spca')
+) || charities?.[0];
 ---
 
 <BaseLayout title="adopt a run — gps art community movement" class="has-shader-bg">
@@ -88,7 +95,7 @@ const activeRoute = routes?.[0] || fallbackRoute;
     <!-- Secondary Curtain: Opaque Canvas Black Container for Charity Section -->
     <div class="homepage-curtain">
       <!-- Section 05: Partner Charities Spotlight (SPCA Feature) -->
-      <CharitySection />
+      <CharitySection charity={spcaCharity} />
     </div>
 
     <!-- Section 06: Action Banner CTA (Outside Curtain, Transparent over Shader Preset A) -->

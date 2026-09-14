@@ -26,34 +26,13 @@ export default function ShaderBackground({
   const [activePresetKey, setActivePresetKey] = useState<'presetA' | 'presetB'>(
     forcedPreset ?? 'presetA'
   );
-  const [presetFadeOpacity, setPresetFadeOpacity] = useState<number>(1);
   const [isSuspended, setIsSuspended] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [isReadyForTransitions, setIsReadyForTransitions] = useState<boolean>(false);
+  const [isPresetSwapping, setIsPresetSwapping] = useState<boolean>(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
 
-  const activePresetKeyRef = useRef<'presetA' | 'presetB'>(forcedPreset ?? 'presetA');
-  const prefersReducedMotionRef = useRef<boolean>(false);
-  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Keep refs in sync with state
-  useEffect(() => {
-    activePresetKeyRef.current = activePresetKey;
-  }, [activePresetKey]);
-
-  useEffect(() => {
-    prefersReducedMotionRef.current = prefersReducedMotion;
-  }, [prefersReducedMotion]);
-
-  // Clean up transition timer on unmount
-  useEffect(() => {
-    return () => {
-      if (transitionTimerRef.current) {
-        clearTimeout(transitionTimerRef.current);
-      }
-    };
-  }, []);
-
-  // Tilt offsets smoothly interpolated via lerp
+  // Target tilt offsets driven by cursor & scroll momentum
   const [cameraTilt, setCameraTilt] = useState<{ azimuth: number; polar: number }>({
     azimuth: 0,
     polar: 0,
@@ -61,17 +40,20 @@ export default function ShaderBackground({
 
   const mouseTargetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const scrollTargetRef = useRef<number>(0);
-  const currentTiltRef = useRef<{ azimuth: number; polar: number }>({ azimuth: 0, polar: 0 });
-  const rafIdRef = useRef<number | null>(null);
+  const scrollVelocityRef = useRef<number>(0);
+  const lastScrollYRef = useRef<number>(0);
+  const lastScrollTimeRef = useRef<number>(0);
+  const prevPresetRef = useRef<'presetA' | 'presetB'>(activePresetKey);
 
   // ---------------------------------------------------------------------------
-  // 1. First-paint fade-in trigger
+  // 1. First-paint fade-in trigger & initial coordinate snap
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    // Reveal canvas smoothly after client mount
+    // Reveal canvas and enable native damping only after initial mount snap
     const timer = setTimeout(() => {
       setIsLoaded(true);
-    }, 100);
+      setIsReadyForTransitions(true);
+    }, 300);
     return () => clearTimeout(timer);
   }, []);
 
@@ -82,11 +64,9 @@ export default function ShaderBackground({
     if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
-    prefersReducedMotionRef.current = mediaQuery.matches;
 
     const handler = (e: MediaQueryListEvent) => {
       setPrefersReducedMotion(e.matches);
-      prefersReducedMotionRef.current = e.matches;
     };
 
     mediaQuery.addEventListener('change', handler);
@@ -94,121 +74,139 @@ export default function ShaderBackground({
   }, []);
 
   // ---------------------------------------------------------------------------
-  // 3. Smooth Preset Change with Opacity Dip
+  // 2b. Instant preset swap (temporarily disable transition on section change)
   // ---------------------------------------------------------------------------
-  const handlePresetChange = (nextPreset: 'presetA' | 'presetB') => {
-    if (prefersReducedMotionRef.current) {
-      setActivePresetKey(nextPreset);
-      activePresetKeyRef.current = nextPreset;
-      return;
+  useEffect(() => {
+    if (prevPresetRef.current !== activePresetKey) {
+      prevPresetRef.current = activePresetKey;
+      // Force enableTransition to false during exact moment of section transition
+      // so we swap presets instantly without camera glide
+      setIsPresetSwapping(true);
+      const raf = requestAnimationFrame(() => {
+        setIsPresetSwapping(false);
+      });
+      return () => cancelAnimationFrame(raf);
     }
-
-    if (transitionTimerRef.current) {
-      clearTimeout(transitionTimerRef.current);
-    }
-
-    // 1. Dip opacity to 0.3
-    setPresetFadeOpacity(0.3);
-
-    // 2. Swap preset at midpoint and restore opacity
-    transitionTimerRef.current = setTimeout(() => {
-      setActivePresetKey(nextPreset);
-      activePresetKeyRef.current = nextPreset;
-      setPresetFadeOpacity(1);
-    }, 250);
-  };
+  }, [activePresetKey]);
 
   // ---------------------------------------------------------------------------
-  // 4. Observer-Ready Section Seams (Hero, Routes, Bottom CTA)
+  // 3. Observer-Ready Section Seams (Direction 2: Decoupled Latch & Suspension)
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (forcedPreset) {
       setActivePresetKey(forcedPreset);
-      activePresetKeyRef.current = forcedPreset;
       return;
     }
 
-    // Transparent sections that reveal the background shader
     const sectionSelectors = [
       { selector: '.hero-fullscreen', preset: 'presetA' as const },
       { selector: '#routes-featured', preset: 'presetB' as const },
       { selector: '#bottom-cta', preset: 'presetA' as const },
     ];
 
-    const observedElements: { element: Element; preset: 'presetA' | 'presetB' }[] = [];
-    sectionSelectors.forEach(({ selector, preset }) => {
-      const el = document.querySelector(selector);
-      if (el) {
-        observedElements.push({ element: el, preset });
-      }
-    });
-
-    // If no transparent elements are found at all, stay visible on presetA
-    if (observedElements.length === 0) {
-      return;
-    }
-
-    const activeElements = new Map<Element, { preset: 'presetA' | 'presetB'; visibleHeight: number }>();
+    const observedElements: { element: Element; preset: 'presetA' | 'presetB'; isIntersecting: boolean }[] = [];
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const target = entry.target;
+          const target = entry.target as HTMLElement;
           const match = observedElements.find((item) => item.element === target);
           if (!match) return;
 
+          match.isIntersecting = entry.isIntersecting;
+
           if (entry.isIntersecting) {
-            activeElements.set(target, {
-              preset: match.preset,
-              visibleHeight: entry.intersectionRect.height,
-            });
-          } else {
-            activeElements.delete(target);
+            setActivePresetKey(match.preset);
           }
         });
 
-        // Determine active preset & suspension state
-        let maxVisibleHeight = 0;
-        let dominantPreset: 'presetA' | 'presetB' = activePresetKeyRef.current;
-
-        activeElements.forEach(({ preset, visibleHeight }) => {
-          if (visibleHeight > maxVisibleHeight) {
-            maxVisibleHeight = visibleHeight;
-            dominantPreset = preset;
-          }
-        });
-
-        if (maxVisibleHeight === 0 || activeElements.size === 0) {
-          // Opaque curtain sections cover the viewport: suspend rendering to save GPU/battery
-          setIsSuspended(true);
-        } else {
-          setIsSuspended(false);
-          // Trigger smooth preset transition if preset changed
-          if (dominantPreset !== activePresetKeyRef.current) {
-            handlePresetChange(dominantPreset);
-          }
-        }
+        // Suspend rendering ONLY when no transparent section is visible (e.g. inside opaque curtains)
+        const anyVisible = observedElements.some((item) => item.isIntersecting);
+        setIsSuspended(!anyVisible);
       },
       {
-        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-        rootMargin: '30px 0px 30px 0px',
+        threshold: 0,
+        rootMargin: '50px 0px 50px 0px',
       }
     );
 
-    observedElements.forEach(({ element }) => observer.observe(element));
+    const attachAvailableElements = () => {
+      sectionSelectors.forEach(({ selector, preset }) => {
+        const el = document.querySelector(selector);
+        if (el && !observedElements.some((item) => item.element === el)) {
+          observedElements.push({ element: el, preset, isIntersecting: false });
+          observer.observe(el);
+        }
+      });
+    };
+
+    // 1. Initial scan on React mount
+    attachAvailableElements();
+
+    // 2. If any element hasn't streamed or loaded into the DOM yet, observe mutations
+    let mutationObserver: MutationObserver | null = null;
+    if (observedElements.length < sectionSelectors.length) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachAvailableElements, { once: true });
+      }
+
+      if (typeof MutationObserver !== 'undefined') {
+        mutationObserver = new MutationObserver(() => {
+          attachAvailableElements();
+          if (observedElements.length >= sectionSelectors.length) {
+            mutationObserver?.disconnect();
+            mutationObserver = null;
+          }
+        });
+
+        const rootTarget = document.body || document.documentElement;
+        if (rootTarget) {
+          mutationObserver.observe(rootTarget, {
+            childList: true,
+            subtree: true,
+          });
+        }
+      }
+    }
 
     return () => {
+      document.removeEventListener('DOMContentLoaded', attachAvailableElements);
+      mutationObserver?.disconnect();
       observer.disconnect();
     };
   }, [forcedPreset]);
 
   // ---------------------------------------------------------------------------
-  // 4. Subtle Cursor & Scroll Camera Parallax (Option B, no touch capture)
+  // 4. Subtle Cursor & Scroll Momentum Parallax (Native Damping, 0 Idle Renders)
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (prefersReducedMotion) return;
+
+    let updateScheduled = false;
+    let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleUpdate = () => {
+      if (updateScheduled) return;
+      updateScheduled = true;
+      requestAnimationFrame(() => {
+        updateScheduled = false;
+        if (isSuspended || prefersReducedMotion) return;
+
+        // Max tilt range: +/- 8 deg azimuth, +/- 4 deg polar + scroll momentum
+        const targetAzimuth =
+          mouseTargetRef.current.x * 8 +
+          scrollTargetRef.current * 3 +
+          scrollVelocityRef.current;
+        const targetPolar = mouseTargetRef.current.y * 4;
+
+        setCameraTilt({
+          azimuth: targetAzimuth,
+          polar: targetPolar,
+        });
+      });
+    };
 
     const handlePointerMove = (e: PointerEvent) => {
       // Ignore touch events to preserve native touch scrolling
@@ -218,47 +216,37 @@ export default function ShaderBackground({
       const normY = (e.clientY / window.innerHeight) * 2 - 1; // -1 to 1
 
       mouseTargetRef.current = { x: normX, y: normY };
+      scheduleUpdate();
     };
 
     const handleScroll = () => {
+      const now = performance.now();
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       const scrollY = window.scrollY || window.pageYOffset;
+      const deltaY = scrollY - lastScrollYRef.current;
+      const deltaTime = Math.max(1, now - lastScrollTimeRef.current);
+
+      // Instantaneous scroll momentum (clamped to +/- 6 degrees)
+      scrollVelocityRef.current = Math.min(Math.max((deltaY / deltaTime) * 5, -6), 6);
+      lastScrollYRef.current = scrollY;
+      lastScrollTimeRef.current = now;
       scrollTargetRef.current = maxScroll > 0 ? (scrollY / maxScroll) * 2 - 1 : 0;
+
+      scheduleUpdate();
+
+      // Coast momentum to rest shortly after scrolling stops
+      if (scrollEndTimer) clearTimeout(scrollEndTimer);
+      scrollEndTimer = setTimeout(() => {
+        scrollVelocityRef.current = 0;
+        scheduleUpdate();
+      }, 120);
     };
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Smooth animation loop using lerp
-    let running = true;
-    const animateLoop = () => {
-      if (!running) return;
-
-      if (!isSuspended && !prefersReducedMotion) {
-        // Max tilt range: +/- 8 degrees azimuth, +/- 4 degrees polar
-        const targetAzimuth = mouseTargetRef.current.x * 8 + scrollTargetRef.current * 4;
-        const targetPolar = mouseTargetRef.current.y * 4;
-
-        // Linear interpolation with damping factor 0.05
-        currentTiltRef.current.azimuth +=
-          (targetAzimuth - currentTiltRef.current.azimuth) * 0.05;
-        currentTiltRef.current.polar +=
-          (targetPolar - currentTiltRef.current.polar) * 0.05;
-
-        setCameraTilt({
-          azimuth: currentTiltRef.current.azimuth,
-          polar: currentTiltRef.current.polar,
-        });
-      }
-
-      rafIdRef.current = requestAnimationFrame(animateLoop);
-    };
-
-    rafIdRef.current = requestAnimationFrame(animateLoop);
-
     return () => {
-      running = false;
-      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      if (scrollEndTimer) clearTimeout(scrollEndTimer);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('scroll', handleScroll);
     };
@@ -274,14 +262,26 @@ export default function ShaderBackground({
     const effectiveAnimate =
       isSuspended || prefersReducedMotion ? 'off' : base.animate;
 
+    // Force enableTransition to false on initial mount, during instant preset swaps, or for reduced motion
+    const effectiveEnableTransition =
+      isReadyForTransitions && !isPresetSwapping && !prefersReducedMotion;
+
     return {
       ...base,
       animate: effectiveAnimate,
+      enableTransition: effectiveEnableTransition,
       // Apply subtle tilt shifts to camera angles
       cAzimuthAngle: base.cAzimuthAngle + cameraTilt.azimuth,
       cPolarAngle: base.cPolarAngle + cameraTilt.polar,
     };
-  }, [activePresetKey, isSuspended, prefersReducedMotion, cameraTilt]);
+  }, [
+    activePresetKey,
+    isSuspended,
+    prefersReducedMotion,
+    cameraTilt,
+    isReadyForTransitions,
+    isPresetSwapping,
+  ]);
 
   return (
     <div
@@ -293,10 +293,8 @@ export default function ShaderBackground({
         height: '100vh',
         pointerEvents: 'none',
         zIndex: -1,
-        opacity: isLoaded ? presetFadeOpacity : 0,
-        transition: isLoaded
-          ? 'opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
-          : 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        opacity: isLoaded ? 1 : 0,
+        transition: 'opacity 2.4s cubic-bezier(0.25, 0.1, 0.25, 1)',
         overflow: 'hidden',
       }}
       aria-hidden="true"

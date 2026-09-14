@@ -321,7 +321,7 @@ export interface ShaderGradientConfig {
 // =============================================================================
 export const SHADER_PRESET_A: ShaderGradientConfig = {
   // 1. Geometry
-  type: 'plane',
+  type: 'sphere',
   wireframe: false,
   shader: 'defaults',
 
@@ -329,34 +329,34 @@ export const SHADER_PRESET_A: ShaderGradientConfig = {
   animate: 'on',
   uTime: 0.2,
   uSpeed: 0.1,          // Gentle, calm wave motion
-  uStrength: 2.8,        // Pronounced liquid folds
-  uDensity: 1.6,         // Balanced wave frequency
+  uStrength: 0.3,        // Pronounced liquid folds
+  uDensity: 0.8,         // Balanced wave frequency
   uFrequency: 5.5,
-  uAmplitude: 0.0,
+  uAmplitude: 3.2,       // Organic spiral distortion for 3D sphere
 
   // 3. Colors (Adopt a Run Brand Tokens)
-  color1: 'rgb(79, 60, 13)',     // var(--color-route-orange)
-  color2: '#6174b3',     // var(--color-route-coral)
-  color3: 'rgb(232, 233, 245)',     // var(--color-canvas-black) / deep dusk base
-  reflection: 0.12,
+  color1: '#73bfc4',     // var(--color-route-orange)
+  color2: '#ff810a',     // var(--color-route-coral)
+  color3: '#8da0ce',     // var(--color-canvas-black) / deep dusk base
+  reflection: 0.4,
 
   // 4. Position & Rotation
   positionX: 0,
-  positionY: 0,       // Centers the liquid horizon in the lower viewport
+  positionY: 0,       // Centers the sphere in the viewport
   positionZ: 0,
   rotationX: 0,
-  rotationY: 0,
-  rotationZ: 225,        // Diagonal flow matching the wordmark typography angle
+  rotationY: 130,
+  rotationZ: 70,        // Diagonal flow matching the wordmark typography angle
 
   // 5. Camera & View
-  cAzimuthAngle: 180,
-  cPolarAngle: 95,       // Slight upward look for dramatic scale
-  cDistance: 2.5,
-  cameraZoom: 1.0,
+  cAzimuthAngle: 270,
+  cPolarAngle: 180,       // Slight upward look for dramatic scale
+  cDistance: 0.54,
+  cameraZoom: 15.0,
 
   // 6. Lighting & Environment
-  lightType: '3d',
-  brightness: 1.15,
+  lightType: 'env',
+  brightness: 0.8,
   envPreset: 'city',
 
   // 7. Grain
@@ -372,8 +372,8 @@ export const SHADER_PRESET_A: ShaderGradientConfig = {
 
   // 9. Advanced Controls
   control: 'props',
-  enableTransition: false,
-  smoothTime: 0.8,
+  enableTransition: true,
+  smoothTime: 0.3,
   enableCameraUpdate: true,
   toggleAxis: false,
   zoomOut: false,
@@ -438,7 +438,7 @@ export const SHADER_PRESET_B: ShaderGradientConfig = {
   // 9. Advanced Controls
   control: 'props',
   enableTransition: true,
-  smoothTime: 0.8,
+  smoothTime: 0.3,
   enableCameraUpdate: true,
   toggleAxis: false,
   zoomOut: false,
@@ -456,7 +456,7 @@ export interface ShaderCanvasOptions {
 }
 
 export const DEFAULT_CANVAS_OPTIONS: ShaderCanvasOptions = {
-  pixelDensity: 1.2,          // Crisp rendering without 4K GPU overkill
+  pixelDensity: 1,          // Crisp rendering without 4K GPU overkill
   fov: 45,
   pointerEvents: 'none',      // Never intercept user clicks or gestures
   lazyLoad: false,

@@ -551,17 +551,6 @@
     border-top: 1px solid var(--color-border-subtle);
     padding: var(--space-08) var(--space-06);
     margin-top: auto;
-    position: relative;
-    /* Footer backing extension: occludes fixed backgrounds during bounce overscroll without creating scrollable overflow */
-    box-shadow:
-      0 80px 0 0 var(--color-surface-canvas),
-      0 160px 0 0 var(--color-surface-canvas),
-      0 240px 0 0 var(--color-surface-canvas),
-      0 320px 0 0 var(--color-surface-canvas),
-      0 400px 0 0 var(--color-surface-canvas),
-      0 480px 0 0 var(--color-surface-canvas),
-      0 560px 0 0 var(--color-surface-canvas),
-      0 640px 0 0 var(--color-surface-canvas);
   }
 
   .site-footer-inner {
