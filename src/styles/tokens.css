@@ -26,6 +26,10 @@
     --color-surface-card-text: var(--color-canvas-black);
     --color-surface-overlay: rgba(24, 19, 17, 0.88);
     --color-header-translucent: rgba(24, 19, 17, 0.60);
+    --color-header-veil-top: rgba(24, 19, 17, 0.74);
+    --color-header-veil-bottom: rgba(24, 19, 17, 0.28);
+    --color-header-shadow: rgba(0, 0, 0, 0.45);
+    --color-route-trail: rgba(245, 174, 102, 0);
     --color-border-subtle: var(--color-border-hairline);
     --color-border-strong: rgba(255, 251, 249, 0.40);
     --color-accent: var(--color-route-orange);
@@ -84,6 +88,10 @@
 
     /* Layout Seam & Header Tokens */
     --header-height: var(--space-10);
+    --header-feather: var(--space-07);
+    /* Veil extends past the header edge and tapers out (progressive blur) */
+    --header-blur: 28px;
+    --header-saturate: 170%;
 
 
     /* Semantic Font Families & Fluid Clamp Typography */

@@ -354,40 +354,58 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    isolation: isolate;
     width: 100%;
-    background-color: transparent;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
     padding: var(--space-04) var(--space-06);
-    transition: background-color 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
   }
 
-  .site-header.is-sticky {
-    background-color: var(--color-header-translucent);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  /* Sentinel pinned to the document top; the header observes it to know
+     when it has left the top of the page (single source of truth). */
+  .site-header-sentinel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: var(--space-03);
+    pointer-events: none;
+    visibility: hidden;
   }
 
-  @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
-    .site-header {
-      animation: header-stuck-fade auto linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0px 48px;
-    }
+  /* Veil: a tinted, saturated blur that runs past the header's bottom edge
+     and feathers out, so content dissolves beneath it instead of meeting
+     a hard line. Only opacity animates; the blur itself stays static. */
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 calc(-1 * var(--header-feather)) 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(to bottom,
+        var(--color-header-veil-top) 0%,
+        var(--color-header-veil-bottom) 100%);
+    backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-out-expo);
+  }
 
-    @keyframes header-stuck-fade {
-      from {
-        background-color: transparent;
-        backdrop-filter: blur(0px);
-        -webkit-backdrop-filter: blur(0px);
-      }
+  /* Soft ambient depth under the veil, offset downward */
+  .site-header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    box-shadow: 0 var(--space-03) var(--space-06) calc(-1 * var(--space-04)) var(--color-header-shadow);
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-out-expo);
+  }
 
-      to {
-        background-color: var(--color-header-translucent);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-      }
-    }
+  .site-header[data-stuck]::before,
+  .site-header[data-stuck]::after {
+    opacity: 1;
   }
 
   .site-header-grid {
@@ -405,6 +423,9 @@
 
   .nav-brand-cta {
     grid-column: 1;
+    justify-self: start;
+    position: relative;
+    padding-block: var(--space-02);
     display: inline-flex;
     align-items: baseline;
     gap: var(--space-02);
@@ -426,6 +447,60 @@
     font-weight: 900;
     line-height: var(--leading-wordmark);
     color: var(--color-pure-white);
+    display: inline-block;
+    transform-origin: left bottom;
+    transition: transform 0.5s var(--ease-out-expo), color 0.3s var(--ease-out-expo);
+  }
+
+  /* Hover: "run" leans into a stride while a route trail draws beneath
+     the phrase, fading in from behind like a GPS track being laid down. */
+  .nav-brand-cta::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(-1 * var(--space-01));
+    height: var(--space-01);
+    background: linear-gradient(to right, var(--color-route-trail), var(--color-accent));
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0.6s var(--ease-out-expo);
+    pointer-events: none;
+  }
+
+  .nav-brand-cta:hover .brand-run,
+  .nav-brand-cta:focus-visible .brand-run {
+    transform: skewX(-10deg) translateX(var(--space-01));
+    color: var(--color-accent);
+  }
+
+  .nav-brand-cta:hover::after,
+  .nav-brand-cta:focus-visible::after {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .nav-brand-cta:active .brand-run {
+    transform: skewX(-14deg) translateX(var(--space-02));
+    transition-duration: 0.15s;
+  }
+
+  .nav-brand-cta:focus-visible {
+    outline: 1px solid var(--color-accent);
+    outline-offset: var(--space-02);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-brand-cta .brand-run,
+    .nav-brand-cta::after,
+    .site-header::before,
+    .site-header::after {
+      transition-duration: 0.01ms;
+    }
+
+    .nav-brand-cta:hover .brand-run,
+    .nav-brand-cta:focus-visible .brand-run,
+    .nav-brand-cta:active .brand-run {
+      transform: none;
+    }
   }
 
   .nav-announcement-slot {
