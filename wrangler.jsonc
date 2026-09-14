@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "adopt-a-run",
+  "name": "adoptarun",
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": [
@@ -9,6 +9,19 @@
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist/client"
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true
+    }
   }
   // D1 Database binding deferred until MVP requires persistent storage
   // "d1_databases": [
