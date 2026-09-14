@@ -5,6 +5,9 @@ import { $isNavOpen, closeNav } from '@/stores/shell';
 /** Matches the longest closing animation on `.mobile-nav-backdrop[data-state='closing']`. */
 export const NAV_EXIT_MS = 400;
 
+/** Page scroll distance that dismisses the open drawer; absorbs incidental nudges and overscroll bounce. */
+export const SCROLL_DISMISS_PX = 32;
+
 const NAV_LINKS = [
   { href: '/routes', label: 'routes' },
   { href: '/charities', label: 'charities' },
@@ -61,9 +64,19 @@ export const MobileNavDrawer: React.FC = () => {
       }
     };
 
+    // Scrolling the page is read as intent to leave the menu
+    const scrollOrigin = window.scrollY;
+    const handleScroll = () => {
+      if (Math.abs(window.scrollY - scrollOrigin) > SCROLL_DISMISS_PX) {
+        closeNav();
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('scroll', handleScroll);
       root.classList.remove('nav-open');
       document.getElementById('nav-mobile-toggle')?.focus();
     };
@@ -131,6 +144,7 @@ export const MobileNavDrawer: React.FC = () => {
           </ul>
         </nav>
       </div>
+      <div className="mobile-nav-scrim" aria-hidden="true" />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { AnnouncementBanner } from '@/components/AnnouncementBanner';
-import { MobileNavDrawer, NAV_EXIT_MS } from '@/components/MobileNavDrawer';
+import { MobileNavDrawer, NAV_EXIT_MS, SCROLL_DISMISS_PX } from '@/components/MobileNavDrawer';
 import {
   $announcementTicker,
   $isNavOpen,
@@ -112,6 +112,28 @@ describe('Header Interactive Components', () => {
 
       fireEvent.keyDown(window, { key: 'Escape' });
       expect($isNavOpen.get()).toBe(false);
+    });
+
+    it('closes drawer once the page scrolls past the dismiss threshold', () => {
+      act(() => {
+        openNav();
+      });
+      render(<MobileNavDrawer />);
+
+      const setScrollY = (y: number) =>
+        Object.defineProperty(window, 'scrollY', { value: y, configurable: true, writable: true });
+
+      try {
+        setScrollY(SCROLL_DISMISS_PX);
+        fireEvent.scroll(window);
+        expect($isNavOpen.get()).toBe(true);
+
+        setScrollY(SCROLL_DISMISS_PX + 1);
+        fireEvent.scroll(window);
+        expect($isNavOpen.get()).toBe(false);
+      } finally {
+        setScrollY(0);
+      }
     });
 
     it('offers a sign up link to the adoption portal', () => {

@@ -407,6 +407,7 @@
   }
 
   .site-header-grid {
+    transition: opacity 0.3s var(--ease-out-expo);
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
     /* Col 1, Col 2, Col 3, Col 4, Col 5 */
@@ -716,21 +717,29 @@
      the top-row hairline draws across, then each row rises on its own
      hairline in sequence. Close: rows drop out together and the panel
      rolls back up, quicker than it arrived. */
-  html.nav-open {
-    overflow: hidden;
+  /* The drawer is translucent, so the header row beneath it would ghost
+     through; fade it out while the menu is open. */
+  html.nav-open .site-header-grid {
+    opacity: 0;
   }
 
+  /* No filter, opacity, or background here: any of those would make this a
+     backdrop root and cut the drawer's blur off from the page. */
   .mobile-nav-backdrop {
     position: fixed;
     inset: 0;
     z-index: 200;
-    /* Light scrim: the page stays legible beneath, so the menu reads as a
-       layer over it rather than a separate screen */
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Light scrim below the drawer only, so the drawer's own veil samples the
+     page directly and matches the sticky header. */
+  .mobile-nav-scrim {
+    flex: 1;
     background-color: var(--color-surface-scrim);
     backdrop-filter: blur(var(--scrim-blur));
     -webkit-backdrop-filter: blur(var(--scrim-blur));
-    display: flex;
-    flex-direction: column;
     animation: nav-fade-in 0.5s var(--ease-out-expo) both;
   }
 
@@ -740,8 +749,13 @@
     }
   }
 
+  /* Same veil as the stuck header: tinted gradient, saturated blur */
   .mobile-nav-drawer {
-    background-color: var(--color-surface-canvas);
+    background: linear-gradient(to bottom,
+        var(--color-header-veil-top) 0%,
+        var(--color-header-veil-bottom) 100%);
+    backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     border-bottom: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-none);
     animation: nav-panel-in 0.7s var(--ease-out-expo) both;
@@ -771,9 +785,12 @@
     display: grid;
   }
 
-  /* The top-row hairline is the list's upper rule, so rows sit close to it */
+  /* The top-row hairline is the list's upper rule, so rows sit close to it.
+     Below the last row: one row's height of clearance, a buffer against
+     accidental scroll-dismiss while reaching for "sign up". */
   .mobile-nav-links {
-    padding: var(--space-02) var(--space-06) var(--space-03);
+    --mobile-nav-row: calc(var(--space-05) * 2 + var(--font-size-metric) * var(--leading-action));
+    padding: var(--space-02) var(--space-06) var(--mobile-nav-row);
   }
 
   .mobile-nav-list {
@@ -857,6 +874,9 @@
 
   .mobile-nav-backdrop[data-state='closing'] {
     pointer-events: none;
+  }
+
+  .mobile-nav-backdrop[data-state='closing'] .mobile-nav-scrim {
     animation: nav-fade-out 0.4s var(--ease-in-expo) both;
   }
 
