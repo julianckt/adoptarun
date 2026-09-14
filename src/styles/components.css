@@ -627,6 +627,10 @@
      ------------------------------------------------------------- */
   .site-footer {
     --footer-accent: var(--color-route-coral);
+    /* Stack above <main> (a stacking context via its shader clip-path) so the finale's
+       solid-black bottom edge can never paint over this hairline at fractional heights */
+    position: relative;
+    z-index: 1;
     width: 100%;
     margin-top: auto;
     background-color: var(--color-surface-canvas);
