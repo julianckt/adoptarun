@@ -445,17 +445,15 @@
     font-weight: 900;
     line-height: var(--leading-wordmark);
     color: var(--color-pure-white);
-    transition:
-      font-variation-settings 0.6s var(--ease-out-expo),
-      color 0.4s var(--ease-out-expo);
+    transition: color 0.4s var(--ease-out-expo);
   }
 
   .nav-brand-cta .brand-with {
     transition: color 0.4s var(--ease-out-expo) 0.05s;
   }
 
-  /* Hover: "run" opens up to the hero lockup's full width, the words warm
-     to route orange, and a GPS track draws out past them to an arrowhead. */
+  /* Hover: the words warm to route orange and a GPS track draws out past
+     them to an arrowhead. */
   .nav-brand-cta .cta-route {
     align-self: center;
     width: var(--space-08);
@@ -467,10 +465,15 @@
     fill: none;
     stroke: var(--color-accent);
     stroke-width: 1.5;
-    stroke-linecap: square;
+    /* Butt caps: square caps paint a dot at the hidden dash's end. The
+       opacity fade after retraction clears any antialiasing remnant. */
+    stroke-linecap: butt;
     stroke-dasharray: 1 1;
     stroke-dashoffset: 1;
-    transition: stroke-dashoffset 0.7s var(--ease-out-expo);
+    opacity: 0;
+    transition:
+      stroke-dashoffset 0.7s var(--ease-out-expo),
+      opacity 0.2s linear 0.5s;
   }
 
   .nav-brand-cta .cta-route-head {
@@ -479,7 +482,6 @@
 
   .nav-brand-cta:hover .brand-run,
   .nav-brand-cta:focus-visible .brand-run {
-    font-variation-settings: 'wdth' 175, 'wght' 900;
     color: var(--color-accent);
   }
 
@@ -491,6 +493,10 @@
   .nav-brand-cta:hover .cta-route path,
   .nav-brand-cta:focus-visible .cta-route path {
     stroke-dashoffset: 0;
+    opacity: 1;
+    transition:
+      stroke-dashoffset 0.7s var(--ease-out-expo),
+      opacity 0s;
   }
 
   .nav-brand-cta:hover .cta-route-head,
