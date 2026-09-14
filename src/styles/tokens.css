@@ -28,9 +28,7 @@
     --color-header-translucent: rgba(24, 19, 17, 0.60);
     --color-header-veil-top: rgba(24, 19, 17, 0.74);
     --color-header-veil-bottom: rgba(24, 19, 17, 0.28);
-    --color-header-shadow: rgba(0, 0, 0, 0.45);
-    --color-route-trail: rgba(245, 174, 102, 0);
-    --color-border-subtle: var(--color-border-hairline);
+    --color-header-shadow: rgba(0, 0, 0, 0.45);    --color-border-subtle: var(--color-border-hairline);
     --color-border-strong: rgba(255, 251, 249, 0.40);
     --color-accent: var(--color-route-orange);
     --color-highlight: var(--color-group-run-green);

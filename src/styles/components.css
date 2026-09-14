@@ -445,53 +445,57 @@
     font-weight: 900;
     line-height: var(--leading-wordmark);
     color: var(--color-pure-white);
-    display: inline-block;
-    transform-origin: left bottom;
-    transition: transform 0.5s var(--ease-out-expo), color 0.3s var(--ease-out-expo);
+    transition:
+      font-variation-settings 0.6s var(--ease-out-expo),
+      color 0.4s var(--ease-out-expo);
   }
 
-  /* "with us" follows a beat behind, like the trailing leg of a stride */
   .nav-brand-cta .brand-with {
-    display: inline-block;
-    transform-origin: left bottom;
-    transition: transform 0.5s var(--ease-out-expo) 0.04s;
+    transition: color 0.4s var(--ease-out-expo) 0.05s;
   }
 
-  /* Hover: the phrase leans into a stride while a route trail draws beneath
-     the phrase, fading in from behind like a GPS track being laid down. */
-  .nav-brand-cta::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: calc(-1 * var(--space-01));
-    height: var(--space-01);
-    background: linear-gradient(to right, var(--color-route-trail), var(--color-accent));
-    clip-path: inset(0 100% 0 0);
-    transition: clip-path 0.6s var(--ease-out-expo);
-    pointer-events: none;
+  /* Hover: "run" opens up to the hero lockup's full width, the words warm
+     to route orange, and a GPS track draws out past them to an arrowhead. */
+  .nav-brand-cta .cta-route {
+    align-self: center;
+    width: var(--space-08);
+    height: var(--space-05);
+    overflow: visible;
+  }
+
+  .nav-brand-cta .cta-route path {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.5;
+    stroke-linecap: square;
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.7s var(--ease-out-expo);
+  }
+
+  .nav-brand-cta .cta-route-head {
+    transition-duration: 0.4s;
   }
 
   .nav-brand-cta:hover .brand-run,
   .nav-brand-cta:focus-visible .brand-run {
-    transform: skewX(-10deg) translateX(var(--space-01));
+    font-variation-settings: 'wdth' 175, 'wght' 900;
     color: var(--color-accent);
   }
 
   .nav-brand-cta:hover .brand-with,
   .nav-brand-cta:focus-visible .brand-with {
-    transform: skewX(-10deg) translateX(var(--space-01));
+    color: var(--color-accent);
   }
 
-  .nav-brand-cta:hover::after,
-  .nav-brand-cta:focus-visible::after {
-    clip-path: inset(0 0 0 0);
+  .nav-brand-cta:hover .cta-route path,
+  .nav-brand-cta:focus-visible .cta-route path {
+    stroke-dashoffset: 0;
   }
 
-  .nav-brand-cta:active .brand-run,
-  .nav-brand-cta:active .brand-with {
-    transform: skewX(-14deg) translateX(var(--space-02));
-    transition-duration: 0.15s;
+  .nav-brand-cta:hover .cta-route-head,
+  .nav-brand-cta:focus-visible .cta-route-head {
+    transition-delay: 0.3s;
   }
 
   .nav-brand-cta:focus-visible {
@@ -502,16 +506,11 @@
   @media (prefers-reduced-motion: reduce) {
     .nav-brand-cta .brand-run,
     .nav-brand-cta .brand-with,
-    .nav-brand-cta::after,
+    .nav-brand-cta .cta-route path,
     .site-header::before,
     .site-header::after {
       transition-duration: 0.01ms;
-    }
-
-    .nav-brand-cta:hover :is(.brand-run, .brand-with),
-    .nav-brand-cta:focus-visible :is(.brand-run, .brand-with),
-    .nav-brand-cta:active :is(.brand-run, .brand-with) {
-      transform: none;
+      transition-delay: 0s;
     }
   }
 
