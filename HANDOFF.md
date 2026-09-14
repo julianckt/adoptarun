@@ -1,97 +1,169 @@
-# Handoff: Root Cause Confirmed — Astro SSR Streaming Race Condition at CharitySection & Background Shader
+# Handoff: Favicon Set Implementation Plan (Evil Martians Minimalist Spec)
 
-## 1. Executive Summary & Final Root Cause
+## 1. Executive Summary & Objective
 
-The bug where the background WebGL shader ([`ShaderBackground.tsx`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/ShaderBackground/ShaderBackground.tsx)) fails to transition to **Preset A** and halts animation when scrolling to the bottom CTA section ([`#bottom-cta`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/BottomCtaSection.astro#L24)) has been **definitively solved and empirically proven**.
+Implement a high-performance, minimalist favicon set for **Adopt A Run** strictly following the [Evil Martians modern favicon guide](https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs), tailored for sites without PWA or web app manifest requirements.
 
-### The Root Cause: Astro SSR Chunked Streaming Race Condition
+The favicon set centers on the **"run"** wordmark rendered in **Scale VF** at maximum weight and width (`wght: 900`, `wdth: 175`), framed within an **Apple continuous-curvature squircle** (superellipse / G2 curvature), and styled using the repository's brand tokens (`canvas-black` and `canvas-white`).
 
-The failure is **not** caused by CSS layout geometry, colossal typography, hardware compositing, negative margins, or semantic HTML tags.
+---
 
-Instead, it is caused by an architectural timing conflict between **Astro's Server-Side Streaming (SSR/dev mode)** and **React's client-side hydration lifecycle**:
+## 2. Aligned Decisions & Architectural Invariants
 
+All requirements and design decisions were aligned and confirmed via `/grill-me`:
+
+1. **Deliverable Scope (Strictly 3 Files)**:
+   - `public/favicon.svg`: Modern vector icon with embedded light/dark color scheme adaptation.
+   - `public/favicon.ico`: 32×32 (and 16×16) multi-resolution bitmap fallback for legacy browsers, bookmark bars, and RSS readers.
+   - `public/apple-touch-icon.png`: 180×180 raster icon for Apple touch devices and iOS Home Screen shortcuts.
+   - *No web app manifest (`manifest.webmanifest`), no maskable PWA icons.*
+2. **Brand Color Tokens** (defined in [`src/styles/tokens.css`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/styles/tokens.css)):
+   - **Canvas Black**: `rgb(24, 19, 17)` (`#181311`)
+   - **Canvas White**: `rgb(255, 251, 249)` (`#fffbf9`)
+3. **Color Hierarchy & Theme Adaptation**:
+   - **`favicon.svg`**:
+     - *Light Mode*: Canvas Black squircle background (`#181311`), Canvas White "run" wordmark (`#fffbf9`).
+     - *Dark Mode* (via `@media (prefers-color-scheme: dark)`): Inverted to Canvas White squircle background (`#fffbf9`), Canvas Black "run" wordmark (`#181311`) to prevent the icon from disappearing against dark browser tab bars.
+   - **`favicon.ico`**: Canvas Black squircle background with Canvas White "run" wordmark.
+   - **`apple-touch-icon.png`**: Full-bleed Canvas Black background with Canvas White "run" wordmark padded ~20px from edges.
+     - *Why full-bleed*: iOS automatically applies continuous squircle clipping to Home Screen icons. Supplying transparent corners causes iOS to render black corner artifacts or double-mask borders.
+4. **Wordmark Geometry & Vector Bézier Outlines**:
+   - Browsers sandbox SVG favicons and actively block external font loading (`@import` or Typekit web fonts).
+   - The "run" letterforms must be pure vector Bézier `<path d="..." />` outlines baked directly into the SVG. This guarantees 100% vector fidelity across all devices with zero font-loading delays, zero FOUT, and no security policy blocks.
+5. **Tooling & Removability Constraint**:
+   - A single, self-contained generator script [`scripts/generate-favicons.mjs`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/scripts/generate-favicons.mjs) registered as `"generate:favicons": "node scripts/generate-favicons.mjs"` in [`package.json`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/package.json).
+   - Uses standard Node.js APIs and `sharp` (already permitted and available in `node_modules`).
+   - Zero new dependencies added to `package.json`.
+   - Easily removable in the future by simply deleting the script and its script entry.
+
+---
+
+## 3. Detailed File Changes & Specifications
+
+### 3.1. `scripts/generate-favicons.mjs` [NEW]
+
+Create a self-contained Node ESM script to generate all 3 assets deterministically:
+
+```javascript
+// scripts/generate-favicons.mjs
+import fs from 'node:fs';
+import path from 'node:path';
+import sharp from 'sharp';
+
+// 1. Color tokens
+const CANVAS_BLACK = '#181311';
+const CANVAS_WHITE = '#fffbf9';
+
+// 2. Apple Squircle Geometry (G2 continuous curvature superellipse)
+// Normalized 100x100 squircle path (or scaled to viewBox)
+// Formula / cubic bezier approximation of Apple's iOS/macOS squircle
 ```
-[Server: Astro SSR HTML Stream]                     [Browser Client Execution]
-1. Streams Chunk 1:                                 --> Browser parses Chunk 1.
-   • <head> & CSS tokens                            --> <ShaderBackground client:only="react" /> mounts!
-   • <ShaderBackgroundWrapper client:only />        --> useEffect runs on Frame 0:
-   • Hero Section (.hero-fullscreen)                    • document.querySelector('.hero-fullscreen') -> FOUND ✅
-   • Featured Routes (#routes-featured)                 • document.querySelector('#routes-featured') -> FOUND ✅
-                                                        • document.querySelector('#bottom-cta')      -> NULL! ❌
-2. Reaches <CharitySection />:                      --> #bottom-cta is NOT in observedElements array.
-   • Encounters top-level `await getCharities()`        --> #bottom-cta is NEVER registered with IntersectionObserver.
-   • Astro PAUSES streaming until promise resolves!
-                                                    
-3. getCharities() resolves:                         --> Browser parses Chunk 2.
-   • Streams Chunk 2:                                   #bottom-cta is now in the DOM.
-     - <CharitySection> body                            BUT ShaderBackground only queried selectors ONCE on mount!
-     - <BottomCtaSection id="bottom-cta" />             It never re-queries the DOM.
-     - <Footer />
-                                                    --> When user scrolls down, #bottom-cta NEVER triggers
-                                                        preset switch because the browser observer was never attached!
+
+#### Asset 1: `public/favicon.svg`
+- `viewBox="0 0 100 100"`
+- Embedded CSS with `@media (prefers-color-scheme: dark)`:
+  - Default: `.squircle { fill: #181311; } .wordmark { fill: #fffbf9; }`
+  - Dark mode: `@media (prefers-color-scheme: dark) { .squircle { fill: #fffbf9; } .wordmark { fill: #181311; } }`
+- Scaled Apple squircle path (~94% canvas size with centered margins).
+- Precision vector `<path>` outlines of the "run" wordmark at Scale VF `wght: 900`, `wdth: 175`, centered within the squircle.
+
+#### Asset 2: `public/apple-touch-icon.png` (180×180)
+- Full-bleed `#181311` rectangle background.
+- Centered `#fffbf9` "run" wordmark scaled with ~20px padding from the borders.
+- Rendered using `sharp({ ... }).png().toFile('public/apple-touch-icon.png')`.
+
+#### Asset 3: `public/favicon.ico` (32×32 + 16×16)
+- Render 32×32 and 16×16 PNG buffers using `sharp` from the squircle SVG (light mode: `#181311` squircle with `#fffbf9` "run").
+- Pack into a valid Windows ICO container:
+  - 6-byte ICO Header (`0x0000`, `0x0001` for ICO, `0x0002` for 2 image entries).
+  - 16-byte Directory Entries for each resolution (width, height, color count, planes, bpp, size, offset).
+  - Raw PNG payloads appended at respective offsets.
+  - Written directly to `public/favicon.ico`.
+
+---
+
+### 3.2. `package.json` [MODIFY]
+
+Add the generator script under `"scripts"`:
+```json
+"scripts": {
+  ...
+  "generate:favicons": "node scripts/generate-favicons.mjs"
+}
 ```
 
 ---
 
-## 2. Empirical Isolation Log (Proof Matrix)
+### 3.3. `src/layouts/BaseLayout.astro` [MODIFY]
 
-The root cause was isolated through a systematic test matrix:
+Update the `<head>` favicon link tags according to the Evil Martians specification:
 
-| Test # | Test Performed in `CharitySection.astro` | State of `await getCharities()` | `#bottom-cta` Fires? | Result / Elimination |
-| :--- | :--- | :--- | :--- | :--- |
-| **Baseline** | Full original component | Active | ❌ **NO** | Core issue reproduced. |
-| **Reorder 1** | Relocate `#bottom-cta` *before* `CharitySection` | Active (downstream) | ✅ **YES** | Proved suppression is positional (downstream of Charity). |
-| **Reorder 2** | Relocate `#routes-featured` *after* `CharitySection` | Active (upstream) | ❌ **NO** | Confirmed *any* element downstream of Charity fails. |
-| **Test 1** | Centerpiece Cut (lines 41–62 removed) | Active | ❌ **NO** | Eliminated typography, photo frame, negative margins, and GPU transforms. |
-| **Test 2** | Styles Cut (lines 77–290 `<style>` removed) | Active | ❌ **NO** | Eliminated all CSS rules (`overflow: hidden`, transforms, layout). |
-| **Test 3** | Skeleton Cut (bare `<p>` placeholder) | Inactive (cut) | ✅ **YES** | **Breakthrough:** Downstream observer immediately restored! |
-| **Test 4** | Internal Observers Cut (lines 342–343 commented out) | Active | ❌ **NO** | Eliminated internal `headerObserver` and `footerObserver`. |
-| **Test 5** | Charity Footer Cut (lines 64–73 removed) | Active | ❌ **NO** | Eliminated semantic `<footer>` and description copy. |
-| **Test 6** | Header Cut (lines 37–39 removed) | Inactive (syntax break) | ✅ **YES** | Confirmed template markup is innocent. |
-| **Test 7** | Full HTML (Header + Centerpiece + Footer, no CSS/JS/frontmatter) | Inactive (cut) | ✅ **YES** | **Confirmed:** 100% of HTML markup is innocent. |
-| **Test 8** | Full HTML + Full `<style>` (no frontmatter/Sanity) | Inactive (cut) | ✅ **YES** | **Confirmed:** 100% of CSS `<style>` is innocent. |
-| **Test 9** | Restore Frontmatter with `await getCharities()` | Active | ❌ **NO** | **Direct Trigger:** Adding back the async query halts `#bottom-cta`. |
-| **Test 10** | Comment out `await getCharities()`, keep all variables | Inactive (bypassed) | ✅ **YES** | **100% Proof:** Eliminating the streaming pause permanently fixes observer! |
+```astro
+<!-- Replace existing single <link rel="icon" ...> with the Evil Martians minimal trio: -->
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+```
+
+*Note: The `sizes="32x32"` attribute on `favicon.ico` is intentional and mandatory per Evil Martians to prevent older Chrome versions from prioritizing the `.ico` file over the scalable `.svg`.*
 
 ---
 
-## 3. Ruled-Out Hypotheses (Conclusively Debunked)
+## 4. Scale VF Wordmark Glyph Extraction Reference
 
-The following hypotheses from earlier iterations are **definitively disproven**:
-1. **NOT Colossal Typography / Font Clamp**: `--font-fluid-colossal: clamp(240px, 25vw, 400px)` does not affect the observer.
-2. **NOT Negative Margin Overlaps**: `calc(-1 * clamp(24px, 3.5vw, 56px))` on `.charity-photo-frame` works fine.
-3. **NOT Hardware Compositing**: `will-change: transform` does not corrupt the browser layout engine.
-4. **NOT Container Overflow**: `overflow: hidden` on `.charity-section` does not clip sibling observers.
-5. **NOT Semantic `<footer id="charity-footer">`**: The nested `<footer>` tag is valid and causes no landmark or layout conflicts.
-6. **NOT JavaScript inside `CharitySection.astro`**: The scroll scrub and trigger-once observers do not collide with `ShaderBackground`.
-7. **NOT Sanity Stega Unicode characters**: Stega zero-width characters in text content do not break `IntersectionObserver`.
+The Scale VF font (`scale-variable`) in Typekit kit `pyi8tbr` has the following confirmed axis bounds:
+- `wdth`: `min: 50, default: 50, max: 175`
+- `wght`: `min: 200, default: 200, max: 900`
 
----
-
-## 4. The 2-Part Implementation Plan (Ready for Execution)
-
-To permanently resolve this and protect the entire site from future streaming race conditions, implement the following two changes:
-
-### Part 1: Page-Level Data Hoisting in [`src/pages/index.astro`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/pages/index.astro)
-
-Follow Astro's established architecture (already used for `getRoutes()` at line 13):
-* Hoist `getCharities()` to the root of `src/pages/index.astro` using `Promise.all([getRoutes(), getCharities()])`.
-* Astro will resolve all page data **before** opening the response stream, eliminating any mid-document streaming pauses.
-* Pass the selected `spcaCharity` down to `<CharitySection charity={spcaCharity} />` as a prop.
-* Update `CharitySection.astro` to receive `charity` via `Astro.props` with a synchronous static fallback.
-
-### Part 2: Defensive Observer Lifecycle in [`src/components/ShaderBackground/ShaderBackground.tsx`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/ShaderBackground/ShaderBackground.tsx)
-
-Harden `ShaderBackground.tsx` so client-side React never assumes the entire DOM was rendered synchronously:
-* Wrap selector querying in a helper that executes on mount and re-verifies on `DOMContentLoaded` / `window.addEventListener('load')` if `document.readyState === 'loading'`.
-* If any selector in `sectionSelectors` (`#bottom-cta`) returns `null` on frame 0, register a lightweight `MutationObserver` on `document.body` to attach the observer as soon as the element appears in the DOM.
+The target configuration for "run" is:
+- Text: `"run"` (lowercase, strictly matching the lowercase UI voice from `DESIGN.md`)
+- Variations: `'wdth' 175, 'wght' 900`
+- The font file is downloaded at:
+  `/Users/julianchung/.gemini/antigravity-ide/brain/7c52ffb3-381a-45fa-a7e7-f2ce2bbebd77/scratch/test_font`
+- `opentype.js` is cached at:
+  `/Users/julianchung/.npm/_npx/2b3cf126c0557c4b/node_modules/opentype.js/dist/opentype.js`
+- To obtain the exact SVG `<path d="..." />`, use `opentype.parse(fs.readFileSync(fontPath).buffer)` and retrieve `font.getPath('run', x, y, fontSize, { variationSettings: { wdth: 175, wght: 900 } }).toPathData(2)`.
 
 ---
 
-## 5. Preserved Shader Improvements (Active & Intact)
+## 5. Apple Squircle Path Reference (G2 Curvature)
 
-All previously verified optimizations in [`ShaderBackground.tsx`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/ShaderBackground/ShaderBackground.tsx) and [`shaderConfig.ts`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/ShaderBackground/shaderConfig.ts) remain intact:
-1. **0 Idle React Re-renders**: Native damping (`smoothTime: 0.3`) driven by cursor and momentum batching via `requestAnimationFrame`.
-2. **Instant Preset Swap**: Section transitions suppress `enableTransition` for a single tick to eliminate camera glide.
-3. **Frame-0 Mount Snap**: Camera initializes snapped to coordinates, avoiding the initial slew from origin.
-4. **Decoupled Sentinel Observer**: Uses `threshold: 0` with `rootMargin: '50px 0px 50px 0px'` for immediate latching upon viewport entry.
+For a 100×100 canvas with a 94×94 squircle centered at (50, 50) with 3px margins:
+The continuous-curvature squircle Bézier approximation formula (standard Apple superellipse `|x/a|^n + |y/b|^n = 1` with `n ≈ 4.5` / iOS rounded rect) in normalized SVG path:
+
+```xml
+<path class="squircle" d="M 50 3
+  C 71.5 3, 84.5 5.5, 91.5 12.5
+  C 98.5 19.5, 101 32.5, 101 54
+  C 101 75.5, 98.5 88.5, 91.5 95.5
+  C 84.5 102.5, 71.5 105, 50 105
+  C 28.5 105, 15.5 102.5, 8.5 95.5
+  C 1.5 88.5, -1 75.5, -1 54
+  C -1 32.5, 1.5 19.5, 8.5 12.5
+  C 15.5 5.5, 28.5 3, 50 3 Z" />
+```
+*(Adjust bounds and corner parameters to fit exactly in `viewBox="0 0 100 100"` with symmetric padding).*
+
+---
+
+## 6. Step-by-Step Implementation Sequence for Agent 2
+
+1. **Glyph Extraction & Script Generation**:
+   - Write `scripts/generate-favicons.mjs` containing:
+     - Vector glyph path generation for `"run"` at `wdth: 175, wght: 900`.
+     - SVG squircle generator with theme styles.
+     - Sharp rendering for `public/apple-touch-icon.png` (180×180).
+     - Sharp rendering + ICO binary packaging for `public/favicon.ico` (32×32).
+     - Writing `public/favicon.svg`.
+2. **Package Script**:
+   - Add `"generate:favicons": "node scripts/generate-favicons.mjs"` to `package.json`.
+3. **Execute Generator**:
+   - Run `node scripts/generate-favicons.mjs` (or `npm run generate:favicons`).
+   - Verify that `public/favicon.svg`, `public/apple-touch-icon.png`, and `public/favicon.ico` exist and are valid.
+4. **Template Integration**:
+   - Update `src/layouts/BaseLayout.astro` `<head>` with the 3 `<link>` elements.
+5. **Validation Checklist**:
+   - Run `npm run check:design` (must report 0 anti-patterns).
+   - Run `npm test` (all Vitest suites pass).
+   - Run `npm run build` (Astro build passes with 0 errors).
+   - Visually review the generated SVG in both light and dark mode.

@@ -57,4 +57,17 @@
     background-color: var(--color-accent);
     color: var(--color-canvas-black);
   }
+
+  /* Degular Display Optical Size Rule: Lock all Degular instances strictly to optical size 72 */
+  .featured-routes-title,
+  .route-card-district,
+  .about-sentence,
+  .about-tally,
+  .journey-badge-number,
+  .journey-lead-text,
+  .charity-letter,
+  .finale-headline {
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 72;
+  }
 }

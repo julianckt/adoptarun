@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro check && tsc --noEmit",
     "check:design": "node .agents/skills/impeccable/scripts/detect.mjs src/",
+    "generate:favicons": "node scripts/generate-favicons.mjs",
     "deploy": "ASTRO_TELEMETRY_DISABLED=1 astro build && wrangler deploy"
   },
   "dependencies": {

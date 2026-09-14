@@ -87,10 +87,9 @@
 
 
     /* Semantic Font Families & Fluid Clamp Typography */
-    --font-display: 'Degular Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    --font-body: 'Runda', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
-    --font-wordmark: 'Scale VF', system-ui, sans-serif;
-    --font-chinese: 'Source Han Sans HK VF', system-ui, sans-serif;
+    --font-display: 'degular-variable', 'Degular Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-body: 'runda', 'Runda', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+    --font-wordmark: 'scale-variable', 'Scale VF', system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
     --font-fluid-display: clamp(4rem, 8vw, 10rem);

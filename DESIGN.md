@@ -157,7 +157,6 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 **Display Font:** Degular Display (with `system-ui`, `sans-serif` fallback)  
 **Body Font:** Runda (with `system-ui`, `sans-serif` fallback)  
 **Wordmark / Hero CTA Font:** Scale VF (with `system-ui`, `sans-serif` fallback)  
-**Chinese Font:** Source Han Sans HK VF / Noto Sans HK (with `system-ui`, `sans-serif` fallback)
 
 **Character:** A tension-filled pairing between the compressed, editorial weight of Degular Display and the warm geometric clarity of Runda, punctuated by the wide, experimental presence of Scale VF.
 
@@ -166,7 +165,7 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 - **Headline** (Degular Display Medium 500, 80px–96px, line-height 0.8): Primary section headings ("Run Routes", "Merging Community", "Proudly Supporting").
 - **Title** (Degular Display Regular 400, 64px, line-height 0.8): Subsection headings and route card schedule callouts.
 - **Body** (Runda Normal 400, 20px, line-height 1.0, paragraphs 0.9): Core narrative copy, route blurbs, and editorial descriptions. Reads as a block of rich texture with breathy, comma-spliced clauses.
-- **Label / Metric** (Runda Medium 500 or Light 300, 16px–24px, line-height 1.0): Navigation items, buttons, route telemetry abbreviations (`elev.`, `est.`, `14km`, `+4m`, `10min`), and Chinese display specs.
+- **Label / Metric** (Runda Medium 500 or Light 300, 16px–24px, line-height 1.0): Navigation items, buttons, and route telemetry abbreviations (`elev.`, `est.`, `14km`, `+4m`, `10min`).
 
 ### Named Rules
 **The Line-Height Compression Rule.** Degular Display must always be set at an ultra-compressed line-height of 0.8 (80%). Headings must read as dense blocks of typographic texture rather than loose text.

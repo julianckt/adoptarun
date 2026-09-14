@@ -234,6 +234,8 @@
 
   .route-card-district {
     font-family: var(--font-display);
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 72;
     font-weight: 700;
     font-size: var(--font-size-wordmark);
     line-height: var(--leading-compressed);
