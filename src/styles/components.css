@@ -876,15 +876,38 @@
     pointer-events: none;
   }
 
-  /* Close: content clears first, then the veil lifts while the header row
-     fades back in beneath it, so the X appears to settle into the hamburger. */
+  /* Close: rows and the top-row hairline clear first, then the veil lifts.
+     The top row itself never fades: it sits exactly over the site header
+     (which fades back in beneath the veil), and its X unfolds back into
+     the resting hamburger, so on unmount the two rows match pixel for pixel. */
   .mobile-nav-backdrop[data-state='closing'] .mobile-nav-veil {
     animation: nav-veil-out 0.3s var(--ease-in-expo) 0.08s both;
   }
 
-  .mobile-nav-backdrop[data-state='closing'] .mobile-nav-header,
+  .mobile-nav-backdrop[data-state='closing'] .mobile-nav-header::after,
   .mobile-nav-backdrop[data-state='closing'] .mobile-nav-list li {
     animation: nav-item-out 0.18s var(--ease-in-expo) both;
+  }
+
+  .mobile-nav-backdrop[data-state='closing'] .nav-burger--close .nav-burger-bar:first-child {
+    animation: burger-unfold-top 0.35s var(--ease-out-expo) both;
+  }
+
+  .mobile-nav-backdrop[data-state='closing'] .nav-burger--close .nav-burger-bar:last-child {
+    animation: burger-unfold-bottom 0.35s var(--ease-out-expo) both;
+  }
+
+  @keyframes burger-unfold-top {
+    to {
+      transform: none;
+    }
+  }
+
+  /* Ends exactly where the toggle's short bar rests (right-aligned, 62.5%) */
+  @keyframes burger-unfold-bottom {
+    to {
+      transform: translateX(18.75%) scaleX(0.625);
+    }
   }
 
   @keyframes nav-veil-in {
