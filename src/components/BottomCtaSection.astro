@@ -248,4 +248,83 @@ const { class: className, ...restProps } = Astro.props;
       transition: none;
     }
   }
+
+  /* Scroll-driven entrance: lines, subtext, and actions lift and resolve out of
+     blur as they travel up the viewport. CSS only; content stays fully visible
+     where view timelines are unsupported. */
+  @keyframes finale-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-09));
+      filter: blur(var(--space-03));
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes finale-fade {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    /* clip (not hidden) so the section is not a scroll container and each
+       element's view() timeline tracks the page scroll */
+    .finale {
+      overflow: clip;
+    }
+
+    .finale-line,
+    .finale-subtext,
+    .finale-actions {
+      animation-timeline: view();
+      animation-fill-mode: both;
+      animation-duration: auto;
+      animation-timing-function: var(--ease-out-expo);
+    }
+
+    /* cover N% ≈ the element sitting N% up the viewport */
+    @media (prefers-reduced-motion: no-preference) {
+      .finale-line,
+      .finale-subtext,
+      .finale-actions {
+        animation-name: finale-rise;
+      }
+
+      .finale-line:nth-child(1) {
+        animation-range: cover 13% cover 43%;
+      }
+
+      .finale-line:nth-child(2) {
+        animation-range: cover 15% cover 45%;
+      }
+
+      .finale-line:nth-child(3) {
+        animation-range: cover 17% cover 47%;
+      }
+
+      .finale-subtext,
+      .finale-actions {
+        animation-range: cover 15% cover 30%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .finale-line,
+      .finale-subtext,
+      .finale-actions {
+        animation-name: finale-fade;
+        animation-range: cover 15% cover 45%;
+      }
+    }
+  }
 </style>
