@@ -45,8 +45,18 @@ const {
     </div>
 
     <!-- Mobile Hamburger Toggle -->
-    <button class="nav-mobile-toggle" id="nav-mobile-toggle" type="button" aria-label="Toggle Navigation Menu">
-      menu
+    <button
+      class="nav-mobile-toggle"
+      id="nav-mobile-toggle"
+      type="button"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+    >
+      <span class="nav-burger" aria-hidden="true">
+        <span class="nav-burger-bar"></span>
+        <span class="nav-burger-bar"></span>
+      </span>
     </button>
   </div>
 
@@ -54,12 +64,15 @@ const {
 </header>
 
 <script>
-  import { openNav, dismissAnnouncement } from '@/stores/shell';
+  import { openNav, dismissAnnouncement, $isNavOpen } from '@/stores/shell';
 
   const toggle = document.getElementById('nav-mobile-toggle');
   if (toggle) {
     toggle.addEventListener('click', () => {
       openNav();
+    });
+    $isNavOpen.subscribe((open) => {
+      toggle.setAttribute('aria-expanded', String(open));
     });
   }
 

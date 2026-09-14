@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { AnnouncementBanner } from '@/components/AnnouncementBanner';
-import { MobileNavDrawer } from '@/components/MobileNavDrawer';
+import { MobileNavDrawer, NAV_EXIT_MS } from '@/components/MobileNavDrawer';
 import {
   $announcementTicker,
   $isNavOpen,
@@ -112,6 +112,38 @@ describe('Header Interactive Components', () => {
 
       fireEvent.keyDown(window, { key: 'Escape' });
       expect($isNavOpen.get()).toBe(false);
+    });
+
+    it('offers a sign up link to the adoption portal', () => {
+      act(() => {
+        openNav();
+      });
+      render(<MobileNavDrawer />);
+
+      const signUpLink = screen.getByRole('link', { name: /sign up/i });
+      expect(signUpLink.getAttribute('href')).toBe('/signup');
+    });
+
+    it('plays the exit state before unmounting the dialog', () => {
+      vi.useFakeTimers();
+      try {
+        act(() => {
+          openNav();
+        });
+        render(<MobileNavDrawer />);
+
+        act(() => {
+          closeNav();
+        });
+        expect(screen.getByTestId('mobile-nav-backdrop').getAttribute('data-state')).toBe('closing');
+
+        act(() => {
+          vi.advanceTimersByTime(NAV_EXIT_MS);
+        });
+        expect(screen.queryByRole('dialog')).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });
