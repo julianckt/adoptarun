@@ -105,9 +105,9 @@ const charityDescription =
 
   /* Triggered reveal: the script toggles .is-revealed as each element crosses the trigger line */
   [data-charity-reveal] {
-    transition: opacity 700ms var(--ease-out-expo),
-                transform 700ms var(--ease-out-expo),
-                filter 700ms var(--ease-out-expo);
+    transition: opacity 400ms var(--ease-out-expo),
+                transform 400ms var(--ease-out-expo),
+                filter 400ms var(--ease-out-expo);
     transition-delay: var(--reveal-delay, 0ms);
   }
 
@@ -118,8 +118,8 @@ const charityDescription =
   /* Hidden state only applies once the script arms the section, so no-JS shows everything */
   :global(.charity-section.is-armed) [data-charity-reveal]:not(.is-revealed) {
     opacity: 0;
-    transform: translateY(var(--space-05));
-    filter: blur(var(--space-01));
+    transform: translateY(var(--space-03));
+    filter: blur(calc(var(--space-01) / 2));
   }
 
   .charity-header {
@@ -293,7 +293,7 @@ const charityDescription =
       (entries) => {
         entries.forEach((entry) => entry.target.classList.toggle('is-revealed', entry.isIntersecting));
       },
-      { rootMargin: '0px 0px -15% 0px', threshold: 0 }
+      { rootMargin: '0px 0px -5% 0px', threshold: 0 }
     );
     section.querySelectorAll('[data-charity-reveal]').forEach((el) => revealObserver.observe(el));
     section.classList.add('is-armed');
