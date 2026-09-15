@@ -3,11 +3,12 @@
  * CharitySection.astro
  *
  * Section 05: Partner Charities Spotlight (SPCA Feature) (Issue #6):
- * - Natural unpinned document flow with standard Lumos section footprint.
- * - Decoupled trigger-once animations for header ("Proudly Supporting") and footer text/CTA
- *   using authentic AboutSection drift curve (600ms cubic-bezier(0.16, 1, 0.3, 1)).
- * - Centerpiece retains real-time natural scroll scrub: Overlapping photo frame scales up
- *   faster than letters part.
+ * - Natural unpinned document flow framed by top and bottom hairlines.
+ * - Centerpiece is a smoothed scroll scrub: the photo frame grows ahead of the letters and
+ *   its moving edges push SP and CA aside; the letters trail slightly for a sense of weight.
+ * - Header and footer text reveal on a quiet scroll-linked fade (rise + blur-to-sharp) that
+ *   reverses when scrolling back, so it plays every time the section is entered.
+ * - CSS defaults are the settled end state, so no-JS and reduced-motion show the final layout.
  * - Sourced from Sanity getCharities() with graceful static fallback.
  * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
  */
@@ -30,8 +31,8 @@ const charityDescription =
 
 <section id="charity-spotlight" class:list={['charity-section', className]} aria-label="Partner Charities Spotlight - SPCA" {...restProps}>
   <div class="charity-container">
-    <!-- Section Header (Trigger-Once Entrance) -->
-    <header id="charity-header" class="charity-header">
+    <!-- Section Header (Scroll-linked reveal) -->
+    <header id="charity-header" class="charity-header" data-charity-reveal="0.24">
       <h2 class="charity-subtitle">{charityTitle}</h2>
     </header>
 
@@ -57,12 +58,12 @@ const charityDescription =
       <span class="charity-letter charity-letter--right" aria-hidden="true">CA</span>
     </div>
 
-    <!-- Bottom Mission Copy & Action Link (Trigger-Once Entrance) -->
+    <!-- Bottom Mission Copy & Action Link (Scroll-linked reveal) -->
     <footer id="charity-footer" class="charity-footer">
-      <p class="charity-description">
+      <p class="charity-description" data-charity-reveal="0.2">
         {charityDescription}
       </p>
-      <div class="charity-actions">
+      <div class="charity-actions" data-charity-reveal="0.16">
         <a href="/charities" class="hairline-link hairline-link--orange charity-cta-link" aria-label="View all partner charities">
           view all partner charities &rarr;
         </a>
@@ -79,10 +80,11 @@ const charityDescription =
     overflow: hidden;
     padding-top: var(--space-12);
     padding-bottom: var(--space-12);
+    border-top: 1px solid var(--color-border-hairline);
+    border-bottom: 1px solid var(--color-border-hairline);
     box-sizing: border-box;
-    /* CSS variables driven by JavaScript natural scroll scrub */
-    --scroll-progress: 0;
-    --photo-scale: 0.72;
+    /* Settled end state; JavaScript scrubs these while the section is in view */
+    --photo-scale: 1;
     --letter-split: 0px;
   }
 
@@ -100,28 +102,28 @@ const charityDescription =
     position: relative;
   }
 
-  /* Section Header: Trigger-once fade and upward drift (AboutSection curve) */
+  /* Quiet scroll-linked reveal: --reveal runs 0 → 1 (defaults to fully shown) */
+  [data-charity-reveal] {
+    opacity: var(--reveal, 1);
+    transform: translateY(calc((1 - var(--reveal, 1)) * var(--space-05)));
+    filter: blur(calc((1 - var(--reveal, 1)) * var(--space-01)));
+    will-change: opacity, transform, filter;
+  }
+
   .charity-header {
     width: 100%;
     text-align: center;
-    margin-bottom: var(--space-08);
-    opacity: 0;
-    transform: translateY(var(--space-06));
-    transition: opacity 600ms var(--ease-out-expo),
-                transform 600ms var(--ease-out-expo);
-  }
-
-  .charity-header.is-triggered {
-    opacity: 1;
-    transform: translateY(var(--space-00));
+    margin-bottom: var(--space-10);
   }
 
   .charity-subtitle {
-    font-family: var(--font-body);
-    font-weight: 400;
-    font-size: var(--font-size-hero-wordmark);
+    font-family: var(--font-display);
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 72;
+    font-weight: 600;
+    font-size: var(--font-fluid-title);
     line-height: var(--leading-default);
-    color: var(--color-canvas-white);
+    color: var(--color-text-secondary);
     margin: 0;
     padding: 0;
     letter-spacing: -0.02em;
@@ -135,7 +137,7 @@ const charityDescription =
     justify-content: center;
     position: relative;
     user-select: none;
-    margin-bottom: var(--space-08);
+    margin-bottom: var(--space-10);
   }
 
   .charity-letter {
@@ -143,14 +145,13 @@ const charityDescription =
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
     font-weight: 600;
-    font-size: var(--font-fluid-colossal);
+    font-size: calc(var(--font-fluid-colossal) * 0.77);
     line-height: var(--leading-default);
-    color: var(--color-canvas-white);
+    color: var(--color-art-cyan);
     display: inline-block;
     position: relative;
     z-index: 1;
     will-change: transform;
-    transition: transform 0.05s linear;
   }
 
   .charity-letter--left {
@@ -163,8 +164,8 @@ const charityDescription =
 
   /* Expanding Overlapping Photo Frame */
   .charity-photo-frame {
-    width: min(568px, 38vw);
-    height: min(379px, 25.3vw);
+    width: calc(min(568px, 38vw) * 0.77);
+    height: calc(min(379px, 25.3vw) * 0.77);
     position: relative;
     z-index: 2;
     flex-shrink: 0;
@@ -172,12 +173,11 @@ const charityDescription =
     border-radius: var(--radius-none);
     background-color: var(--color-surface-canvas);
     /* Negative horizontal margin creates authentic overlap across SP and CA */
-    margin-left: calc(-1 * clamp(24px, 3.5vw, 56px));
-    margin-right: calc(-1 * clamp(24px, 3.5vw, 56px));
+    margin-left: calc(-0.77 * clamp(24px, 3.5vw, 56px));
+    margin-right: calc(-0.77 * clamp(24px, 3.5vw, 56px));
     box-shadow: 0 var(--space-06) var(--space-12) rgba(0, 0, 0, 0.7);
     will-change: transform;
-    transform: scale(var(--photo-scale, 0.72));
-    transition: transform 0.05s linear;
+    transform: scale(var(--photo-scale, 1));
   }
 
   .charity-photo-img {
@@ -186,12 +186,10 @@ const charityDescription =
     object-fit: cover;
     object-position: center 30%;
     display: block;
-    /* Subtle counter-zoom to deepen parallax inside frame */
-    transform: scale(calc(1.12 - (var(--photo-scale, 0.72) - 0.72) * 0.25));
-    transition: transform 0.05s linear;
+    /* Counter-zoom: image sits slightly closer while the frame is small, settles as it opens */
+    transform: scale(calc(1 + (1 - var(--photo-scale, 1)) * 0.4));
   }
 
-  /* Bottom Copy & Link: Trigger-once fade and upward drift (AboutSection curve) */
   .charity-footer {
     width: 100%;
     max-width: 960px;
@@ -206,58 +204,63 @@ const charityDescription =
     font-weight: 400;
     font-size: var(--font-size-label);
     line-height: var(--leading-body);
-    color: var(--color-canvas-white);
-    margin: 0 0 var(--space-04) 0;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-06) 0;
     padding: 0;
     max-width: 880px;
-    opacity: 0;
-    transform: translateY(var(--space-06));
-    transition: opacity 600ms var(--ease-out-expo),
-                transform 600ms var(--ease-out-expo);
   }
 
   .charity-actions {
     display: flex;
     justify-content: center;
-    opacity: 0;
-    transform: translateY(var(--space-06));
-    transition: opacity 600ms var(--ease-out-expo),
-                transform 600ms var(--ease-out-expo);
-    transition-delay: 150ms;
   }
 
-  /* Triggered state for footer description and action link */
-  .charity-footer.is-triggered .charity-description,
-  .charity-footer.is-triggered .charity-actions {
-    opacity: 1;
-    transform: translateY(var(--space-00));
-  }
-
-  /* Reduced Motion Accessibility */
-  @media (prefers-reduced-motion: reduce) {
+  /* Small screens: the split turns vertical. SP sits above the photo and CA below, and the
+     growing photo pushes them up and down instead of sideways (the script measures height here). */
+  @media (max-width: 640px) {
     .charity-section {
-      --scroll-progress: 1 !important;
-      --photo-scale: 1 !important;
-      --letter-split: 40px !important;
+      padding-top: var(--space-10);
+      padding-bottom: var(--space-10);
     }
 
     .charity-header,
-    .charity-description,
-    .charity-actions {
-      opacity: 1 !important;
-      transform: none !important;
-      transition: none !important;
+    .charity-centerpiece {
+      margin-bottom: var(--space-08);
     }
 
-    .charity-letter,
-    .charity-photo-frame,
-    .charity-photo-img {
-      transform: none !important;
-      transition: none !important;
+    .charity-centerpiece {
+      flex-direction: column;
+    }
+
+    .charity-letter {
+      font-size: 46vw;
+      /* Trim the line box to the capitals so SP and CA sit tight against the photo */
+      line-height: var(--leading-display);
+    }
+
+    .charity-letter--left {
+      transform: translateY(calc(-1 * var(--letter-split, 0px)));
+    }
+
+    .charity-letter--right {
+      transform: translateY(var(--letter-split, 0px));
     }
 
     .charity-photo-frame {
-      transform: scale(1) !important;
+      width: 72vw;
+      height: 48vw;
+      /* Top overlaps SP, bottom overlaps CA (CA tucks further behind the photo) */
+      margin: -11vw 0 -15vw;
+    }
+  }
+
+  /* Reduced Motion: script never runs, so the settled defaults above apply */
+  @media (prefers-reduced-motion: reduce) {
+    [data-charity-reveal],
+    .charity-letter,
+    .charity-photo-frame,
+    .charity-photo-img {
+      will-change: auto;
     }
   }
 </style>
@@ -265,104 +268,112 @@ const charityDescription =
 <script>
   function initCharityComponent() {
     const section = document.getElementById('charity-spotlight');
-    const header = document.getElementById('charity-header');
-    const footer = document.getElementById('charity-footer');
+    const frame = section?.querySelector<HTMLElement>('.charity-photo-frame');
+    if (!section || !frame) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    if (!section) return;
+    const reveals = Array.from(section.querySelectorAll<HTMLElement>('[data-charity-reveal]'));
+    const revealSpans = reveals.map((el) => Number(el.dataset.charityReveal) || 0.3);
 
-    // Reduced motion shortcut
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      header?.classList.add('is-triggered');
-      footer?.classList.add('is-triggered');
-      section.style.setProperty('--scroll-progress', '1');
-      section.style.setProperty('--photo-scale', '1');
-      section.style.setProperty('--letter-split', '40px');
-      return;
+    // Photo scale at the start of the scrub; it reaches 1 at 75% of the scroll range.
+    const PHOTO_START = 0.62;
+    const PHOTO_LEAD = 0.75;
+    // Per-frame approach rates (at 60fps). Letters are slower than the photo so they trail its edges.
+    const PHOTO_RATE = 0.102;
+    const LETTER_RATE = 0.072;
+    const TEXT_RATE = 0.08;
+
+    const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+    const approach = (current: number, target: number, rate: number, dt: number) =>
+      current + (target - current) * (1 - Math.pow(1 - rate, dt / (1000 / 60)));
+
+    // Below 640px the split is vertical, so the photo pushes along its height instead of its width
+    const verticalQuery = window.matchMedia('(max-width: 640px)');
+    const measureFrame = () => (verticalQuery.matches ? frame.offsetHeight : frame.offsetWidth);
+    let frameSize = measureFrame();
+
+    function readTargets() {
+      const vh = window.innerHeight;
+      const rect = section!.getBoundingClientRect();
+
+      // Centerpiece progress: section centre travels from 110% to ~41% of the viewport
+      const startY = vh * 1.1;
+      const endY = vh * 0.4125;
+      const progress = clamp01((startY - (rect.top + rect.height * 0.5)) / (startY - endY));
+      const photo = PHOTO_START + (1 - PHOTO_START) * easeOutCubic(clamp01(progress / PHOTO_LEAD));
+
+      // Text progress: each element finishes once its top has travelled data-charity-reveal of the
+      // viewport height (smaller = finishes earlier)
+      const texts = reveals.map((el, i) => {
+        const top = el.getBoundingClientRect().top;
+        return easeInOutSine(clamp01((vh - top) / (vh * revealSpans[i])));
+      });
+
+      return { photo, texts };
     }
 
-    // 1. Trigger-once entrance for Header & Footer via IntersectionObserver
-    if ('IntersectionObserver' in window) {
-      const headerObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              header?.classList.add('is-triggered');
-              headerObserver.unobserve(entry.target);
-            }
-          });
-        },
-        {
-          threshold: 0.05,
-          rootMargin: '0px 0px -40px 0px',
-        }
-      );
+    // Letters hug the photo's visual edge: a scaled frame's edge moves by size * (scale - 1) / 2
+    const edgeFor = (photoScale: number) => (frameSize * (photoScale - 1)) / 2;
 
-      const footerObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              footer?.classList.add('is-triggered');
-              footerObserver.unobserve(entry.target);
-            }
-          });
-        },
-        {
-          threshold: 0.1,
-          rootMargin: '0px 0px -40px 0px',
-        }
-      );
+    const initial = readTargets();
+    const state = {
+      photo: initial.photo,
+      split: edgeFor(initial.photo),
+      texts: initial.texts.slice(),
+    };
 
-      if (header) headerObserver.observe(header);
-      if (footer) footerObserver.observe(footer);
-    } else {
-      header?.classList.add('is-triggered');
-      footer?.classList.add('is-triggered');
+    function write() {
+      section!.style.setProperty('--photo-scale', state.photo.toFixed(4));
+      section!.style.setProperty('--letter-split', state.split.toFixed(2) + 'px');
+      reveals.forEach((el, i) => el.style.setProperty('--reveal', state.texts[i].toFixed(4)));
     }
 
-    // 2. Real-time natural scroll scrub for Centerpiece (photo expansion & letter split)
-    let isTicking = false;
+    write();
 
-    function updateCenterpieceScrub() {
-      if (!section) return;
-      const rect = section.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
+    let running = false;
+    let lastTime = 0;
 
-      // Progress from entrance to center of viewport
-      const sectionCenter = rect.top + rect.height * 0.5;
-      const startY = viewportHeight * 1.1;
-      const targetCenterY = viewportHeight * 0.55;
+    function step(now: number) {
+      const dt = lastTime ? Math.min(64, now - lastTime) : 1000 / 60;
+      lastTime = now;
 
-      const distance = startY - targetCenterY;
-      const current = startY - sectionCenter;
-      const rawProgress = current / distance;
-      const progress = Math.max(0, Math.min(1, rawProgress));
+      const targets = readTargets();
+      state.photo = approach(state.photo, targets.photo, PHOTO_RATE, dt);
+      const edge = edgeFor(state.photo);
+      state.split = approach(state.split, edge, LETTER_RATE, dt);
+      state.texts = state.texts.map((v, i) => approach(v, targets.texts[i], TEXT_RATE, dt));
+      write();
 
-      // Accelerated power curve (0.65) for photo scaling
-      const photoCurve = Math.pow(progress, 0.65);
-      const photoScale = 0.72 + photoCurve * 0.38;
+      const settled =
+        Math.abs(state.photo - targets.photo) < 0.0005 &&
+        Math.abs(state.split - edge) < 0.1 &&
+        state.texts.every((v, i) => Math.abs(v - targets.texts[i]) < 0.001);
 
-      // Steadier curve (1.2) for letter split
-      const letterCurve = Math.pow(progress, 1.2);
-      const maxSplitPx = Math.min(56, Math.max(24, window.innerWidth * 0.035));
-      const letterSplit = (letterCurve * maxSplitPx).toFixed(2) + 'px';
-
-      section.style.setProperty('--scroll-progress', progress.toFixed(4));
-      section.style.setProperty('--photo-scale', photoScale.toFixed(4));
-      section.style.setProperty('--letter-split', letterSplit);
-
-      isTicking = false;
-    }
-
-    function onScroll() {
-      if (!isTicking) {
-        requestAnimationFrame(updateCenterpieceScrub);
-        isTicking = true;
+      if (settled) {
+        running = false;
+        lastTime = 0;
+      } else {
+        requestAnimationFrame(step);
       }
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    updateCenterpieceScrub();
+    function kick() {
+      if (running) return;
+      running = true;
+      requestAnimationFrame(step);
+    }
+
+    window.addEventListener('scroll', kick, { passive: true });
+    window.addEventListener(
+      'resize',
+      () => {
+        frameSize = measureFrame();
+        kick();
+      },
+      { passive: true }
+    );
   }
 
   if (document.readyState === 'loading') {
