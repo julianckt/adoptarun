@@ -367,7 +367,8 @@ const {
     }
   }
 
-  /* Phone: DESIGN.md gutters step down; the tally drops to body size so the headline always leads */
+  /* Phone: DESIGN.md gutters step down; the tally steps to metric size, a clear step above the
+     paragraph and still below the fitted headline (28px floor) */
   @media (max-width: 640px) {
     .about-content {
       padding: var(--space-10) var(--space-06);
@@ -384,7 +385,7 @@ const {
     }
 
     .about-tally {
-      font-size: var(--font-size-body);
+      font-size: var(--font-size-metric);
       text-wrap: pretty;
     }
   }
