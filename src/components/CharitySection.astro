@@ -116,7 +116,7 @@ const charityDescription =
   }
 
   /* Hidden state only applies once the script arms the section, so no-JS shows everything */
-  :global(.charity-section.is-armed) [data-charity-reveal]:not(:global(.is-revealed)) {
+  :global(.charity-section.is-armed) [data-charity-reveal]:not(.is-revealed) {
     opacity: 0;
     transform: translateY(var(--space-05));
     filter: blur(var(--space-01));
