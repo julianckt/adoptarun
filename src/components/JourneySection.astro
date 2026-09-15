@@ -8,7 +8,7 @@
  *   the 3 steps as a hairline-ruled ledger on the right. Stacks to one column below 1100px.
  * - Connected stepper: each hairline rule draws in left to right as its step arrives.
  * - The lockup scales from the masthead width (container units) so it never outgrows its column;
- *   on phones the wordmark drops beneath the "3" + STEPS TO row to run near full width.
+ *   on phones it is sized to span the content width exactly, margin to margin.
  *
  * Scroll storytelling (CSS scroll-driven, no JS): the mesh badge wipes open, then each step's
  * hairline rule draws in while its text rises out of a soft blur. Defaults
@@ -249,7 +249,8 @@
     }
   }
 
-  /* Phones: "3" + STEPS TO share a row; the wordmark runs beneath at near full width */
+  /* Phones: the lockup spans margin to margin. Its width is badge (2em) + gap + "a run"
+     (~4.88em), so the wordmark size is the remaining width over 6.9 (a hair of slack). */
   @media (max-width: 640px) {
     .journey-container {
       padding-inline: var(--space-05);
@@ -260,29 +261,8 @@
     }
 
     .journey-lockup {
-      --wm-size: min(var(--font-size-headline), calc(100cqi / 5));
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      align-items: end;
-      column-gap: var(--space-05);
-      row-gap: var(--space-04);
-    }
-
-    .journey-heading-lockup {
-      display: contents;
-    }
-
-    .journey-badge-square {
-      width: calc(var(--wm-size) * 1.6);
-      height: calc(var(--wm-size) * 1.6);
-    }
-
-    .journey-badge-number {
-      font-size: calc(var(--wm-size) * 1.6);
-    }
-
-    .journey-wordmark {
-      grid-column: 1 / -1;
+      --wm-size: calc((100cqi - var(--space-05)) / 6.9);
+      gap: var(--space-05);
     }
 
     .journey-mission-text {
