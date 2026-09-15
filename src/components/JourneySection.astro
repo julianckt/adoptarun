@@ -6,10 +6,12 @@
  * - Displays the 3 steps to adopting a run (Match & Commit, Grow & Nurture, Forever Guardian).
  * - Split layout: masthead (mesh-backdrop "3" + STEPS TO wordmark lockup + mission) on the left,
  *   the 3 steps as a hairline-ruled ledger on the right. Stacks to one column below 1100px.
- * - Connected stepper: each rule carries a square waypoint node and a Route Orange trace.
+ * - Connected stepper: each hairline rule draws in left to right as its step arrives.
+ * - The lockup scales from the masthead width (container units) so it never outgrows its column;
+ *   on phones the wordmark drops beneath the "3" + STEPS TO row to run near full width.
  *
  * Scroll storytelling (CSS scroll-driven, no JS): the mesh badge wipes open, then each step's
- * trace draws along its rule from the node while its text rises out of a soft blur. Defaults
+ * hairline rule draws in while its text rises out of a soft blur. Defaults
  * are the settled end state, so unsupported browsers and reduced motion show the final layout.
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
@@ -83,10 +85,14 @@
     flex-direction: column;
     gap: var(--space-07);
     min-width: 0;
+    container-type: inline-size;
     view-timeline: --journey-masthead block;
   }
 
+  /* --wm-size drives the whole lockup: the badge is twice it, the lead 0.8x. "a run" sets
+     ~4.9em wide, so badge + gap + wordmark fits the column at 1/7 of its width. */
   .journey-lockup {
+    --wm-size: min(var(--font-size-headline), calc((100cqi - var(--space-06)) / 7));
     display: flex;
     align-items: flex-end;
     gap: var(--space-06);
@@ -95,8 +101,8 @@
   }
 
   .journey-badge-square {
-    width: var(--space-13);
-    height: var(--space-13);
+    width: calc(var(--wm-size) * 2);
+    height: calc(var(--wm-size) * 2);
     background-image: url('/images/journey/mesh-backdrop.jpg');
     background-size: cover;
     background-position: center;
@@ -115,7 +121,7 @@
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
     font-weight: 600;
-    font-size: var(--font-size-display);
+    font-size: calc(var(--wm-size) * 2);
     line-height: var(--leading-compressed);
     color: var(--color-canvas-white);
     user-select: none;
@@ -135,11 +141,15 @@
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
     font-weight: 400;
-    font-size: var(--font-size-title);
+    font-size: calc(var(--wm-size) * 0.8);
     line-height: var(--leading-compressed);
     color: var(--color-canvas-white);
     text-transform: uppercase;
     letter-spacing: normal;
+  }
+
+  .journey-wordmark {
+    font-size: var(--wm-size);
   }
 
   .journey-mission-text {
@@ -152,7 +162,7 @@
     text-wrap: pretty;
   }
 
-  /* Steps ledger: a connected stepper. Each rule is a leg of the route with a waypoint node. */
+  /* Steps ledger: a connected stepper. Each hairline rule draws in as its step arrives. */
   .journey-list {
     list-style: none;
     margin: 0;
@@ -167,7 +177,6 @@
     align-items: end;
     gap: var(--space-06);
     padding-block: var(--space-07);
-    border-top: 1px solid var(--color-border-hairline);
     view-timeline: --journey-step block;
   }
 
@@ -175,26 +184,15 @@
     border-bottom: 1px solid var(--color-border-hairline);
   }
 
-  /* Route trace: a Route Orange line laid over the hairline, drawn left to right */
+  /* Top rule: a hairline drawn left to right as the step arrives */
   .journey-step::before {
     content: '';
     position: absolute;
     inset-inline: 0;
-    top: -1px;
+    top: 0;
     height: 1px;
-    background-color: var(--color-route-orange);
+    background-color: var(--color-border-hairline);
     transform-origin: left center;
-  }
-
-  /* Waypoint node where the trace begins */
-  .journey-step::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: calc(var(--space-03) / -2);
-    width: var(--space-03);
-    height: var(--space-03);
-    background-color: var(--color-route-orange);
   }
 
   .journey-step-numeral {
@@ -245,17 +243,13 @@
       padding-block: var(--space-06);
     }
 
-    .journey-step-title {
-      font-size: var(--font-fluid-title);
-    }
-
     .journey-step-desc {
       grid-column: 2;
       justify-self: start;
     }
   }
 
-  /* Phones: scale the lockup down so the badge and wordmark fit inside the gutters */
+  /* Phones: "3" + STEPS TO share a row; the wordmark runs beneath at near full width */
   @media (max-width: 640px) {
     .journey-container {
       padding-inline: var(--space-05);
@@ -266,24 +260,29 @@
     }
 
     .journey-lockup {
-      gap: var(--space-05);
+      --wm-size: min(var(--font-size-headline), calc(100cqi / 5));
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: end;
+      column-gap: var(--space-05);
+      row-gap: var(--space-04);
+    }
+
+    .journey-heading-lockup {
+      display: contents;
     }
 
     .journey-badge-square {
-      width: var(--space-12);
-      height: var(--space-12);
+      width: calc(var(--wm-size) * 1.6);
+      height: calc(var(--wm-size) * 1.6);
     }
 
     .journey-badge-number {
-      font-size: var(--font-size-headline);
-    }
-
-    .journey-lead-text {
-      font-size: var(--font-size-metric);
+      font-size: calc(var(--wm-size) * 1.6);
     }
 
     .journey-wordmark {
-      font-size: var(--font-size-wordmark);
+      grid-column: 1 / -1;
     }
 
     .journey-mission-text {
@@ -330,16 +329,6 @@
     }
   }
 
-  @keyframes journey-node {
-    from {
-      transform: scale(0);
-    }
-
-    to {
-      transform: scale(1);
-    }
-  }
-
   @keyframes journey-fade {
     from {
       opacity: 0;
@@ -353,10 +342,10 @@
   @supports (animation-timeline: view()) {
     .journey-badge-square,
     .journey-badge-number,
-    .journey-heading-lockup,
+    .journey-lead-text,
+    .journey-wordmark,
     .journey-mission-text,
     .journey-step::before,
-    .journey-step::after,
     .journey-step-numeral,
     .journey-step-title,
     .journey-step-desc {
@@ -367,13 +356,13 @@
 
     .journey-badge-square,
     .journey-badge-number,
-    .journey-heading-lockup,
+    .journey-lead-text,
+    .journey-wordmark,
     .journey-mission-text {
       animation-timeline: --journey-masthead;
     }
 
     .journey-step::before,
-    .journey-step::after,
     .journey-step-numeral,
     .journey-step-title,
     .journey-step-desc {
@@ -391,7 +380,8 @@
         animation-range: entry 40% cover 45%;
       }
 
-      .journey-heading-lockup {
+      .journey-lead-text,
+      .journey-wordmark {
         animation-name: journey-rise;
         animation-range: entry 30% cover 42%;
       }
@@ -401,15 +391,10 @@
         animation-range: cover 20% cover 50%;
       }
 
-      /* The node lands first, then the trace runs out from it while the text follows */
-      .journey-step::after {
-        animation-name: journey-node;
-        animation-range: entry 30% entry 90%;
-      }
-
+      /* The rule draws in first; the text follows it */
       .journey-step::before {
         animation-name: journey-trace;
-        animation-range: entry 50% cover 45%;
+        animation-range: entry 20% cover 40%;
       }
 
       .journey-step-numeral {
@@ -429,7 +414,8 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .journey-heading-lockup,
+      .journey-lead-text,
+      .journey-wordmark,
       .journey-mission-text,
       .journey-step-numeral,
       .journey-step-title,
