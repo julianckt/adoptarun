@@ -8,9 +8,10 @@
  *   the 3 steps as a hairline-ruled ledger on the right. Stacks to one column below 1100px.
  * - Connected stepper: each rule carries a square waypoint node and a Route Orange trace.
  *
- * Scroll storytelling (CSS scroll-driven, no JS): the mesh badge wipes open, then each step's
- * trace draws along its rule from the node while its text rises out of a soft blur. Defaults
- * are the settled end state, so unsupported browsers and reduced motion show the final layout.
+ * Scroll storytelling (smoothed scroll scrub, same pattern as CharitySection): the mesh badge
+ * wipes open, then each step's node lands, its trace draws along the rule and its text rises out
+ * of a soft blur. The script writes a 0 → 1 --p per block; CSS derives every stage from it.
+ * --p defaults to 1, so no-JS and reduced motion show the settled layout.
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
@@ -83,7 +84,6 @@
     flex-direction: column;
     gap: var(--space-07);
     min-width: 0;
-    view-timeline: --journey-masthead block;
   }
 
   .journey-lockup {
@@ -168,7 +168,6 @@
     gap: var(--space-06);
     padding-block: var(--space-07);
     border-top: 1px solid var(--color-border-hairline);
-    view-timeline: --journey-step block;
   }
 
   .journey-step:last-child {
@@ -295,148 +294,126 @@
     }
   }
 
-  /* Scroll-driven route drawing. CSS only; unsupported browsers keep the settled layout. */
-  @keyframes journey-wipe {
-    from {
-      clip-path: inset(100% 0 0 0);
-    }
-
-    to {
-      clip-path: inset(0 0 0 0);
-    }
+  /* Scroll storytelling: the script scrubs --p (0 → 1) on the masthead and each step.
+     Every stage maps its own window of --p to a local 0 → 1 progress (--t). */
+  .journey-masthead,
+  .journey-step {
+    --p: 1;
   }
 
-  @keyframes journey-rise {
-    from {
-      opacity: 0;
-      transform: translateY(var(--space-06));
-      filter: blur(var(--space-01));
-    }
-
-    to {
-      opacity: 1;
-      transform: none;
-      filter: blur(0);
-    }
+  .journey-badge-square {
+    --t: clamp(0, calc(var(--p) / 0.55), 1);
+    clip-path: inset(calc((1 - var(--t)) * 100%) 0 0 0);
   }
 
-  @keyframes journey-trace {
-    from {
-      transform: scaleX(0);
-    }
-
-    to {
-      transform: scaleX(1);
-    }
+  .journey-badge-number {
+    --t: clamp(0, calc((var(--p) - 0.15) / 0.55), 1);
   }
 
-  @keyframes journey-node {
-    from {
-      transform: scale(0);
-    }
-
-    to {
-      transform: scale(1);
-    }
+  .journey-heading-lockup {
+    --t: clamp(0, calc((var(--p) - 0.1) / 0.55), 1);
   }
 
-  @keyframes journey-fade {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
+  .journey-mission-text {
+    --t: clamp(0, calc((var(--p) - 0.3) / 0.6), 1);
   }
 
-  @supports (animation-timeline: view()) {
-    .journey-badge-square,
-    .journey-badge-number,
-    .journey-heading-lockup,
-    .journey-mission-text,
-    .journey-step::before,
-    .journey-step::after,
-    .journey-step-numeral,
-    .journey-step-title,
-    .journey-step-desc {
-      animation-fill-mode: both;
-      animation-duration: auto;
-      animation-timing-function: var(--ease-out-expo);
-    }
+  .journey-step-numeral {
+    --t: clamp(0, calc((var(--p) - 0.15) / 0.5), 1);
+  }
 
-    .journey-badge-square,
-    .journey-badge-number,
-    .journey-heading-lockup,
-    .journey-mission-text {
-      animation-timeline: --journey-masthead;
-    }
+  .journey-step-title {
+    --t: clamp(0, calc((var(--p) - 0.22) / 0.55), 1);
+  }
 
-    .journey-step::before,
-    .journey-step::after,
-    .journey-step-numeral,
-    .journey-step-title,
-    .journey-step-desc {
-      animation-timeline: --journey-step;
-    }
+  .journey-step-desc {
+    --t: clamp(0, calc((var(--p) - 0.32) / 0.6), 1);
+  }
 
-    @media (prefers-reduced-motion: no-preference) {
-      .journey-badge-square {
-        animation-name: journey-wipe;
-        animation-range: entry 20% cover 40%;
-      }
+  .journey-badge-number,
+  .journey-heading-lockup,
+  .journey-mission-text,
+  .journey-step-numeral,
+  .journey-step-title,
+  .journey-step-desc {
+    opacity: var(--t);
+    transform: translateY(calc((1 - var(--t)) * var(--space-06)));
+    filter: blur(calc((1 - var(--t)) * var(--space-01)));
+  }
 
-      .journey-badge-number {
-        animation-name: journey-rise;
-        animation-range: entry 40% cover 45%;
-      }
+  /* Node lands first, then the trace runs out from it */
+  .journey-step::after {
+    transform: scale(clamp(0, calc(var(--p) / 0.2), 1));
+  }
 
-      .journey-heading-lockup {
-        animation-name: journey-rise;
-        animation-range: entry 30% cover 42%;
-      }
-
-      .journey-mission-text {
-        animation-name: journey-rise;
-        animation-range: cover 20% cover 50%;
-      }
-
-      /* The node lands first, then the trace runs out from it while the text follows */
-      .journey-step::after {
-        animation-name: journey-node;
-        animation-range: entry 30% entry 90%;
-      }
-
-      .journey-step::before {
-        animation-name: journey-trace;
-        animation-range: entry 50% cover 45%;
-      }
-
-      .journey-step-numeral {
-        animation-name: journey-rise;
-        animation-range: entry 60% cover 35%;
-      }
-
-      .journey-step-title {
-        animation-name: journey-rise;
-        animation-range: entry 70% cover 42%;
-      }
-
-      .journey-step-desc {
-        animation-name: journey-rise;
-        animation-range: entry 90% cover 48%;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .journey-heading-lockup,
-      .journey-mission-text,
-      .journey-step-numeral,
-      .journey-step-title,
-      .journey-step-desc {
-        animation-name: journey-fade;
-        animation-range: entry 20% cover 40%;
-      }
-    }
+  .journey-step::before {
+    transform: scaleX(clamp(0, calc((var(--p) - 0.1) / 0.65), 1));
   }
 </style>
+
+<script>
+  function initJourneyScrub() {
+    const section = document.getElementById('journey-section');
+    if (!section) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const blocks = Array.from(
+      section.querySelectorAll<HTMLElement>('.journey-masthead, .journey-step')
+    );
+
+    // A block's progress runs 0 → 1 as its top travels from the viewport bottom to 45% up it
+    const SPAN = 0.55;
+    const RATE = 0.09;
+
+    const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    const approach = (current: number, target: number, dt: number) =>
+      current + (target - current) * (1 - Math.pow(1 - RATE, dt / (1000 / 60)));
+
+    const readTargets = () => {
+      const vh = window.innerHeight;
+      return blocks.map((el) =>
+        easeOutCubic(clamp01((vh - el.getBoundingClientRect().top) / (vh * SPAN)))
+      );
+    };
+
+    let state = readTargets();
+    const write = () =>
+      blocks.forEach((el, i) => el.style.setProperty('--p', state[i].toFixed(4)));
+    write();
+
+    let running = false;
+    let lastTime = 0;
+
+    function step(now: number) {
+      const dt = lastTime ? Math.min(64, now - lastTime) : 1000 / 60;
+      lastTime = now;
+
+      const targets = readTargets();
+      state = state.map((v, i) => approach(v, targets[i], dt));
+      write();
+
+      if (state.every((v, i) => Math.abs(v - targets[i]) < 0.001)) {
+        running = false;
+        lastTime = 0;
+      } else {
+        requestAnimationFrame(step);
+      }
+    }
+
+    function kick() {
+      if (running) return;
+      running = true;
+      requestAnimationFrame(step);
+    }
+
+    window.addEventListener('scroll', kick, { passive: true });
+    window.addEventListener('resize', kick, { passive: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initJourneyScrub);
+  } else {
+    initJourneyScrub();
+  }
+</script>
