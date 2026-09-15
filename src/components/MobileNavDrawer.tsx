@@ -11,6 +11,10 @@ export const SCROLL_DISMISS_PX = 32;
 /** Viewports where CSS hides the drawer and shows the desktop header links. */
 export const DESKTOP_NAV_QUERY = '(min-width: 769px)';
 
+/** The menu toggle only shows below the desktop breakpoint; without matchMedia (jsdom) assume mobile. */
+const isDesktopLayout = () =>
+  typeof window.matchMedia === 'function' && window.matchMedia(DESKTOP_NAV_QUERY).matches;
+
 const NAV_LINKS = [
   { href: '/routes', label: 'routes' },
   { href: '/charities', label: 'charities' },
@@ -28,6 +32,13 @@ export const MobileNavDrawer: React.FC = () => {
   const [currentPath, setCurrentPath] = useState('');
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  // Only deliberate dismissals hand focus back to the toggle; scroll and resize closes leave it be
+  const restoreFocusRef = useRef(false);
+
+  const dismiss = () => {
+    restoreFocusRef.current = true;
+    closeNav();
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -48,7 +59,7 @@ export const MobileNavDrawer: React.FC = () => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        closeNav();
+        dismiss();
         return;
       }
 
@@ -81,7 +92,10 @@ export const MobileNavDrawer: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScroll);
       root.classList.remove('nav-open');
-      document.getElementById('nav-mobile-toggle')?.focus();
+      if (restoreFocusRef.current && !isDesktopLayout()) {
+        document.getElementById('nav-mobile-toggle')?.focus();
+      }
+      restoreFocusRef.current = false;
     };
   }, [isOpen]);
 
@@ -106,7 +120,7 @@ export const MobileNavDrawer: React.FC = () => {
     <div
       className="mobile-nav-backdrop"
       data-state={isOpen ? 'open' : 'closing'}
-      onClick={closeNav}
+      onClick={dismiss}
       data-testid="mobile-nav-backdrop"
     >
       <div className="mobile-nav-veil" aria-hidden="true" />
@@ -131,7 +145,7 @@ export const MobileNavDrawer: React.FC = () => {
             ref={closeRef}
             type="button"
             className="mobile-nav-close"
-            onClick={closeNav}
+            onClick={dismiss}
             aria-label="Close navigation"
           >
             <span className="nav-burger nav-burger--close" aria-hidden="true">

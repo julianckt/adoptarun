@@ -30,13 +30,13 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
 <section
   id="routes-featured"
   class:list={['featured-routes-section', className]}
-  aria-label="Featured Routes"
+  aria-labelledby="featured-routes-heading"
   {...restProps}
 >
   <div class="featured-routes-container">
     <!-- Section Header (Top-Left) -->
     <header class="featured-routes-header">
-      <h2 class="featured-routes-title">featured routes</h2>
+      <h2 id="featured-routes-heading" class="featured-routes-title">featured routes</h2>
     </header>
 
     <!-- 3 Featured Route Cards (Desktop 3-col row / Mobile swipe runway) -->

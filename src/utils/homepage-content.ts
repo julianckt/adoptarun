@@ -52,7 +52,7 @@ export interface CharityPhoto {
 
 export const DEFAULT_CHARITY_PHOTO: CharityPhoto = {
   src: '/images/charity/spca-puppy.jpg',
-  alt: 'SPCA rescue puppy resting head in human hand',
+  alt: 'rescue puppy resting its head in a human hand',
 };
 
 /** The photo frame's largest rendered size (568×379) at 2x, cropped around the editor's hotspot. */

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { AnnouncementBanner } from '@/components/AnnouncementBanner';
 import {
@@ -167,6 +167,78 @@ describe('Header Interactive Components', () => {
       } finally {
         vi.unstubAllGlobals();
       }
+    });
+
+    describe('focus return on close', () => {
+      let toggle: HTMLButtonElement;
+
+      beforeEach(() => {
+        toggle = document.createElement('button');
+        toggle.id = 'nav-mobile-toggle';
+        document.body.appendChild(toggle);
+      });
+
+      afterEach(() => {
+        toggle.remove();
+        vi.unstubAllGlobals();
+      });
+
+      const openDrawer = () => {
+        act(() => {
+          openNav();
+        });
+        render(<MobileNavDrawer />);
+      };
+
+      it('returns focus to the menu toggle when closed with Escape', () => {
+        openDrawer();
+        fireEvent.keyDown(window, { key: 'Escape' });
+        expect(document.activeElement).toBe(toggle);
+      });
+
+      it('returns focus to the menu toggle when closed with the close button', () => {
+        openDrawer();
+        fireEvent.click(screen.getByRole('button', { name: /close navigation/i }));
+        expect(document.activeElement).toBe(toggle);
+      });
+
+      it('returns focus to the menu toggle when the backdrop is clicked', () => {
+        openDrawer();
+        fireEvent.click(screen.getByTestId('mobile-nav-backdrop'));
+        expect($isNavOpen.get()).toBe(false);
+        expect(document.activeElement).toBe(toggle);
+      });
+
+      it('leaves focus alone when scrolling dismisses the drawer', () => {
+        openDrawer();
+        const setScrollY = (y: number) =>
+          Object.defineProperty(window, 'scrollY', { value: y, configurable: true, writable: true });
+
+        try {
+          setScrollY(SCROLL_DISMISS_PX + 1);
+          fireEvent.scroll(window);
+          expect($isNavOpen.get()).toBe(false);
+          expect(document.activeElement).not.toBe(toggle);
+        } finally {
+          setScrollY(0);
+        }
+      });
+
+      it('does not focus the toggle while the desktop layout hides it', () => {
+        vi.stubGlobal(
+          'matchMedia',
+          vi.fn().mockReturnValue({
+            matches: true,
+            media: DESKTOP_NAV_QUERY,
+            addEventListener: () => {},
+            removeEventListener: () => {},
+          })
+        );
+        openDrawer();
+        fireEvent.keyDown(window, { key: 'Escape' });
+        expect($isNavOpen.get()).toBe(false);
+        expect(document.activeElement).not.toBe(toggle);
+      });
     });
 
     it('offers a sign up link to the adoption portal', () => {

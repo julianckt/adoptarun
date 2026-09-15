@@ -22,7 +22,7 @@ export const AnnouncementBanner: React.FC = () => {
   };
 
   return (
-    <div className="announcement-bar-container" role="region" aria-label="Announcement">
+    <div className="announcement-bar-container">
       <a href={ticker.link} className="announcement-link">
         {ticker.text}
       </a>
