@@ -54,6 +54,8 @@ export interface SanityRoute {
   tags?: string[] | null;
   isGroupRun: boolean;
   groupRunDateTime?: string;
+  /** Current signups for a group run. Not yet in the Sanity schema; data source TBD. */
+  groupRunSignupCount?: number;
   groupRunMeetupPoint?: string;
   groupRunNotes?: string;
 }

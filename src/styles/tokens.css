@@ -24,9 +24,10 @@
     --color-surface-canvas: var(--color-canvas-black);
     --color-surface-card: var(--color-route-orange);
     --color-surface-card-text: var(--color-canvas-black);
-    --color-surface-overlay: rgba(24, 19, 17, 0.88);
-    --color-header-translucent: rgba(24, 19, 17, 0.60);
-    --color-border-subtle: var(--color-border-hairline);
+    --color-surface-overlay: rgba(24, 19, 17, 0.88);    --color-header-translucent: rgba(24, 19, 17, 0.60);
+    --color-header-veil-top: rgba(24, 19, 17, 0.74);
+    --color-header-veil-bottom: rgba(24, 19, 17, 0.28);
+    --color-header-shadow: rgba(0, 0, 0, 0.45);    --color-border-subtle: var(--color-border-hairline);
     --color-border-strong: rgba(255, 251, 249, 0.40);
     --color-accent: var(--color-route-orange);
     --color-highlight: var(--color-group-run-green);
@@ -84,6 +85,9 @@
 
     /* Layout Seam & Header Tokens */
     --header-height: var(--space-10);
+    --burger-stroke: 1.5px;
+    --header-blur: 28px;
+    --header-saturate: 170%;
 
 
     /* Semantic Font Families & Fluid Clamp Typography */
@@ -123,6 +127,9 @@
 
     /* Motion Easing Tokens */
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+    /* Gentle departure, long quiet settle: for linked, physical motion such as a photo pushing text */
+    --ease-in-out-soft: cubic-bezier(0.62, 0.05, 0.22, 1);
 
     /* Architectural Constraints */
     --radius-none: 0px;

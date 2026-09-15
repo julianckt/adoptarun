@@ -43,8 +43,9 @@ const spcaCharity = charities?.find(
 ---
 
 <BaseLayout title="adopt a run — gps art community movement" class="has-shader-bg">
-  <ShaderBackgroundWrapper />
   <main>
+    <!-- Shader lives inside <main> so main's clip-path confines the fixed layer (see .has-shader-bg > main) -->
+    <ShaderBackgroundWrapper />
     <!-- Fullscreen Hero Section -->
     <section class="hero-fullscreen" aria-label="Hero Section">
       <div class="hero-inner">

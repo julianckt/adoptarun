@@ -35,7 +35,7 @@ const { class: className, ...restProps } = Astro.props;
     <p class="finale-subtext">
       every kilometer drawn on the city's pavement raises rescue funds and champions a kinder city.
     </p>
-    
+
     <div class="finale-actions">
       <a href="/signup" class="btn btn-primary finale-cta">
         <span class="brand-run">run</span> with us <span class="finale-cta-arrow" aria-hidden="true">&rarr;</span>
@@ -137,6 +137,8 @@ const { class: className, ...restProps } = Astro.props;
   }
 
   .finale-inner {
+    container-type: inline-size;
+    inline-size: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -148,7 +150,8 @@ const { class: className, ...restProps } = Astro.props;
     font-family: var(--font-display);
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
-    font-size: var(--font-fluid-display);
+    /* Fit the longest line ("complete the route.") to the container on narrow screens */
+    font-size: min(var(--font-fluid-display), 12cqi);
     font-weight: 600;
     line-height: var(--leading-compressed);
     letter-spacing: normal;
@@ -209,21 +212,31 @@ const { class: className, ...restProps } = Astro.props;
 
   @media (max-width: 768px) {
     .finale {
-      min-height: auto;
-      padding-block: var(--space-12);
+      padding-block-start: var(--space-11);
+      padding-block-end: max(var(--space-11), env(safe-area-inset-bottom));
       padding-inline: var(--space-05);
+    }
+
+    .finale-subtext {
+      margin-top: var(--space-06);
     }
 
     .finale-actions {
       flex-direction: column;
-      align-items: stretch;
+      align-items: center;
       width: 100%;
       gap: var(--space-03);
+      margin-top: var(--space-08);
     }
 
     .finale-cta,
     .finale-torch {
       justify-content: center;
+      min-block-size: var(--space-09);
+    }
+
+    .finale-cta {
+      min-inline-size: 50%;
     }
   }
 
@@ -232,6 +245,85 @@ const { class: className, ...restProps } = Astro.props;
     .finale-cta-arrow,
     .finale-torch {
       transition: none;
+    }
+  }
+
+  /* Scroll-driven entrance: lines, subtext, and actions lift and resolve out of
+     blur as they travel up the viewport. CSS only; content stays fully visible
+     where view timelines are unsupported. */
+  @keyframes finale-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-09));
+      filter: blur(var(--space-03));
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes finale-fade {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    /* clip (not hidden) so the section is not a scroll container and each
+       element's view() timeline tracks the page scroll */
+    .finale {
+      overflow: clip;
+    }
+
+    .finale-line,
+    .finale-subtext,
+    .finale-actions {
+      animation-timeline: view();
+      animation-fill-mode: both;
+      animation-duration: auto;
+      animation-timing-function: var(--ease-out-expo);
+    }
+
+    /* cover N% ≈ the element sitting N% up the viewport */
+    @media (prefers-reduced-motion: no-preference) {
+      .finale-line,
+      .finale-subtext,
+      .finale-actions {
+        animation-name: finale-rise;
+      }
+
+      .finale-line:nth-child(1) {
+        animation-range: cover 13% cover 43%;
+      }
+
+      .finale-line:nth-child(2) {
+        animation-range: cover 15% cover 45%;
+      }
+
+      .finale-line:nth-child(3) {
+        animation-range: cover 17% cover 47%;
+      }
+
+      .finale-subtext,
+      .finale-actions {
+        animation-range: cover 15% cover 30%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .finale-line,
+      .finale-subtext,
+      .finale-actions {
+        animation-name: finale-fade;
+        animation-range: cover 15% cover 45%;
+      }
     }
   }
 </style>

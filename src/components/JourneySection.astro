@@ -6,26 +6,33 @@
  * - Displays the 3 steps to adopting a run (Match & Commit, Grow & Nurture, Forever Guardian).
  * - Split layout: masthead (mesh-backdrop "3" + STEPS TO wordmark lockup + mission) on the left,
  *   the 3 steps as a hairline-ruled ledger on the right. Stacks to one column below 1100px.
+ * - Connected stepper: each hairline rule draws in left to right as its step arrives.
+ * - The lockup scales from the masthead width (container units) so it never outgrows its column;
+ *   on phones it is sized to span the content width exactly, margin to margin.
+ *
+ * Scroll storytelling (CSS scroll-driven, no JS): the mesh badge wipes open, then each step's
+ * hairline rule draws in while its text rises out of a soft blur. Defaults
+ * are the settled end state, so unsupported browsers and reduced motion show the final layout.
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
 ---
 
-<section id="journey-section" class="journey-section" aria-label="3 Steps to Adopt a Run">
+<section id="journey-section" class="journey-section" aria-labelledby="journey-heading">
   <div class="journey-container">
     <header class="journey-masthead">
-      <div class="journey-lockup">
-        <div class="journey-badge-square" aria-hidden="true">
+      <h2 id="journey-heading" class="journey-lockup" aria-label="3 steps to adopt a run">
+        <span class="journey-badge-square" aria-hidden="true">
           <span class="journey-badge-number">3</span>
-        </div>
-        <div class="journey-heading-lockup">
+        </span>
+        <span class="journey-heading-lockup" aria-hidden="true">
           <span class="journey-lead-text">STEPS TO</span>
-          <div class="c-wordmark c-wordmark--headline" aria-label="adopt a run">
+          <span class="c-wordmark c-wordmark--headline journey-wordmark">
             <span class="c-wordmark-line"><span class="c-wordmark-adopt">adopt</span></span>
             <span class="c-wordmark-line"><span class="c-wordmark-a">a</span><span class="c-wordmark-space">&nbsp;</span><span class="c-wordmark-run">run</span></span>
-          </div>
-        </div>
-      </div>
+          </span>
+        </span>
+      </h2>
       <p class="journey-mission-text">make commitments to yourself and to your community – run the route and own the impact</p>
     </header>
 
@@ -55,21 +62,21 @@
     background-color: var(--color-canvas-black);
     position: relative;
     z-index: 10;
-    display: flex;
-    justify-content: center;
-    padding-block: var(--space-12);
-    box-sizing: border-box;
   }
 
+  /* Shares About's frame and gutters so the two sections read as one run of content */
   .journey-container {
     width: 100%;
-    max-width: 1416px;
-    padding-inline: var(--space-06);
+    max-width: 1512px;
+    margin: 0 auto;
+    padding-block: var(--space-fluid-xl) var(--space-fluid-3xl);
+    padding-inline: var(--space-fluid-xl);
     box-sizing: border-box;
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: var(--space-10);
+    gap: var(--space-fluid-2xl);
     align-items: start;
+    color: var(--color-canvas-white);
   }
 
   /* Masthead */
@@ -77,17 +84,25 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-07);
+    min-width: 0;
+    container-type: inline-size;
+    view-timeline: --journey-masthead block;
   }
 
+  /* --wm-size drives the whole lockup: the badge is twice it, the lead 0.8x. "a run" sets
+     ~4.9em wide, so badge + gap + wordmark fits the column at 1/7 of its width. */
   .journey-lockup {
+    --wm-size: min(var(--font-size-headline), calc((100cqi - var(--space-06)) / 7));
     display: flex;
     align-items: flex-end;
     gap: var(--space-06);
+    margin: 0;
+    font-weight: inherit;
   }
 
   .journey-badge-square {
-    width: calc(var(--space-11) * 2);
-    height: calc(var(--space-11) * 2);
+    width: calc(var(--wm-size) * 2);
+    height: calc(var(--wm-size) * 2);
     background-image: url('/images/journey/mesh-backdrop.jpg');
     background-size: cover;
     background-position: center;
@@ -96,15 +111,18 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    overflow: hidden;
+    clip-path: inset(0 0 0 0);
   }
 
   .journey-badge-number {
+    display: block;
     font-family: var(--font-display);
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
-    font-weight: 700;
-    font-size: var(--font-size-display);
-    line-height: var(--leading-default);
+    font-weight: 600;
+    font-size: calc(var(--wm-size) * 2);
+    line-height: var(--leading-compressed);
     color: var(--color-canvas-white);
     user-select: none;
   }
@@ -115,6 +133,7 @@
     justify-content: flex-end;
     align-items: flex-start;
     gap: var(--space-03);
+    min-width: 0;
   }
 
   .journey-lead-text {
@@ -122,68 +141,91 @@
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
     font-weight: 400;
-    font-size: var(--font-size-title);
-    line-height: var(--leading-default);
+    font-size: calc(var(--wm-size) * 0.8);
+    line-height: var(--leading-compressed);
     color: var(--color-canvas-white);
     text-transform: uppercase;
-    letter-spacing: 0;
+    letter-spacing: normal;
+  }
+
+  .journey-wordmark {
+    font-size: var(--wm-size);
   }
 
   .journey-mission-text {
     font-family: var(--font-body);
     font-size: var(--font-size-body);
     line-height: var(--leading-body);
-    color: var(--color-canvas-white);
+    color: var(--color-text-secondary);
     margin: 0;
-    max-width: 36ch;
+    max-width: 31ch;
+    text-wrap: pretty;
   }
 
-  /* Steps ledger */
+  /* Steps ledger: a connected stepper. Each hairline rule draws in as its step arrives. */
   .journey-list {
     list-style: none;
     margin: 0;
     padding: 0;
+    min-width: 0;
   }
 
   .journey-step {
+    position: relative;
     display: grid;
-    grid-template-columns: var(--space-10) minmax(0, 1fr) minmax(0, 16rem);
+    grid-template-columns: var(--space-10) minmax(0, 1fr) minmax(0, 1fr);
     align-items: end;
     gap: var(--space-06);
-    padding-block: var(--space-06);
-    border-top: 1px solid var(--color-border-hairline);
+    padding-block: var(--space-07);
+    view-timeline: --journey-step block;
   }
 
   .journey-step:last-child {
     border-bottom: 1px solid var(--color-border-hairline);
   }
 
+  /* Top rule: a hairline drawn left to right as the step arrives */
+  .journey-step::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background-color: var(--color-border-hairline);
+    transform-origin: left center;
+  }
+
   .journey-step-numeral {
     align-self: start;
     font-family: var(--font-body);
-    font-weight: 700;
+    font-weight: 500;
     font-size: var(--font-size-label);
     line-height: var(--leading-default);
     color: var(--color-route-orange);
   }
 
   .journey-step-title {
-    font-family: var(--font-body);
+    font-family: var(--font-display);
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 72;
     font-weight: 500;
-    font-size: var(--font-size-feature);
+    font-size: var(--font-fluid-headline);
     line-height: var(--leading-compressed);
+    letter-spacing: normal;
     color: var(--color-canvas-white);
     margin: 0;
   }
 
   .journey-step-desc {
+    justify-self: end;
     font-family: var(--font-body);
     font-weight: 400;
     font-size: var(--font-size-label);
     line-height: var(--leading-body);
-    color: color-mix(in srgb, var(--color-canvas-white) 78%, transparent);
+    color: var(--color-text-secondary);
     margin: 0;
-    max-width: 32ch;
+    max-width: 30ch;
+    text-wrap: pretty;
   }
 
   @media (max-width: 1100px) {
@@ -192,14 +234,184 @@
     }
   }
 
+  /* Numeral keeps its own column; title and description stack beside it */
   @media (max-width: 860px) {
     .journey-step {
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--space-04);
+      grid-template-columns: var(--space-10) minmax(0, 1fr);
+      row-gap: var(--space-05);
+      column-gap: var(--space-05);
+      padding-block: var(--space-06);
     }
 
-    .journey-step-title {
-      font-size: var(--font-size-title);
+    .journey-step-desc {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+
+  /* Phones: the lockup spans margin to margin. Its width is badge (2em) + gap + "a run"
+     (~4.88em), so the wordmark size is the remaining width over 6.9 (a hair of slack). */
+  @media (max-width: 640px) {
+    .journey-container {
+      padding-inline: var(--space-05);
+    }
+
+    .journey-masthead {
+      gap: var(--space-06);
+    }
+
+    .journey-lockup {
+      --wm-size: calc((100cqi - var(--space-05)) / 6.9);
+      gap: var(--space-05);
+    }
+
+    /* Text sits 10% under the fitted size; the badge keeps the full size */
+    .journey-lead-text {
+      font-size: calc(var(--wm-size) * 0.8 * 0.9);
+    }
+
+    .journey-wordmark {
+      font-size: calc(var(--wm-size) * 0.9);
+    }
+
+    .journey-mission-text {
+      font-size: var(--font-size-label);
+    }
+
+    .journey-step {
+      grid-template-columns: var(--space-09) minmax(0, 1fr);
+    }
+  }
+
+  /* Scroll-driven route drawing. CSS only; unsupported browsers keep the settled layout. */
+  @keyframes journey-wipe {
+    from {
+      clip-path: inset(100% 0 0 0);
+    }
+
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes journey-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-06));
+      filter: blur(var(--space-01));
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes journey-trace {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes journey-fade {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    .journey-badge-square,
+    .journey-badge-number,
+    .journey-lead-text,
+    .journey-wordmark,
+    .journey-mission-text,
+    .journey-step::before,
+    .journey-step-numeral,
+    .journey-step-title,
+    .journey-step-desc {
+      animation-fill-mode: both;
+      animation-duration: auto;
+      animation-timing-function: var(--ease-out-expo);
+    }
+
+    .journey-badge-square,
+    .journey-badge-number,
+    .journey-lead-text,
+    .journey-wordmark,
+    .journey-mission-text {
+      animation-timeline: --journey-masthead;
+    }
+
+    .journey-step::before,
+    .journey-step-numeral,
+    .journey-step-title,
+    .journey-step-desc {
+      animation-timeline: --journey-step;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .journey-badge-square {
+        animation-name: journey-wipe;
+        animation-range: entry 20% cover 40%;
+      }
+
+      .journey-badge-number {
+        animation-name: journey-rise;
+        animation-range: entry 40% cover 45%;
+      }
+
+      .journey-lead-text,
+      .journey-wordmark {
+        animation-name: journey-rise;
+        animation-range: entry 30% cover 42%;
+      }
+
+      .journey-mission-text {
+        animation-name: journey-rise;
+        animation-range: cover 20% cover 50%;
+      }
+
+      /* The rule draws in first; the text follows it */
+      .journey-step::before {
+        animation-name: journey-trace;
+        animation-range: entry 20% cover 40%;
+      }
+
+      .journey-step-numeral {
+        animation-name: journey-rise;
+        animation-range: entry 60% cover 35%;
+      }
+
+      .journey-step-title {
+        animation-name: journey-rise;
+        animation-range: entry 70% cover 42%;
+      }
+
+      .journey-step-desc {
+        animation-name: journey-rise;
+        animation-range: entry 90% cover 48%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .journey-lead-text,
+      .journey-wordmark,
+      .journey-mission-text,
+      .journey-step-numeral,
+      .journey-step-title,
+      .journey-step-desc {
+        animation-name: journey-fade;
+        animation-range: entry 20% cover 40%;
+      }
     }
   }
 </style>

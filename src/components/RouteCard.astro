@@ -24,6 +24,9 @@ const {
   elevationGain,
   difficulty = 'beginner',
   colorTheme = 'route-orange',
+  isGroupRun = false,
+  groupRunDateTime,
+  groupRunSignupCount,
 } = route;
 
 const miniMapSvg = route.miniMapSvg || (route as any).gpxFile?.miniMapSvg;
@@ -40,57 +43,105 @@ const formattedDuration = formatRouteDuration(estimatedDurationMin);
 const formattedElevation = formatRouteElevation(elevationGain);
 const formattedDifficulty = formatRouteDifficulty(difficulty);
 const displayTags = formatRouteTags(tags);
+
+// Group run bookmark: rendered only when the route carries a valid start time
+const groupRunAt = groupRunDateTime ? new Date(groupRunDateTime) : null;
+const hk = { timeZone: 'Asia/Hong_Kong' } as const;
+const groupRunStart =
+  groupRunAt && !Number.isNaN(groupRunAt.getTime())
+    ? (() => {
+        const [clock, period] = groupRunAt
+          .toLocaleTimeString('en-US', { ...hk, hour: 'numeric', minute: '2-digit', hour12: true })
+          .split(/\s/);
+        return {
+          iso: groupRunAt.toISOString(),
+          weekday: groupRunAt.toLocaleDateString('en-GB', { ...hk, weekday: 'short' }),
+          day: groupRunAt.toLocaleDateString('en-GB', { ...hk, day: '2-digit' }),
+          month: groupRunAt.toLocaleDateString('en-GB', { ...hk, month: 'short' }),
+          clock,
+          period,
+        };
+      })()
+    : null;
+const showSignups = isGroupRun && typeof groupRunSignupCount === 'number';
 ---
 
-<article class:list={['route-card', themeClass, className]} {...restProps}>
-  <!-- Top Minimap Window (356px x 216px) -->
-  <div class="route-card-minimap">
-    <slot name="minimap">
-      {miniMapSvg ? (
-        <div class="route-card-minimap-svg" set:html={miniMapSvg} />
-      ) : (
-        <div class="route-card-minimap-placeholder" aria-label="Route minimap placeholder">
-          <span class="route-card-placeholder-label">gps trace</span>
-        </div>
-      )}
-    </slot>
-  </div>
-
-  <!-- Bottom Info Container (356px x 240px) -->
-  <div class="route-card-info">
-    <div class="route-card-header">
-      <div class="route-card-heading-group">
-        <h3 class="route-card-district">{district}</h3>
-        {displayTags && (
-          <p class="route-card-blurb">{displayTags}</p>
-        )}
-      </div>
-
-      <!-- Telemetry Readouts -->
-      {
-        (formattedDuration || formattedElevation) && (
-          <div class="route-card-telemetry">
-            {formattedDuration && (
-              <div class="route-card-metric">
-                <span class="route-card-metric-label">est.</span>
-                <span class="route-card-metric-val">{formattedDuration}</span>
-              </div>
-            )}
-            {formattedElevation && (
-              <div class="route-card-metric">
-                <span class="route-card-metric-label">elev.</span>
-                <span class="route-card-metric-val">{formattedElevation}</span>
-              </div>
-            )}
+<article
+  class:list={['route-card', themeClass, { 'route-card--group-run': isGroupRun }, className]}
+  {...restProps}
+>
+  <!-- Night Plate: full-bleed map under a veil, framed by the route color -->
+  <div class="route-card-plate">
+    <div class="route-card-minimap">
+      <slot name="minimap">
+        {miniMapSvg ? (
+          <div class="route-card-minimap-svg" set:html={miniMapSvg} />
+        ) : (
+          <div class="route-card-minimap-placeholder" aria-label="Route minimap placeholder">
+            <span class="route-card-placeholder-label">gps trace</span>
           </div>
-        )
-      }
+        )}
+      </slot>
     </div>
 
-    <!-- Bottom Row: Difficulty & Distance -->
-    <div class="route-card-footer"><span class="route-card-difficulty">{formattedDifficulty}</span><span class="route-card-distance">{formattedDistance}</span></div>
+    {isGroupRun ? (
+      <div class="route-card-top">
+        <!-- Group Run Bookmark: date & start time -->
+        {groupRunStart && (
+          <time class="route-card-bookmark" datetime={groupRunStart.iso}>
+            <span class="route-card-bookmark-flag">group run</span>
+            <span class="route-card-bookmark-weekday">{groupRunStart.weekday}</span>
+            <span class="route-card-bookmark-day">{groupRunStart.day}</span>
+            <span class="route-card-bookmark-month">{groupRunStart.month}</span>
+            <span class="route-card-bookmark-time">
+              {groupRunStart.clock}<span class="route-card-bookmark-period">{groupRunStart.period}</span>
+            </span>
+          </time>
+        )}
+        <div class="route-card-head">
+          <div class="route-card-heading-group">
+            <h3 class="route-card-district">{district}</h3>
+            {displayTags && <p class="route-card-tags">{displayTags}</p>}
+          </div>
+          {(formattedDuration || formattedElevation) && (
+          <dl class="route-card-telemetry">
+            {formattedDuration && (
+              <div class="route-card-metric"><dt>est.</dt><dd>{formattedDuration}</dd></div>
+            )}
+            {formattedElevation && (
+              <div class="route-card-metric"><dt>elev.</dt><dd>{formattedElevation}</dd></div>
+            )}
+          </dl>
+        )}
+        </div>
+      </div>
+    ) : (
+      <div class="route-card-top">
+        <div class="route-card-heading-group">
+          <h3 class="route-card-district">{district}</h3>
+          {displayTags && <p class="route-card-tags">{displayTags}</p>}
+        </div>
+        {(formattedDuration || formattedElevation) && (
+          <dl class="route-card-telemetry">
+            {formattedDuration && (
+              <div class="route-card-metric"><dt>est.</dt><dd>{formattedDuration}</dd></div>
+            )}
+            {formattedElevation && (
+              <div class="route-card-metric"><dt>elev.</dt><dd>{formattedElevation}</dd></div>
+            )}
+          </dl>
+        )}
+      </div>
+    )}
+
+    {showSignups && <p class="route-card-signups">{groupRunSignupCount} signed up</p>}
+
+    <!-- Color Band: Difficulty & Distance -->
+    <div class="route-card-band">
+      <span class="route-card-difficulty">{formattedDifficulty}</span>
+      <span class="route-card-distance">{formattedDistance}</span>
+    </div>
   </div>
 
   <slot />
 </article>
-

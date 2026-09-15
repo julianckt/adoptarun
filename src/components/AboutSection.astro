@@ -3,13 +3,28 @@
  * AboutSection.astro
  *
  * Homepage About section, merged with the live community movement counters:
- * - One display sentence with photographs set inline beside each movement pillar
- * - Mission paragraph (left) paired with a right-aligned tally sentence (right)
+ * - One display sentence with photographs set into each movement pillar
+ * - Mission paragraph (left) paired with a right-aligned tally sentence (right), under a hairline
  * - Tally figures carry a route-colour underscore; values are props for future Sanity integration
  *
- * Scroll storytelling (progressive enhancement, fully visible without JS):
- * - Triggers 1–3 wipe open the Community, Exercise and Art photographs inside the sentence
- * - Trigger 4 lifts in the paragraph and the tally
+ * Sentence layout: the heading never wraps on its own. Two layouts exist:
+ * - wide:    "Your next run collective —" / "merging ▭ Community with" / "▭ Exercise and ▭ Art."
+ * - stacked: "Your next run collective" / "merging Community ▭" / "with Exercise ▭" / "and Art. ▭"
+ *            Each photo fills its line from a word-space after the word to the right margin. Below
+ *            a size floor the first line splits into "Your next run" / "collective".
+ * The script measures the settled sentence in an offscreen probe, picks the layout and fits the
+ * font to it, so lines are decided before any photo opens and never jump mid-animation. Without
+ * JS the wide layout is kept and cqi sizing fits it to the width.
+ *
+ * Scroll storytelling (progressive enhancement, fully visible without JS or with reduced motion):
+ * - Triggers 1–3 open the Community, Exercise and Art photographs. Photos always hold their layout
+ *   space; while closed they are clipped away (transform + clip-path only, no reflow).
+ *   Wide: the words after a photo are translated back over the gap and slide out as it opens, so
+ *   the photo's edge pushes the line along. Stacked: the photo wipes in from the right margin and
+ *   the words stay still. Triggers are bidirectional, and every moving piece shares one duration
+ *   and curve per direction, so nothing drifts apart.
+ * - Paragraph, tally and underscores use the Journey section's scroll-driven motion (same keyframes,
+ *   easing and fill), on earlier ranges: text rises out of a soft blur, underscores draw left to right.
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
@@ -31,37 +46,26 @@ const {
 <section id="about-section" class="about-container" aria-label="About adopt a run">
   <div class="about-content">
     <h2 class="about-sentence">
-      <span class="about-lead">Your next run collective —</span>
-      merging
-      <span class="about-pic pic-community" aria-hidden="true">
-        <img
-          src="/images/about/community-puppy.jpg"
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
-      </span>
-      <b class="accent-community">Community</b>
-      with
-      <span class="about-pic pic-exercise" aria-hidden="true">
-        <img
-          src="/images/about/exercise-runners.jpg"
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
-      </span>
-      <b class="accent-exercise">Exercise</b>
-      and
-      <span class="about-pic pic-art" aria-hidden="true">
-        <img
-          src="/images/about/art-artlane.jpg"
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
-      </span>
-      <b class="accent-art">Art.</b>
+      <span class="about-lead">Your next run<br class="br-split"> collective<span class="lead-dash"> —</span></span><br>
+      <span class="pillar">merging <span class="about-pic pic-community" aria-hidden="true"><img
+            src="/images/about/community-puppy.jpg"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          /></span><b class="seg seg-after-1 accent-community">Community</b></span>
+      <span class="pillar"><span class="seg seg-after-1">with</span><br class="br-wide">
+        <span class="about-pic pic-exercise" aria-hidden="true"><img
+            src="/images/about/exercise-runners.jpg"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          /></span><b class="seg seg-after-2 accent-exercise">Exercise</b></span>
+      <span class="pillar"><span class="seg seg-after-2">and</span> <span class="about-pic pic-art seg-after-2" aria-hidden="true"><img
+            src="/images/about/art-artlane.jpg"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          /></span><b class="seg seg-after-3 accent-art">Art.</b></span>
     </h2>
 
     <div class="about-row">
@@ -76,13 +80,20 @@ const {
 
 <style>
   .about-container {
+    /* One duration for every piece of the push; the script shortens it while retracting */
+    --push-duration: 1100ms;
     width: 100%;
     background-color: var(--color-canvas-black);
     position: relative;
     z-index: 10;
   }
 
+  .about-container[data-motion='retract'] {
+    --push-duration: 800ms;
+  }
+
   .about-content {
+    container: about / inline-size;
     max-width: 1512px;
     margin: 0 auto;
     padding: var(--space-fluid-3xl) var(--space-fluid-xl);
@@ -90,16 +101,36 @@ const {
     color: var(--color-canvas-white);
   }
 
-  /* One sentence, photographs set into the line */
+  /* One sentence, photographs set into the line. Lines are fixed by the layouts below. */
   .about-sentence {
+    --pic-w: 2.5em;
+    --pic-gap: 0.22em;
+    /* Smallest photo a stacked line may leave room for */
+    --pic-min: 1.5em;
+    /* How far a closed photo pulls the words after it back (its width plus its trailing gap) */
+    --pic-shift: calc(var(--pic-w) + var(--pic-gap));
+    --closed-1: 0em;
+    --closed-2: 0em;
+    --closed-3: 0em;
     margin: var(--space-00);
     font-family: var(--font-display);
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
-    font-size: var(--font-fluid-headline);
+    /* The script replaces the cqi approximation with a measured --about-fit */
+    font-size: min(var(--font-fluid-headline), var(--about-fit, 6.8cqi));
     font-weight: 400;
+    /* 0.9 rather than 0.8: at 0.8 descenders (merging) touch the photo that opens the next line */
     line-height: 0.9;
-    text-wrap: balance;
+    white-space: nowrap;
+  }
+
+  /* Wide: pillars dissolve into the sentence; only the split break is unused */
+  .pillar {
+    display: contents;
+  }
+
+  .about-sentence:not([data-split]) .br-split {
+    display: none;
   }
 
   .about-lead,
@@ -119,16 +150,17 @@ const {
     color: var(--color-art-cyan);
   }
 
+  /* Photos always hold their layout space; closing is a clip, never a reflow */
   .about-pic {
     display: inline-block;
-    width: 2.5em;
+    width: var(--pic-w);
     height: 0.66em;
-    margin-inline: 0.08em;
+    margin-inline-end: var(--pic-gap);
     vertical-align: -0.02em;
     overflow: hidden;
     clip-path: inset(0 0 0 0);
-    transition: clip-path 900ms var(--ease-out-expo),
-                opacity 600ms var(--ease-out-expo);
+    transition: clip-path var(--push-duration) var(--ease-in-out-soft),
+                transform var(--push-duration) var(--ease-in-out-soft);
   }
 
   .about-pic img {
@@ -136,6 +168,7 @@ const {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform var(--push-duration) var(--ease-in-out-soft);
   }
 
   .pic-community img {
@@ -146,18 +179,83 @@ const {
     object-position: center 45%;
   }
 
-  /* Paragraph left, tally sentence right — tucked under the sentence */
+  /* Words after a photo on its line: pulled back over the closed photo, pushed out as it opens.
+     Same duration and curve as the clip, so each word rides the photo's moving edge. */
+  .seg {
+    display: inline-block;
+    transition: transform var(--push-duration) var(--ease-in-out-soft);
+  }
+
+  .seg-after-1 {
+    transform: translateX(calc(-1 * var(--closed-1)));
+  }
+
+  .seg-after-2 {
+    transform: translateX(calc(-1 * var(--closed-2)));
+  }
+
+  .seg-after-3 {
+    transform: translateX(calc(-1 * (var(--closed-2) + var(--closed-3))));
+  }
+
+  /* Stacked (phones): one pillar per line, words first, the photo filling the rest of the line
+     up to the right margin. Words never move here; photos wipe in from the margin instead. */
+  .about-sentence[data-breaks='stacked'] .lead-dash,
+  .about-sentence[data-breaks='stacked'] .br-wide {
+    display: none;
+  }
+
+  .about-sentence[data-breaks='stacked'] .pillar {
+    display: flex;
+    align-items: baseline;
+    gap: var(--pic-gap);
+  }
+
+  .about-sentence[data-breaks='stacked'] .about-pic {
+    order: 1;
+    flex: 1 1 0;
+    width: auto;
+    min-width: var(--pic-min);
+    margin: var(--space-00);
+    /* Baseline alignment sits the photo's bottom edge on the baseline; drop it a hair, as inline */
+    margin-block-end: -0.02em;
+  }
+
+  .about-sentence[data-breaks='stacked'] :is(.seg-after-1, .seg-after-2, .seg-after-3) {
+    transform: none;
+  }
+
+  .about-sentence[data-breaks='stacked'] .about-pic img {
+    transform-origin: right center;
+  }
+
+  /* Long, thin strips show one band of each photo: the faces, the runners, the rainbow stairs */
+  .about-sentence[data-breaks='stacked'] .pic-community img {
+    object-position: center 48%;
+  }
+
+  .about-sentence[data-breaks='stacked'] .pic-exercise img {
+    object-position: center 42%;
+  }
+
+  .about-sentence[data-breaks='stacked'] .pic-art img {
+    object-position: center 78%;
+  }
+
+  /* Paragraph left, tally sentence right — set under a hairline */
   .about-row {
     display: grid;
     grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
     gap: var(--space-fluid-2xl);
-    align-items: end;
-    padding-top: var(--space-fluid-2xl);
+    align-items: start;
+    margin-top: var(--space-fluid-2xl);
+    padding-top: var(--space-fluid-lg);
+    border-top: 1px solid var(--color-border-hairline);
   }
 
   .about-description {
     margin: var(--space-00);
-    max-width: 31ch;
+    max-width: 34ch;
     font-family: var(--font-body);
     font-size: var(--font-size-body);
     line-height: var(--leading-body);
@@ -166,7 +264,7 @@ const {
   }
 
   .about-tally {
-    justify-self: start;
+    justify-self: end;
     margin: var(--space-00);
     max-width: 40ch;
     font-family: var(--font-display);
@@ -182,15 +280,22 @@ const {
 
   .tally-mark {
     --mark-hue: var(--color-route-orange);
+    position: relative;
     padding-inline: 0.04em;
     font-weight: 600;
     color: var(--color-canvas-white);
     white-space: nowrap;
-    text-decoration-line: underline;
-    text-decoration-color: var(--mark-hue);
-    text-decoration-thickness: 0.1em;
-    text-underline-offset: 0.06em;
-    text-decoration-skip-ink: none;
+  }
+
+  /* Route-colour underscore */
+  .tally-mark::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.08em;
+    height: 0.1em;
+    background-color: var(--mark-hue);
+    transform-origin: left center;
   }
 
   .mark-runs {
@@ -213,34 +318,47 @@ const {
     color: var(--color-canvas-white);
   }
 
-  .about-description,
-  .about-tally {
-    transition: opacity 600ms var(--ease-out-expo),
-                transform 600ms var(--ease-out-expo);
+  /* Photo storytelling: only armed once the script runs, so no-JS shows everything */
+  :global(.about-container.is-armed:not(.is-triggered-1)) .about-sentence {
+    --closed-1: var(--pic-shift);
   }
 
-  /* Scroll storytelling: only armed once the script runs, so no-JS shows everything */
+  :global(.about-container.is-armed:not(.is-triggered-2)) .about-sentence {
+    --closed-2: var(--pic-shift);
+  }
+
+  :global(.about-container.is-armed:not(.is-triggered-3)) .about-sentence {
+    --closed-3: var(--pic-shift);
+  }
+
   :global(.about-container.is-armed:not(.is-triggered-1)) .pic-community,
   :global(.about-container.is-armed:not(.is-triggered-2)) .pic-exercise,
   :global(.about-container.is-armed:not(.is-triggered-3)) .pic-art {
     clip-path: inset(0 100% 0 0);
-    opacity: 0;
   }
 
-  :global(.about-container.is-armed:not(.is-triggered-4)) .about-description,
-  :global(.about-container.is-armed:not(.is-triggered-4)) .about-tally {
-    opacity: 0;
-    transform: translateY(var(--space-06));
+  /* Stacked: closed photos collapse towards the right margin, so they wipe in from it */
+  :global(.about-container.is-armed:not(.is-triggered-1)) .about-sentence[data-breaks='stacked'] .pic-community,
+  :global(.about-container.is-armed:not(.is-triggered-2)) .about-sentence[data-breaks='stacked'] .pic-exercise,
+  :global(.about-container.is-armed:not(.is-triggered-3)) .about-sentence[data-breaks='stacked'] .pic-art {
+    clip-path: inset(0 0 0 100%);
   }
 
-  :global(.about-container.is-triggered-4) .about-tally {
-    transition-delay: 150ms;
+  :global(.about-container.is-armed:not(.is-triggered-1)) .pic-community img,
+  :global(.about-container.is-armed:not(.is-triggered-2)) .pic-exercise img,
+  :global(.about-container.is-armed:not(.is-triggered-3)) .pic-art img {
+    transform: scale(1.12);
   }
 
+  /* Tablet: paragraph above tally, both on the left edge */
   @media (max-width: 1024px) {
     .about-row {
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-fluid-xl);
+    }
+
+    .about-description {
+      max-width: 38ch;
     }
 
     .about-tally {
@@ -249,47 +367,263 @@ const {
     }
   }
 
+  /* Phone: DESIGN.md gutters step down; the tally keeps its desktop token (fluid title, 32px here),
+     sitting level with the fitted headline so the two read as a pair */
+  @media (max-width: 640px) {
+    .about-content {
+      padding: var(--space-10) var(--space-06);
+    }
+
+    .about-row {
+      margin-top: var(--space-09);
+      padding-top: var(--space-06);
+      gap: var(--space-07);
+    }
+
+    .about-description {
+      max-width: none;
+    }
+
+    .about-tally {
+      text-wrap: pretty;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .about-pic,
+    .about-pic img,
+    .seg {
+      transition: none;
+    }
+  }
+
+  /* Paragraph, tally and underscores: the Journey section's scroll-driven motion, verbatim
+     (journey-rise / journey-trace / journey-fade), on earlier ranges. CSS only; unsupported
+     browsers keep the settled layout. */
+  @keyframes about-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-06));
+      filter: blur(var(--space-01));
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes about-trace {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes about-fade {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    .about-description,
+    .about-tally,
+    .tally-mark::after {
+      animation-fill-mode: both;
+      animation-duration: auto;
+      animation-timing-function: var(--ease-out-expo);
+    }
+
     .about-description,
     .about-tally {
-      transition: none;
+      animation-timeline: view();
+    }
+
+    /* The underscores run on the tally's own view timeline, so they follow its text */
+    .about-tally {
+      view-timeline-name: --about-tally;
+    }
+
+    .tally-mark::after {
+      animation-timeline: --about-tally;
+    }
+
+    /* One sequence down the page: the three photos open in a tight cascade (script, keyed to the
+       sentence's centre at 72% / 66% / 60% of the viewport), then the paragraph rises in as the
+       Art photo starts, the tally a beat later, and the underscores trace in while the tally is
+       still settling. Each text element starts rising with its top around 80% of the viewport
+       and settles near 65%. */
+    @media (prefers-reduced-motion: no-preference) {
+      .about-description {
+        animation-name: about-rise;
+        animation-range: cover 18% cover 32%;
+      }
+
+      .about-tally {
+        animation-name: about-rise;
+        animation-range: cover 19% cover 32%;
+      }
+
+      .tally-mark::after {
+        animation-name: about-trace;
+      }
+
+      /* Each underscore lands before the next begins, with a short pause between them */
+      .mark-distance::after {
+        animation-range: cover 26% cover 30%;
+      }
+
+      .mark-runs::after {
+        animation-range: cover 32% cover 36%;
+      }
+
+      .mark-runners::after {
+        animation-range: cover 38% cover 42%;
+      }
+
+      .mark-raised::after {
+        animation-range: cover 44% cover 48%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .about-description,
+      .about-tally {
+        animation-name: about-fade;
+        animation-range: cover 18% cover 32%;
+      }
     }
   }
 </style>
 
 <script>
-  function initAboutScrollTriggers() {
+  function initAboutSection() {
     const section = document.getElementById('about-section');
-    if (!section) return;
+    const sentence = section?.querySelector<HTMLElement>('.about-sentence');
+    if (!section || !sentence) return;
 
-    // Thresholds are fractions of viewport height the section top must pass
-    const stages = [0.4, 0.25, 0.1, 0];
-    const fired = stages.map(() => false);
+    // Size floors: below the first the wide layout reads too small, so the stacked layout takes
+    // over; below the second, stacked splits its first line to stay large.
+    const WIDE_FLOOR_REM = 2.75;
+    const STACKED_FLOOR_REM = 1.75;
 
-    const onScroll = () => {
-      const top = section.getBoundingClientRect().top;
+    // Measure the settled sentence in an offscreen probe, per layout, in em. The probe sits outside
+    // the section, so none of the armed/closed photo states apply to it. Stacked photos flex to
+    // fill, so the probe's width is the widest line of words plus each line's minimum photo.
+    function fitSentence() {
+      const probe = sentence!.cloneNode(true) as HTMLElement;
+      probe.querySelectorAll('img').forEach((img) => img.remove());
+      probe.setAttribute('aria-hidden', 'true');
+      Object.assign(probe.style, {
+        position: 'fixed',
+        insetInlineStart: '0',
+        insetBlockStart: '0',
+        width: 'max-content',
+        visibility: 'hidden',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(probe);
+
+      const fontPx = parseFloat(getComputedStyle(probe).fontSize);
+      const widestEm = (layout: 'wide' | 'stacked', split: boolean) => {
+        probe.dataset.breaks = layout;
+        probe.toggleAttribute('data-split', split);
+        return probe.getBoundingClientRect().width / fontPx;
+      };
+      const wideEm = widestEm('wide', false);
+      const stackedEm = widestEm('stacked', false);
+      const splitEm = widestEm('stacked', true);
+      probe.remove();
+
+      // A hair of slack so rounding never tips a line past the edge
+      const available = sentence!.clientWidth * 0.98;
+      const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+      let layout: 'wide' | 'stacked' = 'wide';
+      let split = false;
+      let em = wideEm;
+      if (available / wideEm < WIDE_FLOOR_REM * remPx) {
+        layout = 'stacked';
+        split = available / stackedEm < STACKED_FLOOR_REM * remPx;
+        em = split ? splitEm : stackedEm;
+      }
+
+      sentence!.dataset.breaks = layout;
+      sentence!.toggleAttribute('data-split', split);
+      sentence!.style.setProperty('--about-fit', `${(available / em).toFixed(2)}px`);
+    }
+
+    fitSentence();
+    document.fonts?.ready.then(fitSentence);
+
+    let fitQueued = false;
+    window.addEventListener(
+      'resize',
+      () => {
+        if (fitQueued) return;
+        fitQueued = true;
+        requestAnimationFrame(() => {
+          fitQueued = false;
+          fitSentence();
+        });
+      },
+      { passive: true }
+    );
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Fractions of viewport height the sentence's centre must rise past to open each photo. Keyed to
+    // the sentence itself (not the section edge) so the rhythm is the same on every device, and
+    // spaced tightly so the three read as one cascade, each starting early in the previous one's
+    // motion. The paragraph and tally ranges in CSS pick up straight after the third. Each photo
+    // closes again once the centre drops back below its threshold plus a small band (kept under
+    // the stage spacing), so boundaries never flicker.
+    const stages = [0.72, 0.66, 0.6];
+    const HYSTERESIS = 0.04;
+    const active = stages.map(() => false);
+
+    let scrollQueued = false;
+    const update = () => {
+      scrollQueued = false;
+      const rect = sentence.getBoundingClientRect();
+      const centre = rect.top + rect.height / 2;
       const vh = window.innerHeight;
 
       stages.forEach((threshold, i) => {
-        if (!fired[i] && top <= vh * threshold) {
-          fired[i] = true;
-          section.classList.add(`is-triggered-${i + 1}`);
-        }
+        const next = active[i] ? centre <= vh * (threshold + HYSTERESIS) : centre <= vh * threshold;
+        if (next === active[i]) return;
+        active[i] = next;
+        // Direction is set section-wide in the same frame, so every piece picks up the same timing
+        section.dataset.motion = next ? 'open' : 'retract';
+        section.classList.toggle(`is-triggered-${i + 1}`, next);
       });
-
-      if (fired.every(Boolean)) window.removeEventListener('scroll', onScroll);
     };
 
+    const queueUpdate = () => {
+      if (scrollQueued) return;
+      scrollQueued = true;
+      requestAnimationFrame(update);
+    };
+
+    // Arm and resolve the current position in the same frame, so nothing flashes on load
     section.classList.add('is-armed');
-    window.addEventListener('scroll', onScroll, { passive: true });
-    // Check immediately in case page loaded partway down
-    onScroll();
+    update();
+    window.addEventListener('scroll', queueUpdate, { passive: true });
+    window.addEventListener('resize', queueUpdate, { passive: true });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAboutScrollTriggers);
+    document.addEventListener('DOMContentLoaded', initAboutSection);
   } else {
-    initAboutScrollTriggers();
+    initAboutSection();
   }
 </script>

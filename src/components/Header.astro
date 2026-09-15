@@ -15,11 +15,16 @@ const {
 } = Astro.props;
 ---
 
+<div class="site-header-sentinel" aria-hidden="true"></div>
 <header class:list={['site-header', className]} {...restProps}>
   <div class="site-header-grid">
     <!-- Column 1: Primary brand CTA -->
     <a href="/signup" class="nav-brand-cta">
-      <span class="brand-run">run</span> with us
+      <span class="brand-run">run</span> <span class="brand-with">with us</span>
+      <svg class="cta-route" viewBox="0 0 40 16" aria-hidden="true" focusable="false">
+        <path class="cta-route-line" pathLength="1" d="M1 12 C 7 12, 9 4, 15 4 S 23 12, 29 8 L 37 8" />
+        <path class="cta-route-head" pathLength="1" d="M33 4 L37 8 L33 12" />
+      </svg>
     </a>
 
     <!-- Columns 2 & 3: Announcement Banner Slot -->
@@ -40,8 +45,18 @@ const {
     </div>
 
     <!-- Mobile Hamburger Toggle -->
-    <button class="nav-mobile-toggle" id="nav-mobile-toggle" type="button" aria-label="Toggle Navigation Menu">
-      menu
+    <button
+      class="nav-mobile-toggle"
+      id="nav-mobile-toggle"
+      type="button"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+    >
+      <span class="nav-burger" aria-hidden="true">
+        <span class="nav-burger-bar"></span>
+        <span class="nav-burger-bar"></span>
+      </span>
     </button>
   </div>
 
@@ -49,12 +64,15 @@ const {
 </header>
 
 <script>
-  import { openNav, dismissAnnouncement } from '@/stores/shell';
+  import { openNav, dismissAnnouncement, $isNavOpen } from '@/stores/shell';
 
   const toggle = document.getElementById('nav-mobile-toggle');
   if (toggle) {
     toggle.addEventListener('click', () => {
       openNav();
+    });
+    $isNavOpen.subscribe((open) => {
+      toggle.setAttribute('aria-expanded', String(open));
     });
   }
 
@@ -71,19 +89,14 @@ const {
     });
   }
 
-  // Sticky state detection on scroll
-  const initHeaderSticky = () => {
-    const header = document.querySelector('.site-header');
-    if (!header) return;
-
-    const handleScroll = () => {
-      header.classList.toggle('is-sticky', window.scrollY > 10);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-  };
-
-  initHeaderSticky();
-  document.addEventListener('astro:page-load', initHeaderSticky);
+  // Stuck state: observe a sentinel at the document top. Unlike scroll
+  // events, the observer always reports the final state (fast flings,
+  // overscroll bounce, restored scroll position), so the veil can't strand.
+  const header = document.querySelector<HTMLElement>('.site-header');
+  const sentinel = document.querySelector('.site-header-sentinel');
+  if (header && sentinel) {
+    new IntersectionObserver(([entry]) => {
+      header.toggleAttribute('data-stuck', !entry.isIntersecting);
+    }).observe(sentinel);
+  }
 </script>
