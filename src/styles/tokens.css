@@ -128,6 +128,8 @@
     /* Motion Easing Tokens */
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+    /* Gentle departure, long quiet settle: for linked, physical motion such as a photo pushing text */
+    --ease-in-out-soft: cubic-bezier(0.62, 0.05, 0.22, 1);
 
     /* Architectural Constraints */
     --radius-none: 0px;
