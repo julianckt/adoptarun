@@ -4,12 +4,23 @@
  *
  * Homepage About section, merged with the live community movement counters:
  * - One display sentence with photographs set inline beside each movement pillar
- * - Mission paragraph (left) paired with a right-aligned tally sentence (right)
+ * - Mission paragraph (left) paired with a right-aligned tally sentence (right), under a hairline
  * - Tally figures carry a route-colour underscore; values are props for future Sanity integration
  *
- * Scroll storytelling (progressive enhancement, fully visible without JS):
- * - Triggers 1–3 wipe open the Community, Exercise and Art photographs inside the sentence
- * - Trigger 4 lifts in the paragraph and the tally
+ * Sentence layout: the heading never wraps on its own. Two explicit break sets exist:
+ * - wide:   "Your next run collective —" / "merging ▭ Community with" / "▭ Exercise and ▭ Art."
+ * - narrow: "Your next run" / "collective —" / "merging ▭ Community" / "with ▭ Exercise" / "and ▭ Art."
+ * The script measures the settled sentence (photos fully open) in an offscreen probe, picks the set
+ * and fits the font to it, so lines are decided before any photo grows and never jump mid-animation.
+ * Without JS a container query picks the set and cqi sizing approximates the fit.
+ *
+ * Scroll storytelling (progressive enhancement, fully visible without JS or with reduced motion):
+ * - Triggers 1–3 open the Community, Exercise and Art photographs. Every photo keeps its layout
+ *   width; while closed it is clipped away and the words after it on its line are translated back
+ *   over the gap. Opening wipes the photo in and slides those words out in step, so the photo's
+ *   edge pushes the line along (transform + clip-path only, no reflow).
+ * - Trigger 4 lifts in the paragraph and the tally, then the underscores draw left to right
+ * - Triggers are bidirectional: scrolling back up retracts each stage (faster than it arrived)
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
@@ -31,37 +42,24 @@ const {
 <section id="about-section" class="about-container" aria-label="About adopt a run">
   <div class="about-content">
     <h2 class="about-sentence">
-      <span class="about-lead">Your next run collective —</span>
-      merging
-      <span class="about-pic pic-community" aria-hidden="true">
-        <img
+      <span class="about-lead">Your next run<br class="br-narrow"> collective —</span><br>
+      merging <span class="about-pic pic-community" aria-hidden="true"><img
           src="/images/about/community-puppy.jpg"
           alt=""
           loading="lazy"
           decoding="async"
-        />
-      </span>
-      <b class="accent-community">Community</b>
-      with
-      <span class="about-pic pic-exercise" aria-hidden="true">
-        <img
+        /></span><b class="seg seg-after-1 accent-community">Community</b><br class="br-narrow"> <span class="seg seg-after-1 seg-with">with</span><br class="br-wide">
+      <span class="about-pic pic-exercise" aria-hidden="true"><img
           src="/images/about/exercise-runners.jpg"
           alt=""
           loading="lazy"
           decoding="async"
-        />
-      </span>
-      <b class="accent-exercise">Exercise</b>
-      and
-      <span class="about-pic pic-art" aria-hidden="true">
-        <img
+        /></span><b class="seg seg-after-2 accent-exercise">Exercise</b><br class="br-narrow"> <span class="seg seg-after-2">and</span> <span class="about-pic pic-art seg seg-after-2" aria-hidden="true"><img
           src="/images/about/art-artlane.jpg"
           alt=""
           loading="lazy"
           decoding="async"
-        />
-      </span>
-      <b class="accent-art">Art.</b>
+        /></span><b class="seg seg-after-3 accent-art">Art.</b>
     </h2>
 
     <div class="about-row">
@@ -69,7 +67,7 @@ const {
         We are a budding community project, trying to bring together runners across Hong Kong. Seeking to infuse fun and flair into running all the whilst doing good for the community around us. Get involved in our growing movement and turn your compassion into action!
       </p>
 
-      <p class="about-tally" aria-label="Live community movement counters">together we’ve run <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised">HK$<span class="tally-value">{totalAmountRaised}</span></span> <span class="tally-end">and counting.</span></p>
+      <p class="about-tally" aria-label="Live community movement counters">together we’ve run <span class="tally-mark mark-distance" style="--i: 0"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs" style="--i: 1"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners" style="--i: 2"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised" style="--i: 3">HK$<span class="tally-value">{totalAmountRaised}</span></span> <span class="tally-end">and counting.</span></p>
     </div>
   </div>
 </section>
@@ -83,6 +81,7 @@ const {
   }
 
   .about-content {
+    container: about / inline-size;
     max-width: 1512px;
     margin: 0 auto;
     padding: var(--space-fluid-3xl) var(--space-fluid-xl);
@@ -90,16 +89,47 @@ const {
     color: var(--color-canvas-white);
   }
 
-  /* One sentence, photographs set into the line */
+  /* One sentence, photographs set into the line. Lines are fixed by the break sets below. */
   .about-sentence {
+    --pic-w: 2.5em;
+    --pic-gap: 0.22em;
+    /* How far a closed photo pulls the words after it back (its width plus its trailing gap) */
+    --pic-shift: calc(var(--pic-w) + var(--pic-gap));
+    --closed-1: 0em;
+    --closed-2: 0em;
+    --closed-3: 0em;
+    /* No-JS approximation of the fit; the script replaces it with a measured --about-fit */
+    --fit-fallback: 6.8cqi;
     margin: var(--space-00);
     font-family: var(--font-display);
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
-    font-size: var(--font-fluid-headline);
+    font-size: min(var(--font-fluid-headline), var(--about-fit, var(--fit-fallback)));
     font-weight: 400;
+    /* 0.9 rather than 0.8: at 0.8 descenders (merging) touch the photo that opens the next line */
     line-height: 0.9;
-    text-wrap: balance;
+    white-space: nowrap;
+  }
+
+  .about-sentence[data-breaks='wide'] .br-narrow,
+  .about-sentence[data-breaks='narrow'] .br-wide {
+    display: none;
+  }
+
+  @container about (width >= 40rem) {
+    .about-sentence:not([data-breaks]) .br-narrow {
+      display: none;
+    }
+  }
+
+  @container about (width < 40rem) {
+    .about-sentence {
+      --fit-fallback: 8.4cqi;
+    }
+
+    .about-sentence:not([data-breaks]) .br-wide {
+      display: none;
+    }
   }
 
   .about-lead,
@@ -119,16 +149,17 @@ const {
     color: var(--color-art-cyan);
   }
 
+  /* Photos always hold their layout width; closing is a clip, never a reflow */
   .about-pic {
     display: inline-block;
-    width: 2.5em;
+    width: var(--pic-w);
     height: 0.66em;
-    margin-inline: 0.08em;
+    margin-inline-end: var(--pic-gap);
     vertical-align: -0.02em;
     overflow: hidden;
     clip-path: inset(0 0 0 0);
-    transition: clip-path 900ms var(--ease-out-expo),
-                opacity 600ms var(--ease-out-expo);
+    transition: clip-path 750ms var(--ease-out-expo),
+                transform 750ms var(--ease-out-expo);
   }
 
   .about-pic img {
@@ -136,6 +167,7 @@ const {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 750ms var(--ease-out-expo);
   }
 
   .pic-community img {
@@ -146,18 +178,50 @@ const {
     object-position: center 45%;
   }
 
-  /* Paragraph left, tally sentence right — tucked under the sentence */
+  /* Words after a photo on its line: pulled back over the closed photo, pushed out as it opens.
+     Same duration and curve as the clip, so each word rides the photo's moving edge. */
+  .seg {
+    display: inline-block;
+    transition: transform 750ms var(--ease-out-expo);
+  }
+
+  .seg-after-1 {
+    transform: translateX(calc(-1 * var(--closed-1)));
+  }
+
+  .seg-after-2 {
+    transform: translateX(calc(-1 * var(--closed-2)));
+  }
+
+  .seg-after-3 {
+    transform: translateX(calc(-1 * (var(--closed-2) + var(--closed-3))));
+  }
+
+  /* In the narrow set "with" opens its own line, so it no longer shares Community's photo */
+  .about-sentence[data-breaks='narrow'] .seg-with {
+    transform: none;
+  }
+
+  @container about (width < 40rem) {
+    .about-sentence:not([data-breaks]) .seg-with {
+      transform: none;
+    }
+  }
+
+  /* Paragraph left, tally sentence right — set under a hairline */
   .about-row {
     display: grid;
     grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
     gap: var(--space-fluid-2xl);
-    align-items: end;
-    padding-top: var(--space-fluid-2xl);
+    align-items: start;
+    margin-top: var(--space-fluid-2xl);
+    padding-top: var(--space-fluid-lg);
+    border-top: 1px solid var(--color-border-hairline);
   }
 
   .about-description {
     margin: var(--space-00);
-    max-width: 31ch;
+    max-width: 34ch;
     font-family: var(--font-body);
     font-size: var(--font-size-body);
     line-height: var(--leading-body);
@@ -166,7 +230,7 @@ const {
   }
 
   .about-tally {
-    justify-self: start;
+    justify-self: end;
     margin: var(--space-00);
     max-width: 40ch;
     font-family: var(--font-display);
@@ -182,15 +246,23 @@ const {
 
   .tally-mark {
     --mark-hue: var(--color-route-orange);
+    position: relative;
     padding-inline: 0.04em;
     font-weight: 600;
     color: var(--color-canvas-white);
     white-space: nowrap;
-    text-decoration-line: underline;
-    text-decoration-color: var(--mark-hue);
-    text-decoration-thickness: 0.1em;
-    text-underline-offset: 0.06em;
-    text-decoration-skip-ink: none;
+  }
+
+  /* Route-colour underscore, drawn left to right once the tally has landed */
+  .tally-mark::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.08em;
+    height: 0.1em;
+    background-color: var(--mark-hue);
+    transform-origin: left;
+    transition: transform 650ms var(--ease-out-expo) calc(300ms + var(--i, 0) * 110ms);
   }
 
   .mark-runs {
@@ -219,28 +291,74 @@ const {
                 transform 600ms var(--ease-out-expo);
   }
 
-  /* Scroll storytelling: only armed once the script runs, so no-JS shows everything */
+  .about-tally {
+    transition-delay: 120ms;
+  }
+
+  /* Scroll storytelling: only armed once the script runs, so no-JS shows everything.
+     Retracting states carry their own, faster ease-in timing. Stages retract in reverse order,
+     so anything that depends on two photos is already on the retract timing when the second closes. */
+  :global(.about-container.is-armed:not(.is-triggered-1)) .about-sentence {
+    --closed-1: var(--pic-shift);
+  }
+
+  :global(.about-container.is-armed:not(.is-triggered-2)) .about-sentence {
+    --closed-2: var(--pic-shift);
+  }
+
+  :global(.about-container.is-armed:not(.is-triggered-3)) .about-sentence {
+    --closed-3: var(--pic-shift);
+  }
+
   :global(.about-container.is-armed:not(.is-triggered-1)) .pic-community,
   :global(.about-container.is-armed:not(.is-triggered-2)) .pic-exercise,
   :global(.about-container.is-armed:not(.is-triggered-3)) .pic-art {
     clip-path: inset(0 100% 0 0);
-    opacity: 0;
+  }
+
+  :global(.about-container.is-armed:not(.is-triggered-1)) .pic-community img,
+  :global(.about-container.is-armed:not(.is-triggered-2)) .pic-exercise img,
+  :global(.about-container.is-armed:not(.is-triggered-3)) .pic-art img {
+    transform: scale(1.12);
+  }
+
+  :global(.about-container.is-armed:not(.is-triggered-1)) .seg-after-1,
+  :global(.about-container.is-armed:not(.is-triggered-2)) .seg-after-2,
+  :global(.about-container.is-armed:not(.is-triggered-3)) .seg-after-3,
+  :global(.about-container.is-armed:not(.is-triggered-1)) .pic-community,
+  :global(.about-container.is-armed:not(.is-triggered-2)) .pic-exercise,
+  :global(.about-container.is-armed:not(.is-triggered-3)) .pic-art,
+  :global(.about-container.is-armed:not(.is-triggered-1)) .pic-community img,
+  :global(.about-container.is-armed:not(.is-triggered-2)) .pic-exercise img,
+  :global(.about-container.is-armed:not(.is-triggered-3)) .pic-art img {
+    transition-duration: 450ms;
+    transition-timing-function: var(--ease-in-expo);
+  }
+
+  /* Underscores collapse first, then the paragraph and tally sink away */
+  :global(.about-container.is-armed:not(.is-triggered-4)) .tally-mark::after {
+    transform: scaleX(0);
+    transition: transform 250ms var(--ease-in-expo);
   }
 
   :global(.about-container.is-armed:not(.is-triggered-4)) .about-description,
   :global(.about-container.is-armed:not(.is-triggered-4)) .about-tally {
     opacity: 0;
     transform: translateY(var(--space-06));
+    transition-duration: 350ms;
+    transition-timing-function: var(--ease-in-expo);
+    transition-delay: 180ms;
   }
 
-  :global(.about-container.is-triggered-4) .about-tally {
-    transition-delay: 150ms;
-  }
-
+  /* Tablet: paragraph above tally, both on the left edge */
   @media (max-width: 1024px) {
     .about-row {
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-fluid-xl);
+    }
+
+    .about-description {
+      max-width: 38ch;
     }
 
     .about-tally {
@@ -249,8 +367,33 @@ const {
     }
   }
 
+  /* Phone: DESIGN.md gutters step down; the tally sits below the headline in scale */
+  @media (max-width: 640px) {
+    .about-content {
+      padding: var(--space-10) var(--space-06);
+    }
+
+    .about-row {
+      margin-top: var(--space-09);
+      padding-top: var(--space-06);
+      gap: var(--space-07);
+    }
+
+    .about-description {
+      max-width: none;
+    }
+
+    .about-tally {
+      font-size: var(--font-size-metric);
+      text-wrap: pretty;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .about-pic,
+    .about-pic img,
+    .seg,
+    .tally-mark::after,
     .about-description,
     .about-tally {
       transition: none;
@@ -259,37 +402,103 @@ const {
 </style>
 
 <script>
-  function initAboutScrollTriggers() {
+  function initAboutSection() {
     const section = document.getElementById('about-section');
-    if (!section) return;
+    const sentence = section?.querySelector<HTMLElement>('.about-sentence');
+    if (!section || !sentence) return;
 
-    // Thresholds are fractions of viewport height the section top must pass
+    // Below this font size the wide break set reads too small, so the narrow set takes over
+    const WIDE_FLOOR_REM = 2.75;
+
+    // Measure the settled sentence in an offscreen probe, per break set, in em. The probe sits
+    // outside the section, so none of the armed/closed photo states apply to it.
+    function fitSentence() {
+      const probe = sentence!.cloneNode(true) as HTMLElement;
+      probe.querySelectorAll('img').forEach((img) => img.remove());
+      probe.setAttribute('aria-hidden', 'true');
+      Object.assign(probe.style, {
+        position: 'fixed',
+        insetInlineStart: '0',
+        insetBlockStart: '0',
+        width: 'max-content',
+        visibility: 'hidden',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(probe);
+
+      const fontPx = parseFloat(getComputedStyle(probe).fontSize);
+      const widestEm = (set: 'wide' | 'narrow') => {
+        probe.dataset.breaks = set;
+        return probe.getBoundingClientRect().width / fontPx;
+      };
+      const wideEm = widestEm('wide');
+      const narrowEm = widestEm('narrow');
+      probe.remove();
+
+      // A hair of slack so rounding never tips a line past the edge
+      const available = sentence!.clientWidth * 0.98;
+      const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const useWide = available / wideEm >= WIDE_FLOOR_REM * remPx;
+
+      sentence!.dataset.breaks = useWide ? 'wide' : 'narrow';
+      sentence!.style.setProperty('--about-fit', `${(available / (useWide ? wideEm : narrowEm)).toFixed(2)}px`);
+    }
+
+    fitSentence();
+    document.fonts?.ready.then(fitSentence);
+
+    let fitQueued = false;
+    window.addEventListener(
+      'resize',
+      () => {
+        if (fitQueued) return;
+        fitQueued = true;
+        requestAnimationFrame(() => {
+          fitQueued = false;
+          fitSentence();
+        });
+      },
+      { passive: true }
+    );
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Fractions of viewport height the section top must pass; each stage retracts once the top
+    // drops back below its threshold plus a small band, so boundaries never flicker.
     const stages = [0.4, 0.25, 0.1, 0];
-    const fired = stages.map(() => false);
+    const HYSTERESIS = 0.06;
+    const active = stages.map(() => false);
 
-    const onScroll = () => {
+    let scrollQueued = false;
+    const update = () => {
+      scrollQueued = false;
       const top = section.getBoundingClientRect().top;
       const vh = window.innerHeight;
 
       stages.forEach((threshold, i) => {
-        if (!fired[i] && top <= vh * threshold) {
-          fired[i] = true;
-          section.classList.add(`is-triggered-${i + 1}`);
-        }
+        const next = active[i] ? top <= vh * (threshold + HYSTERESIS) : top <= vh * threshold;
+        if (next === active[i]) return;
+        active[i] = next;
+        section.classList.toggle(`is-triggered-${i + 1}`, next);
       });
-
-      if (fired.every(Boolean)) window.removeEventListener('scroll', onScroll);
     };
 
+    const queueUpdate = () => {
+      if (scrollQueued) return;
+      scrollQueued = true;
+      requestAnimationFrame(update);
+    };
+
+    // Arm and resolve the current position in the same frame, so nothing flashes on load
     section.classList.add('is-armed');
-    window.addEventListener('scroll', onScroll, { passive: true });
-    // Check immediately in case page loaded partway down
-    onScroll();
+    update();
+    window.addEventListener('scroll', queueUpdate, { passive: true });
+    window.addEventListener('resize', queueUpdate, { passive: true });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAboutScrollTriggers);
+    document.addEventListener('DOMContentLoaded', initAboutSection);
   } else {
-    initAboutScrollTriggers();
+    initAboutSection();
   }
 </script>
