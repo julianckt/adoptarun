@@ -1,4 +1,4 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import sanity from '@sanity/astro';
@@ -18,6 +18,12 @@ export default defineConfig({
   site: 'https://adoptarun.org',
   output: 'static',
   session: false,
+  env: {
+    schema: {
+      // Server-only secret for the on-demand /preview route (Cloudflare Worker secret in production).
+      SANITY_API_READ_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
+    },
+  },
   adapter: isBuildOrPreview
     ? cloudflare({
         imageService: 'passthrough',

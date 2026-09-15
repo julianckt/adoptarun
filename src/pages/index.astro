@@ -1,105 +1,15 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import AboutSection from '@/components/AboutSection.astro';
-import JourneySection from '@/components/JourneySection.astro';
-import FeaturedRoutesSection from '@/components/FeaturedRoutesSection.astro';
-import CharitySection from '@/components/CharitySection.astro';
-import BottomCtaSection from '@/components/BottomCtaSection.astro';
-import RouteCard from '@/components/RouteCard.astro';
-import ShaderBackgroundWrapper from '@/components/ShaderBackground/ShaderBackgroundWrapper.astro';
+import HomePage from '@/components/HomePage.astro';
 import { getRoutes, getCharities } from '@/sanity/queries';
-import type { SanityRoute, SanityCharity } from '@/sanity/types';
 
+// Static build: the public client only ever returns published content with stega off.
 const [routes, charities] = await Promise.all([
   getRoutes().catch(() => null),
   getCharities().catch(() => null),
 ]);
-
-const fallbackRoute: SanityRoute = {
-  _id: 'sample-wan-chai',
-  _type: 'route',
-  title: 'Wan Chai Promenade',
-  slug: { _type: 'slug', current: 'wan-chai-promenade' },
-  animalType: 'dog',
-  district: 'Wan Chai',
-  region: 'Hong Kong Island',
-  city: 'Hong Kong',
-  distanceKm: 14,
-  estimatedDurationMin: 10,
-  elevationGain: 4,
-  difficulty: 'beginner',
-  colorTheme: 'route-orange',
-  featured: true,
-  routePolyline: '',
-  description: 'Scenic flat route along Wan Chai Promenade',
-  isGroupRun: false,
-  tags: ['Near MTR', 'Traffic-Free Promenade Run'],
-};
-
-const activeRoute = routes?.[0] || fallbackRoute;
-const spcaCharity = charities?.find(
-  (c) => c.slug?.current?.includes('spca') || c.name?.toLowerCase().includes('spca')
-) || charities?.[0];
 ---
 
 <BaseLayout title="adopt a run — gps art community movement" class="has-shader-bg">
-  <main>
-    <!-- Shader lives inside <main> so main's clip-path confines the fixed layer (see .has-shader-bg > main) -->
-    <ShaderBackgroundWrapper />
-    <!-- Fullscreen Hero Section -->
-    <section class="hero-fullscreen" aria-label="Hero Section">
-      <div class="hero-inner">
-        <!-- Hero Section Main Row -->
-        <div class="hero-main">
-          <!-- Left Column: Wordmark & Tagline -->
-          <div class="hero-header">
-            <h1 class="c-wordmark c-wordmark--hero">
-              <span class="c-wordmark-line"><span class="c-wordmark-adopt">adopt</span></span>
-              <span class="c-wordmark-line"><span class="c-wordmark-a">a</span><span class="c-wordmark-space">&nbsp;</span><span class="c-wordmark-run">run</span></span>
-            </h1>
-            <p class="hero-tagline">the new way to push yourself in training and in giving back</p>
-          </div>
-
-          <!-- Right Column: Route Cards (repeated twice) -->
-          <div class="hero-cards">
-            <RouteCard route={activeRoute} />
-            <RouteCard route={activeRoute} />
-          </div>
-        </div>
-
-        <!-- Hero Bottom Bar -->
-        <div class="hero-bottom">
-          <p class="hero-mission">
-            by bringing people together through long-distance running and community art, our project aims to help champion a kinder city — a city where our shared compassion moves us forward.
-          </p>
-          <a href="#about-section" class="hero-learn-more" aria-label="Learn more about adopt a run">
-            learn more &darr;
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Observer Seam: Future Routes Feature Section will activate Shader Preset B (add id="routes-featured") -->
-
-    <!-- Homepage Curtain: Opaque container that reveals shader on transparent sections -->
-    <div class="homepage-curtain">
-      <!-- Homepage About Section (includes live community movement counters) -->
-      <AboutSection />
-
-      <!-- Section 03: 3-Step Caretaker Journey -->
-      <JourneySection />
-    </div>
-
-    <!-- Section 04: Featured GPS Art Routes (Outside Curtain on Canvas White) -->
-    <FeaturedRoutesSection routes={routes} />
-
-    <!-- Secondary Curtain: Opaque Canvas Black Container for Charity Section -->
-    <div class="homepage-curtain">
-      <!-- Section 05: Partner Charities Spotlight (SPCA Feature) -->
-      <CharitySection charity={spcaCharity} />
-    </div>
-
-    <!-- Section 06: Action Banner CTA (Outside Curtain, Transparent over Shader Preset A) -->
-    <BottomCtaSection />
-  </main>
+  <HomePage routes={routes} charities={charities} />
 </BaseLayout>

@@ -1,0 +1,66 @@
+---
+/**
+ * "Coming soon" placeholder for linked pages that don't exist yet (see src/utils/stub-pages.ts).
+ * Kept out of search indexes; a real page at the same path replaces its stub.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { STUB_PAGES, type StubPage } from '@/utils/stub-pages';
+
+export function getStaticPaths() {
+  return STUB_PAGES.map((page) => ({ params: { stub: page.slug }, props: { page } }));
+}
+
+interface Props {
+  page: StubPage;
+}
+
+const { page } = Astro.props;
+---
+
+<BaseLayout title={`${page.title} — adopt a run`} description={page.description} noindex>
+  <main class="stub-page">
+    <p class="stub-eyebrow">coming soon</p>
+    <h1 class="stub-title">{page.title}</h1>
+    <p class="stub-body">{page.description}</p>
+    <a href="/" class="hairline-link hairline-link--white stub-home">back to home &rarr;</a>
+  </main>
+</BaseLayout>
+
+<style>
+  .stub-page {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-06);
+    padding-block: var(--space-13) var(--space-12);
+    padding-inline: var(--space-06);
+    color: var(--color-text-primary);
+  }
+
+  .stub-eyebrow {
+    margin: 0;
+    font-size: var(--font-size-label);
+    color: var(--color-text-secondary);
+  }
+
+  .stub-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 72;
+    font-size: var(--font-fluid-headline);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+  }
+
+  .stub-body {
+    margin: 0;
+    font-size: var(--font-size-body);
+    line-height: var(--leading-body);
+    color: var(--color-text-secondary);
+  }
+
+  .stub-home {
+    margin-top: var(--space-04);
+  }
+</style>

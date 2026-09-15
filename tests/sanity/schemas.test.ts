@@ -9,7 +9,7 @@ import {
   SITE_COPY_QUERY,
 } from '../../src/sanity/queries';
 import { urlForImage, hasImageAsset, safeUrlForImage } from '../../src/sanity/image';
-import { sanityClient, projectId, dataset, visualEditingEnabled } from '../../src/sanity/client';
+import { sanityClient, projectId, dataset } from '../../src/sanity/client';
 import { cleanStega } from '../../src/sanity';
 import sanityConfig from '../../sanity.config';
 
@@ -147,8 +147,8 @@ describe('Sanity CMS Schemas & Configuration', () => {
       expect(sanityClient).toBeDefined();
     });
 
-    it('exports visualEditingEnabled boolean and cleanStega helper', () => {
-      expect(typeof visualEditingEnabled).toBe('boolean');
+    // Stega/drafts are no longer env-toggled on the public client; see tests/sanity/client.test.ts.
+    it('exports the cleanStega helper', () => {
       expect(typeof cleanStega).toBe('function');
     });
 

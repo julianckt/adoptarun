@@ -8,7 +8,8 @@
  * - Desktop: 3-column row layout.
  * - Mobile/Tablet: Horizontal swipe carousel with edge-peek and touch snapping.
  * - Bottom-right textlink "for more routes ->" linking to /routes.
- * - Canvas White background (ready for future Shader Gradient activation).
+ * - Transparent over Shader Preset B; Canvas White text stays legible on the Canvas Black
+ *   page ground before the shader loads or when WebGL is unavailable.
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
@@ -55,7 +56,7 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
 
     <!-- Section Footer (Bottom-Right Link) -->
     <footer class="featured-routes-footer">
-      <a href="/routes" class="hairline-link hairline-link--black featured-routes-more">
+      <a href="/routes" class="hairline-link hairline-link--white featured-routes-more">
         more routes &rarr;
       </a>
     </footer>
@@ -67,7 +68,7 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
     position: relative;
     width: 100%;
     background-color: transparent;
-    color: var(--color-canvas-black);
+    color: var(--color-canvas-white);
     padding-block: var(--space-12) var(--space-10);
     padding-inline: var(--space-06);
     box-sizing: border-box;
@@ -95,7 +96,7 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
     font-weight: 500;
     line-height: var(--leading-compressed);
     letter-spacing: normal;
-    color: var(--color-canvas-black);
+    color: var(--color-canvas-white);
     margin: 0;
   }
 

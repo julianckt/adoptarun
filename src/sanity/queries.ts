@@ -1,4 +1,5 @@
 import { defineQuery } from 'groq';
+import type { SanityClient } from '@sanity/client';
 import { sanityClient } from './client';
 import type { SanityRoute, SanityCharity, SanitySiteCopy } from './types';
 
@@ -136,22 +137,30 @@ export const SITE_COPY_QUERY = defineQuery(
   }`
 );
 
-export async function getRoutes(): Promise<SanityRoute[]> {
-  return await sanityClient.fetch(ROUTES_QUERY);
+// Each fetcher defaults to the public (published, stega-off) client; /preview passes the preview client.
+
+export async function getRoutes(client: SanityClient = sanityClient): Promise<SanityRoute[]> {
+  return await client.fetch(ROUTES_QUERY);
 }
 
-export async function getRouteBySlug(slug: string): Promise<SanityRoute | null> {
-  return await sanityClient.fetch(ROUTE_BY_SLUG_QUERY, { slug });
+export async function getRouteBySlug(
+  slug: string,
+  client: SanityClient = sanityClient
+): Promise<SanityRoute | null> {
+  return await client.fetch(ROUTE_BY_SLUG_QUERY, { slug });
 }
 
-export async function getCharities(): Promise<SanityCharity[]> {
-  return await sanityClient.fetch(CHARITIES_QUERY);
+export async function getCharities(client: SanityClient = sanityClient): Promise<SanityCharity[]> {
+  return await client.fetch(CHARITIES_QUERY);
 }
 
-export async function getCharityBySlug(slug: string): Promise<SanityCharity | null> {
-  return await sanityClient.fetch(CHARITY_BY_SLUG_QUERY, { slug });
+export async function getCharityBySlug(
+  slug: string,
+  client: SanityClient = sanityClient
+): Promise<SanityCharity | null> {
+  return await client.fetch(CHARITY_BY_SLUG_QUERY, { slug });
 }
 
-export async function getSiteCopy(): Promise<SanitySiteCopy | null> {
-  return await sanityClient.fetch(SITE_COPY_QUERY);
+export async function getSiteCopy(client: SanityClient = sanityClient): Promise<SanitySiteCopy | null> {
+  return await client.fetch(SITE_COPY_QUERY);
 }
