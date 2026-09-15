@@ -13,7 +13,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import HomePage from '@/components/HomePage.astro';
 import { createPreviewClient } from '@/sanity/client';
 import { hasDraftSession } from '@/sanity/preview';
-import { getRoutes, getCharities } from '@/sanity/queries';
+import { getRoutes, getCharities, getSiteCopy } from '@/sanity/queries';
 
 const client = SANITY_API_READ_TOKEN ? createPreviewClient(SANITY_API_READ_TOKEN) : null;
 
@@ -24,13 +24,14 @@ if (!client || !(await hasDraftSession(Astro.cookies, client))) {
 Astro.response.headers.set('Cache-Control', 'private, no-store');
 Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 
-const [routes, charities] = await Promise.all([
+const [routes, charities, siteCopy] = await Promise.all([
   getRoutes(client).catch(() => null),
   getCharities(client).catch(() => null),
+  getSiteCopy(client).catch(() => null),
 ]);
 ---
 
 <BaseLayout title="preview — adopt a run" class="has-shader-bg" noindex>
-  <HomePage routes={routes} charities={charities} />
+  <HomePage routes={routes} charities={charities} siteCopy={siteCopy} />
   <VisualEditing slot="body-end" enabled zIndex={1000} />
 </BaseLayout>

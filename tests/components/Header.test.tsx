@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { AnnouncementBanner } from '@/components/AnnouncementBanner';
-import { MobileNavDrawer, NAV_EXIT_MS, SCROLL_DISMISS_PX } from '@/components/MobileNavDrawer';
+import {
+  MobileNavDrawer,
+  NAV_EXIT_MS,
+  SCROLL_DISMISS_PX,
+  DESKTOP_NAV_QUERY,
+} from '@/components/MobileNavDrawer';
 import {
   $announcementTicker,
   $isNavOpen,
@@ -133,6 +138,34 @@ describe('Header Interactive Components', () => {
         expect($isNavOpen.get()).toBe(false);
       } finally {
         setScrollY(0);
+      }
+    });
+
+    it('closes and clears nav-open when the viewport widens to the desktop layout', () => {
+      const listeners = new Set<(e: MediaQueryListEvent) => void>();
+      const matchMedia = vi.fn().mockReturnValue({
+        matches: false,
+        media: DESKTOP_NAV_QUERY,
+        addEventListener: (_type: string, cb: (e: MediaQueryListEvent) => void) => listeners.add(cb),
+        removeEventListener: (_type: string, cb: (e: MediaQueryListEvent) => void) => listeners.delete(cb),
+      });
+      vi.stubGlobal('matchMedia', matchMedia);
+
+      try {
+        act(() => {
+          openNav();
+        });
+        render(<MobileNavDrawer />);
+        expect(matchMedia).toHaveBeenCalledWith(DESKTOP_NAV_QUERY);
+        expect(document.documentElement.classList.contains('nav-open')).toBe(true);
+
+        act(() => {
+          listeners.forEach((cb) => cb({ matches: true } as MediaQueryListEvent));
+        });
+        expect($isNavOpen.get()).toBe(false);
+        expect(document.documentElement.classList.contains('nav-open')).toBe(false);
+      } finally {
+        vi.unstubAllGlobals();
       }
     });
 

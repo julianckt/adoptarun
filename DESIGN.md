@@ -241,7 +241,7 @@ The signature object of the brand, representing an adoptable route.
 ### Buttons & CTAs
 - **Shape**: Sharp rectangular buttons with 0px border-radius.
 - **Primary CTA**: Canvas White (`rgb(255, 251, 249)`) fill, Canvas Black (`rgb(24, 19, 17)`) text, Runda Medium 500, all-lowercase (`run with us`, `log a run`), padding 16px 32px.
-- **Hero CTA**: Features the word `run` isolated in Scale VF.
+- **Hero CTA**: Features the word `run` isolated in Scale VF (`'wdth' 150, 'wght' 900`, line-height 0.75 / `--leading-wordmark`), identical in every `run with us` CTA (header, mobile drawer, finale).
 - **Hover State**: Fill brightens to Pure White (`#ffffff`), border sharpens, and a subtle widening ambient glow appears.
 - **Press State**: `transform: scale(0.985)` with a subtle darkening wash.
 

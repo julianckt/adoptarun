@@ -67,6 +67,13 @@
     --space-fluid-3xl: clamp(4rem, 8vw, 10rem);
     /* 64px - 160px */
 
+    /* Safe-area insets (viewport-fit=cover); 0 on devices without a notch or rounded corners.
+       Gutters use max(<space token>, inset) so they only grow where the device needs it. */
+    --safe-inset-top: env(safe-area-inset-top, 0px);
+    --safe-inset-right: env(safe-area-inset-right, 0px);
+    --safe-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-inset-left: env(safe-area-inset-left, 0px);
+
     /* Discrete Typography Tokens (DESIGN.md scale) */
     --font-size-micro: 12px;
     --font-size-label: 16px;

@@ -33,7 +33,7 @@ const { page } = Astro.props;
     align-items: flex-start;
     gap: var(--space-06);
     padding-block: var(--space-13) var(--space-12);
-    padding-inline: var(--space-06);
+    padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
     color: var(--color-text-primary);
   }
 

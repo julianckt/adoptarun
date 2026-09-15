@@ -112,7 +112,7 @@ const { class: className, ...restProps } = Astro.props;
     align-items: center;
     justify-content: center;
     padding-block: var(--space-13);
-    padding-inline: var(--space-09);
+    padding-inline: max(var(--space-09), var(--safe-inset-left)) max(var(--space-09), var(--safe-inset-right));
     background-color: transparent;
     overflow: hidden;
   }
@@ -213,8 +213,8 @@ const { class: className, ...restProps } = Astro.props;
   @media (max-width: 768px) {
     .finale {
       padding-block-start: var(--space-11);
-      padding-block-end: max(var(--space-11), env(safe-area-inset-bottom));
-      padding-inline: var(--space-05);
+      padding-block-end: max(var(--space-11), var(--safe-inset-bottom));
+      padding-inline: max(var(--space-05), var(--safe-inset-left)) max(var(--space-05), var(--safe-inset-right));
     }
 
     .finale-subtext {

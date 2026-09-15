@@ -70,7 +70,7 @@
     max-width: 1512px;
     margin: 0 auto;
     padding-block: var(--space-fluid-xl) var(--space-fluid-3xl);
-    padding-inline: var(--space-fluid-xl);
+    padding-inline: max(var(--space-fluid-xl), var(--safe-inset-left)) max(var(--space-fluid-xl), var(--safe-inset-right));
     box-sizing: border-box;
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -253,7 +253,7 @@
      (~4.88em), so the wordmark size is the remaining width over 6.9 (a hair of slack). */
   @media (max-width: 640px) {
     .journey-container {
-      padding-inline: var(--space-05);
+      padding-inline: max(var(--space-05), var(--safe-inset-left)) max(var(--space-05), var(--safe-inset-right));
     }
 
     .journey-masthead {

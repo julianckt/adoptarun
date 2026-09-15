@@ -73,7 +73,7 @@ const {
         We are a budding community project, trying to bring together runners across Hong Kong. Seeking to infuse fun and flair into running all the whilst doing good for the community around us. Get involved in our growing movement and turn your compassion into action!
       </p>
 
-      <p class="about-tally" aria-label="Live community movement counters">together we’ve run <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised">HK$<span class="tally-value">{totalAmountRaised}</span></span> <span class="tally-end">and counting.</span></p>
+      <p class="about-tally">together we’ve run <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised">HK$<span class="tally-value">{totalAmountRaised}</span></span> <span class="tally-end">and counting.</span></p>
     </div>
   </div>
 </section>
@@ -96,7 +96,8 @@ const {
     container: about / inline-size;
     max-width: 1512px;
     margin: 0 auto;
-    padding: var(--space-fluid-3xl) var(--space-fluid-xl);
+    padding-block: var(--space-fluid-3xl);
+    padding-inline: max(var(--space-fluid-xl), var(--safe-inset-left)) max(var(--space-fluid-xl), var(--safe-inset-right));
     box-sizing: border-box;
     color: var(--color-canvas-white);
   }
@@ -371,7 +372,8 @@ const {
      sitting level with the fitted headline so the two read as a pair */
   @media (max-width: 640px) {
     .about-content {
-      padding: var(--space-10) var(--space-06);
+      padding-block: var(--space-10);
+      padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
     }
 
     .about-row {

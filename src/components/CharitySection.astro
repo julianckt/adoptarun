@@ -14,6 +14,7 @@
  * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
  */
 import type { SanityCharity } from '@/sanity/types';
+import { resolveCharityPhoto } from '@/utils/homepage-content';
 
 export interface Props {
   charity?: SanityCharity | null;
@@ -28,6 +29,7 @@ const charityName = charity?.name || 'SPCA';
 const charityDescription =
   charity?.charityDescription ||
   'The Society for the Prevention of Cruelty to Animals (SPCA) champions the welfare of all animals in Hong Kong. By adopting our animal-shaped GPS art routes, every kilometer you run raises awareness, rescue funds, and compassionate community support for shelter animals in need.';
+const photo = resolveCharityPhoto(charity);
 ---
 
 <section id="charity-spotlight" class:list={['charity-section', className]} aria-label="Partner Charities Spotlight - SPCA" {...restProps}>
@@ -45,8 +47,8 @@ const charityDescription =
       <!-- Expanding central photo frame overlapping SP and CA -->
       <div class="charity-photo-frame" role="img" aria-label="SPCA rescue puppy resting head gently in human hand">
         <img
-          src="/images/charity/spca-puppy.jpg"
-          alt="SPCA rescue puppy resting head in human hand"
+          src={photo.src}
+          alt={photo.alt}
           class="charity-photo-img"
           width="568"
           height="379"
@@ -97,8 +99,8 @@ const charityDescription =
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-left: var(--space-06);
-    padding-right: var(--space-06);
+    padding-left: max(var(--space-06), var(--safe-inset-left));
+    padding-right: max(var(--space-06), var(--safe-inset-right));
     box-sizing: border-box;
     position: relative;
   }
