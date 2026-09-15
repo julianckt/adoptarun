@@ -117,11 +117,11 @@ The visual philosophy unites warm human earnestness with uncompromising architec
 Structure and form are razor-sharp: zero border-radius everywhere, hairline dividers, and tightly nested micro-frames built on an 8px modular cadence. The voice is quiet yet ambitious, employing strict all-lowercase casing for interactive navigation and actions, tight editorial Title Case headings in Degular Display set at an ultra-compressed 80% line-height, and honest flat grey placeholders (`rgb(217,217,217)`) for unresolved visual assets.
 
 **Key Characteristics:**
-- **Lowercase UI Voice**: All navigation, CTAs, action buttons, metadata labels, and the wordmark are strictly lowercase (`routes`, `charities`, `donate`, `log a run`, `run with us`, `adopt a run`).
+- **Lowercase UI Voice**: All navigation, CTAs, action buttons, metadata labels, and the wordmark are strictly lowercase (`routes`, `charities`, `donate`, `log a run`, `run with us`, `adopt a run`). The one sanctioned exception is conversational lead-in copy that introduces a value, which reads in sentence case (the footer's `Contact us at`).
 - **Binary Warm Canvas**: Grounded in warm Canvas Black (`rgb(24,19,17)`) and Canvas White (`rgb(255,251,249)`) — never cold terminal black or stark clinical white.
 - **Mesh Noise Color Splashes**: All vibrant color splashes originate from warm mesh noise gradient bitmaps with authentic film noise — never synthetic CSS linear gradients.
 - **Zero-Radius Architecture**: Every button, card, input, badge, and image frame features crisp 0px corners (`--radius-none: 0px`).
-- **Pure Typographic Interface**: Unicode characters (`↓`, `·`, `+`, `×`) and abbreviated metric glyphs (`elev.`, `est.`, `km`, `min`) replace traditional icon sets; zero emoji anywhere.
+- **Pure Typographic Interface**: Unicode characters (`↓`, `·`, `+`, `×`) and abbreviated metric glyphs (`elev.`, `est.`, `km`, `min`) replace traditional icon sets; zero emoji anywhere. The only drawn marks are hand-authored inline hairline-stroke SVGs (see The Hairline Mark Rule).
 - **Strict Typographic Roles**: Degular Display for compressed editorial headings (line-height 0.8), Runda for body, metadata, and numerals (line-height 0.9–1.0), and Scale VF strictly reserved for the wordmark and hero CTA.
 
 ## Colors
@@ -133,9 +133,9 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 - **Canvas White** (`rgb(255, 251, 249)` / `#fffbf9`): The primary light canvas and primary text color on dark surfaces. A warm milk-white that eliminates visual fatigue while maintaining sharp optical legibility.
 
 ### Secondary
-- **Route Orange** (`rgb(245, 174, 102)` / `#f5ae66`): The sanctioned default surface fill for Route Cards. A warm golden peach that provides high contrast against Canvas Black text while evoking dawn and dusk runs.
+- **Route Orange** (`rgb(245, 174, 102)` / `#f5ae66`): The sanctioned default surface fill for Route Cards. A warm golden peach that provides high contrast against Canvas Black text while evoking dawn and dusk runs. Also the site's interactive accent (`--color-accent`): header nav hover, the header CTA hover and its route trace, drawer link arrows, focus outlines, and the journey stage numerals.
 - **Group Run Green** (`rgb(91, 190, 73)` / `#5bbe49`): The sanctioned badge fill for scheduled group runs. A vivid athletic meadow green signaling collective community action.
-- **Route Coral** (`rgb(255, 132, 132)` / `#ff8484`): Sanctioned route card fill variant for featured, endurance, or landmark runs.
+- **Route Coral** (`rgb(255, 132, 132)` / `#ff8484`): Sanctioned route card fill variant for featured, endurance, or landmark runs. Also the footer's accent (`--footer-accent`): email underline, link hover, arrow hover, and text selection.
 - **Route Blush** (`rgb(229, 153, 158)` / `#e5999e`): Sanctioned route card fill variant for beginner-friendly, promenade, or scenic community routes.
 - **Exercise Pink** (`rgb(231, 122, 226)` / `#e77ae2`): Sanctioned highlight accent for the Exercise pillar within the About movement typography.
 - **Art Cyan** (`rgb(66, 190, 224)` / `#42bee0`): Sanctioned highlight accent for the Art pillar within the About movement typography.
@@ -149,7 +149,7 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 
 ### Named Rules
 **The Mesh Noise Splash Rule.** Every splash of vibrant color must come from a warm mesh noise gradient bitmap (warm sunset oranges, corals, and mauves with visible grain) or a live shadergradient canvas. Never substitute a CSS `linear-gradient()` or a cool bluish-purple tech gradient.
-**The Sanctioned Route Palette Rule.** Chromatic fills (`--route-orange`, `--group-run-green`, `--route-coral`, `--route-blush`) are strictly restricted to Route Cards and status badges. All general page surfaces, headers, and navigation bars remain Canvas Black or Canvas White.
+**The Sanctioned Route Palette Rule.** Route colours (`--route-orange`, `--group-run-green`, `--route-coral`, `--route-blush`) may fill surfaces only on Route Cards and status badges. Outside them they appear strictly as small accents on type and hairlines: link and nav hover colour, focus outlines, drawn route traces and arrows, journey stage numerals, the About pillar words, and the About tally underscores (orange, coral, cyan, green). All general page surfaces, headers, and navigation bars remain Canvas Black or Canvas White.
 **The Warm Monochrome Rule.** Never use stark `#000000` or `#ffffff` for page backgrounds or body text. Primary surfaces must use Canvas Black (`rgb(24,19,17)`) and Canvas White (`rgb(255,251,249)`).
 
 ## Typography
@@ -161,11 +161,11 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 **Character:** A tension-filled pairing between the compressed, editorial weight of Degular Display and the warm geometric clarity of Runda, punctuated by the wide, experimental presence of Scale VF.
 
 ### Hierarchy
-- **Display** (Degular Display Semibold 600, 64px–160px [up to 400px], line-height 0.8): Hero headlines, massive numerical milestones, and journey stage markers (`one.`, `two.`, `three.`).
+- **Display** (Degular Display Semibold 600, 64px–160px [up to 400px], line-height 0.8): Hero headlines and massive numerical milestones.
 - **Headline** (Degular Display Medium 500, 80px–96px, line-height 0.8): Primary section headings ("Run Routes", "Merging Community", "Proudly Supporting").
 - **Title** (Degular Display Regular 400, 64px, line-height 0.8): Subsection headings and route card schedule callouts.
 - **Body** (Runda Normal 400, 20px, line-height 1.0, paragraphs 0.9): Core narrative copy, route blurbs, and editorial descriptions. Reads as a block of rich texture with breathy, comma-spliced clauses.
-- **Label / Metric** (Runda Medium 500 or Light 300, 16px–24px, line-height 1.0): Navigation items, buttons, and route telemetry abbreviations (`elev.`, `est.`, `14km`, `+4m`, `10min`).
+- **Label / Metric** (Runda Medium 500 or Light 300, 16px–24px, line-height 1.0): Navigation items, buttons, and route telemetry abbreviations (`elev.`, `est.`, `14km`, `+4m`, `10min`). Journey stage numerals (`one.`, `two.`, `three.`) are set here too: Runda Medium 500 at label size in Route Orange, a quiet index beside the Degular step title.
 
 ### Named Rules
 **The Line-Height Compression Rule.** Degular Display must always be set at an ultra-compressed line-height of 0.8 (80%). Headings must read as dense blocks of typographic texture rather than loose text.
@@ -179,7 +179,7 @@ The palette is a strict, warm dual-canvas system where rich chromatic expression
 **The Runda Weight Ceiling Rule.** No text set in Runda should ever exceed Medium width/weight (500). Bold and Black weights are prohibited in general UI copy; H4 is rendered as Runda Medium all-caps.
 **The Scale VF Restraint Rule.** Scale VF is strictly reserved for the two-line wordmark `adopt / a run` and the hero CTA `run with us`. It must never be applied to general headings, body, or standard navigation links.
 **The Natural Letter-Spacing Rule (No Custom Tracking).** Degular Display already features built-in tight optical letter-spacing. Do not apply custom `letter-spacing` (such as `-0.02em` or negative tracking) to headings, display type, or copy across the website; allow all fonts to render at their natural tracking (`letter-spacing: normal` / `0`).
-**The Lowercase Identity Rule.** Navigation links, primary buttons, taglines, metric abbreviations, and the wordmark are strictly lowercase (`routes`, `charities`, `donate`, `log a run`, `run with us`). Editorial titles alone use Title Case.
+**The Lowercase Identity Rule.** Navigation links, primary buttons, taglines, metric abbreviations, and the wordmark are strictly lowercase (`routes`, `charities`, `donate`, `log a run`, `run with us`). Editorial titles use Title Case. Conversational lead-in copy that introduces a value (the footer's `Contact us at`) reads in sentence case; it is copy, not a label.
 
 ## Layout
 
@@ -197,7 +197,7 @@ The design system is unapologetically flat at rest. Physical depth is expressed 
 
 - **At Rest**: Flat surfaces (`box-shadow: none`). Panels, buttons, and cards sit flush on the canvas.
 - **Hover Transitions**: Key interactive elements lift with a subtle ambient glow (`box-shadow: 0 0 24px rgba(245, 174, 102, 0.28)`) or border darkening (`--border-hairline` to `--border-strong`).
-- **Floating Over Mesh**: Transparent surfaces floating over mesh noise gradients utilize 8–16% white fill paired with a 20px backdrop blur (`backdrop-filter: blur(20px)`). Blur is strictly forbidden over plain white or black.
+- **Floating Over Mesh**: Transparent surfaces floating over mesh noise gradients utilize 8–16% white fill paired with a 20px backdrop blur (`backdrop-filter: blur(20px)`). Blur is strictly forbidden over plain white or black. The sticky header veil is the exception, with its own 28px blur (see Navigation).
 - **Protection Scrims**: Text layered over mesh gradients is protected by directional gradient scrims (`--scrim-bottom` / `--scrim-top`), never solid capsule boxes behind words.
 
 ### Named Rules
@@ -246,9 +246,13 @@ The signature object of the brand, representing an adoptable route.
 - **Press State**: `transform: scale(0.985)` with a subtle darkening wash.
 
 ### Navigation
-- **Header Shell**: Starts transparent with no background fill at scroll 0, resting over the hero canvas. On scroll/sticky, transitions to translucent Canvas Black at 60% opacity (`--color-header-translucent`: `rgba(24, 19, 17, 0.60)`) with 20px backdrop blur.
-- **Style**: Horizontal inline list of lowercase links (`routes`, `charities`, `donate`, `log a run`) set in Runda Medium 20px, line-height 1.0.
-- **States**: Underline animates in smoothly from left to right on hover. Active links retain full opacity; inactive links dim slightly on hover.
+- **Header Shell**: Starts transparent with no background fill at scroll 0, resting over the hero canvas. Once the header leaves the top of the page (`data-stuck`), a veil fades in: a top-to-bottom Canvas Black gradient from 74% to 28% opacity (`--color-header-veil-top` → `--color-header-veil-bottom`) with a 28px backdrop blur and 170% saturation (`--header-blur`, `--header-saturate`), closed off by a bottom hairline and a soft downward ambient shadow (`--color-header-shadow`). Only opacity animates; the blur stays static. The mobile nav drawer uses the same veil. This veil is a protective scrim, not a colour splash, so the Mesh Noise Splash Rule does not apply.
+- **Header CTA**: `run with us` carries a hand-drawn GPS route-trace SVG that draws out to an arrowhead on hover, while the words warm to Route Orange.
+- **Style**: Lowercase links (`routes`, `charities`, `donate`, `log a run`) set in Runda at label size, line-height 0.8 (`--leading-action`), stacked in two right-aligned columns.
+- **States**: On hover the link colour shifts to Route Orange (`--color-accent`); there is no underline. In the mobile drawer, the active page is marked with `aria-current` and a Route Orange arrow.
+
+### Hairline Marks
+**The Hairline Mark Rule.** A small set of hand-authored inline SVGs is sanctioned: the diagonal and up arrows in footer and drawer links, and the route trace in the header CTA. They are `aria-hidden`, drawn with a thin `currentColor` stroke (1.5), carry no fill, sit at label scale, and take a route-colour accent only on hover or active state. No other SVG icons are added, and icon libraries stay banned.
 
 ### Media Placeholders
 - **Style**: Flat Placeholder Grey (`rgb(217, 217, 217)`) rectangles with hairline borders. Used deliberately for unresolved photography and media frames.
@@ -256,18 +260,18 @@ The signature object of the brand, representing an adoptable route.
 ## Do's and Don'ts
 
 ### Do:
-- **Do** format all navigation, buttons, CTAs, brand taglines, and the wordmark in strict all-lowercase (`routes`, `charities`, `donate`, `log a run`, `run with us`, `adopt a run`).
+- **Do** format all navigation, buttons, CTAs, brand taglines, and the wordmark in strict all-lowercase (`routes`, `charities`, `donate`, `log a run`, `run with us`, `adopt a run`). Sentence case is only for conversational lead-in copy such as `Contact us at`.
 - **Do** maintain sharp 0px corners (`border-radius: 0px`) on every component, card, button, and container.
 - **Do** set all Degular Display editorial headings at an ultra-compressed line-height of 0.8 (80%).
 - **Do** set body copy, UI metadata, and numerals in Runda, strictly capping weight at Medium (500).
 - **Do** use warm mesh noise gradient bitmaps (sunset orange, coral, mauve with organic grain) for color splashes.
-- **Do** use Unicode glyphs (`↓`, `·`, `+`, `×`) and abbreviated metric words (`elev.`, `est.`, `km`, `min`) in place of icon libraries.
+- **Do** use Unicode glyphs (`↓`, `·`, `+`, `×`) and abbreviated metric words (`elev.`, `est.`, `km`, `min`) in place of icon libraries. Reach for a drawn mark only within The Hairline Mark Rule.
 - **Do** render the brand wordmark exclusively as stacked type in Scale VF (`'wdth' 125, 'wght' 200`).
 - **Do** use flat grey (`rgb(217, 217, 217)`) rectangles for unresolved media instead of placeholder stock photos.
 
 ### Don't:
 - **Don't** add border-radius to any element under any circumstance.
-- **Don't** import or use icon libraries (no Lucide, Heroicons, FontAwesome, or custom outline SVGs) or emoji anywhere in the UI.
+- **Don't** import or use icon libraries (no Lucide, Heroicons, FontAwesome) or emoji anywhere in the UI, and don't add custom SVG icons beyond the hairline arrows and route trace sanctioned by The Hairline Mark Rule.
 - **Don't** draw, trace, or generate a graphic logo; the brand mark is strictly typographic.
 - **Don't** use synthetic CSS linear gradients or cool bluish-purple gradients for background color splashes.
 - **Don't** use stark `#000000` or `#ffffff` for page backgrounds or body text; use Canvas Black (`rgb(24,19,17)`) and Canvas White (`rgb(255,251,249)`).
