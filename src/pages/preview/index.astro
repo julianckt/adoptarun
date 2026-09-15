@@ -1,0 +1,36 @@
+---
+/**
+ * On-demand homepage preview for Sanity Studio Presentation.
+ *
+ * Renders drafts with stega + the Visual Editing island, but only for a request carrying a
+ * valid draft-mode session (set by /api/draft-mode/enable). Everyone else is sent to `/`.
+ */
+export const prerender = false;
+
+import { SANITY_API_READ_TOKEN } from 'astro:env/server';
+import { VisualEditing } from '@sanity/astro/visual-editing';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HomePage from '@/components/HomePage.astro';
+import { createPreviewClient } from '@/sanity/client';
+import { hasDraftSession } from '@/sanity/preview';
+import { getRoutes, getCharities } from '@/sanity/queries';
+
+const client = SANITY_API_READ_TOKEN ? createPreviewClient(SANITY_API_READ_TOKEN) : null;
+
+if (!client || !(await hasDraftSession(Astro.cookies, client))) {
+  return Astro.redirect('/');
+}
+
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
+const [routes, charities] = await Promise.all([
+  getRoutes(client).catch(() => null),
+  getCharities(client).catch(() => null),
+]);
+---
+
+<BaseLayout title="preview — adopt a run" class="has-shader-bg" noindex>
+  <HomePage routes={routes} charities={charities} />
+  <VisualEditing slot="body-end" enabled zIndex={1000} />
+</BaseLayout>

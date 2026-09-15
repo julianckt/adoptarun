@@ -14,6 +14,13 @@ const dataset =
   (typeof import.meta !== 'undefined' ? import.meta.env?.PUBLIC_SANITY_DATASET : undefined) ||
   'production';
 
+// Origin of the site Presentation previews. Empty = same origin as the embedded /studio.
+// Set to https://adoptarun.org when the Studio moves to Sanity hosting (#28).
+const previewOrigin =
+  (typeof process !== 'undefined' ? process.env?.SANITY_STUDIO_PREVIEW_ORIGIN : undefined) ||
+  (typeof import.meta !== 'undefined' ? import.meta.env?.PUBLIC_SANITY_PREVIEW_ORIGIN : undefined) ||
+  '';
+
 export default defineConfig({
   name: 'adopt-a-run',
   title: 'Adopt A Run',
@@ -26,7 +33,11 @@ export default defineConfig({
     }),
     presentationTool({
       previewUrl: {
-        initial: '/',
+        // The public homepage is static published content; drafts render on-demand at /preview.
+        initial: `${previewOrigin}/preview`,
+        previewMode: {
+          enable: '/api/draft-mode/enable',
+        },
       },
       resolve: {
         locations: {
@@ -72,7 +83,7 @@ export default defineConfig({
             locations: [
               {
                 title: 'Home',
-                href: '/',
+                href: '/preview',
               },
             ],
           }),

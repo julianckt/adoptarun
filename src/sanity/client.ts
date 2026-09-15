@@ -3,21 +3,30 @@ import { createClient, type SanityClient } from '@sanity/client';
 export const projectId = import.meta.env?.PUBLIC_SANITY_PROJECT_ID || 'huk9xx07';
 export const dataset = import.meta.env?.PUBLIC_SANITY_DATASET || 'production';
 export const apiVersion = import.meta.env?.PUBLIC_SANITY_API_VERSION || '2026-03-01';
-export const visualEditingEnabled =
-  import.meta.env?.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === 'true';
+/** Where stega-encoded overlays deep-link to. Becomes an absolute URL once the Studio moves to Sanity hosting (#28). */
+export const studioUrl = import.meta.env?.PUBLIC_SANITY_STUDIO_URL || '/studio';
 
+/**
+ * Public client: published content only, stega always off. Every statically built page uses this,
+ * so no environment variable can leak drafts or zero-width stega characters into production HTML.
+ */
 export const sanityClient: SanityClient = createClient({
   projectId,
   dataset,
   apiVersion,
   useCdn: false,
-  perspective:
-    visualEditingEnabled && Boolean(import.meta.env?.SANITY_API_READ_TOKEN)
-      ? 'drafts'
-      : 'published',
-  stega: {
-    enabled: visualEditingEnabled,
-    studioUrl: '/studio',
-  },
+  perspective: 'published',
+  stega: { enabled: false },
 });
 
+/**
+ * Preview client for the on-demand `/preview` route: drafts + stega for Presentation's
+ * click-to-edit overlays. The token is a server-only secret and never reaches the browser.
+ */
+export function createPreviewClient(token: string): SanityClient {
+  return sanityClient.withConfig({
+    token,
+    perspective: 'drafts',
+    stega: { enabled: true, studioUrl },
+  });
+}
