@@ -512,7 +512,8 @@
     z-index: 100;
     isolation: isolate;
     width: 100%;
-    padding: var(--space-04) var(--space-06);
+    padding-block: max(var(--space-04), var(--safe-inset-top)) var(--space-04);
+    padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
   }
 
   /* Sentinel pinned to the document top; the header observes it to know
@@ -595,12 +596,16 @@
     column-gap: var(--space-03);
   }
 
-  .nav-brand-cta .brand-run {
+  /* "run" in every "run with us" CTA (header, drawer, finale) is set in the wordmark face */
+  .brand-run {
     font-family: var(--font-wordmark);
-    font-size: var(--font-size-body);
     font-variation-settings: 'wdth' 150, 'wght' 900;
     font-weight: 900;
     line-height: var(--leading-wordmark);
+  }
+
+  .nav-brand-cta .brand-run {
+    font-size: var(--font-size-body);
     color: var(--color-pure-white);
     transition: color 0.4s var(--ease-out-expo);
   }
@@ -914,6 +919,9 @@
   .mobile-nav-drawer {
     position: relative;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-block-size: 0;
     border-radius: var(--radius-none);
   }
 
@@ -922,7 +930,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-04) var(--space-06);
+    /* Matches .site-header exactly: the top row sits pixel for pixel over the header */
+    padding-block: max(var(--space-04), var(--safe-inset-top)) var(--space-04);
+    padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
   }
 
   .mobile-nav-header::after {
@@ -943,10 +953,17 @@
 
   /* The top-row hairline is the list's upper rule, so rows sit close to it.
      Below the last row: one row's height of clearance, a buffer against
-     accidental scroll-dismiss while reaching for "sign up". */
+     accidental scroll-dismiss while reaching for "sign up".
+     On a short (landscape) viewport the list scrolls beneath the pinned top
+     row; overscroll stays contained so it never reaches the page. */
   .mobile-nav-links {
     --mobile-nav-row: calc(var(--space-05) * 2 + var(--font-size-metric) * var(--leading-action));
-    padding: var(--space-02) var(--space-06) var(--mobile-nav-row);
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: var(--space-02) calc(var(--mobile-nav-row) + var(--safe-inset-bottom));
+    padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
   }
 
   .mobile-nav-list {
@@ -1121,8 +1138,8 @@
     background-color: var(--color-surface-canvas);
     color: var(--color-text-primary);
     border-top: 1px solid var(--color-border-subtle);
-    padding-block: var(--space-fluid-2xl) var(--space-06);
-    padding-inline: var(--space-fluid-lg);
+    padding-block: var(--space-fluid-2xl) max(var(--space-06), var(--safe-inset-bottom));
+    padding-inline: max(var(--space-fluid-lg), var(--safe-inset-left)) max(var(--space-fluid-lg), var(--safe-inset-right));
     font-family: var(--font-body);
   }
 
@@ -1297,8 +1314,8 @@
     margin-top: calc(-1 * var(--header-height));
     padding-top: calc(var(--header-height) + var(--space-09));
     padding-bottom: var(--space-09);
-    padding-left: var(--space-09);
-    padding-right: var(--space-09);
+    padding-left: max(var(--space-09), var(--safe-inset-left));
+    padding-right: max(var(--space-09), var(--safe-inset-right));
     background-color: transparent;
     display: flex;
     flex-direction: column;
@@ -1338,7 +1355,6 @@
     margin-top: var(--space-13);
   }
 
-  .hero-wordmark,
   .c-wordmark {
     display: flex;
     flex-direction: column;
@@ -1356,34 +1372,27 @@
     line-height: var(--leading-hero-wordmark);
   }
 
-  .hero-wordmark-line,
   .c-wordmark-line {
     display: block;
     line-height: var(--leading-hero-wordmark);
   }
 
-  .hero-wordmark-adopt,
   .c-wordmark-adopt {
     font-weight: 245;
     font-variation-settings: 'wdth' 135, 'wght' 245;
   }
 
-  .hero-wordmark-thin,
-  .hero-wordmark-a,
   .c-wordmark-a {
     font-weight: 300;
     font-variation-settings: 'wdth' 100, 'wght' 300;
   }
 
-  .hero-wordmark-space,
   .c-wordmark-space {
     font-weight: 245;
     font-variation-settings: 'wdth' 75, 'wght' 245;
     white-space: pre;
   }
 
-  .hero-wordmark-strong,
-  .hero-wordmark-run,
   .c-wordmark-run {
     font-weight: 900;
     font-variation-settings: 'wdth' 175, 'wght' 900;
@@ -1452,8 +1461,8 @@
     .hero-fullscreen {
       padding-top: calc(var(--header-height) + var(--space-06));
       padding-bottom: var(--space-06);
-      padding-left: var(--space-06);
-      padding-right: var(--space-06);
+      padding-left: max(var(--space-06), var(--safe-inset-left));
+      padding-right: max(var(--space-06), var(--safe-inset-right));
     }
 
     .hero-inner {
@@ -1473,7 +1482,7 @@
       gap: var(--space-03);
     }
 
-    .hero-wordmark {
+    .c-wordmark--hero {
       font-size: var(--font-size-headline);
     }
 
@@ -1502,15 +1511,15 @@
     .hero-fullscreen {
       padding-top: calc(var(--header-height) + var(--space-06));
       padding-bottom: var(--space-06);
-      padding-left: var(--space-05);
-      padding-right: var(--space-05);
+      padding-left: max(var(--space-05), var(--safe-inset-left));
+      padding-right: max(var(--space-05), var(--safe-inset-right));
     }
 
     .hero-main {
       gap: var(--space-05);
     }
 
-    .hero-wordmark {
+    .c-wordmark--hero {
       font-size: var(--font-size-title);
     }
 
@@ -1560,7 +1569,7 @@
      Extra-Small Viewport (<= 360px)
      ------------------------------------------------------------- */
   @media (max-width: 360px) {
-    .hero-wordmark {
+    .c-wordmark--hero {
       font-size: var(--font-size-wordmark);
     }
 

@@ -70,7 +70,7 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
     background-color: transparent;
     color: var(--color-canvas-white);
     padding-block: var(--space-12) var(--space-10);
-    padding-inline: var(--space-06);
+    padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
     box-sizing: border-box;
   }
 
@@ -134,8 +134,9 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
       padding-bottom: var(--space-04);
       scrollbar-width: none;
       -ms-overflow-style: none;
-      margin-inline: calc(-1 * var(--space-06));
-      padding-inline: var(--space-06);
+      /* Bleeds to the screen edge by exactly the section gutter */
+      margin-inline: calc(-1 * max(var(--space-06), var(--safe-inset-left))) calc(-1 * max(var(--space-06), var(--safe-inset-right)));
+      padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
     }
 
     .featured-routes-grid::-webkit-scrollbar {

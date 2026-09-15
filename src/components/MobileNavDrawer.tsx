@@ -8,6 +8,9 @@ export const NAV_EXIT_MS = 400;
 /** Page scroll distance that dismisses the open drawer; absorbs incidental nudges and overscroll bounce. */
 export const SCROLL_DISMISS_PX = 32;
 
+/** Viewports where CSS hides the drawer and shows the desktop header links. */
+export const DESKTOP_NAV_QUERY = '(min-width: 769px)';
+
 const NAV_LINKS = [
   { href: '/routes', label: 'routes' },
   { href: '/charities', label: 'charities' },
@@ -80,6 +83,19 @@ export const MobileNavDrawer: React.FC = () => {
       root.classList.remove('nav-open');
       document.getElementById('nav-mobile-toggle')?.focus();
     };
+  }, [isOpen]);
+
+  // Past the mobile breakpoint CSS hides the drawer; close it too, so the open state
+  // (and the header's nav-open fade) never outlives the hidden dialog
+  useEffect(() => {
+    if (!isOpen || typeof window.matchMedia !== 'function') return;
+
+    const desktop = window.matchMedia(DESKTOP_NAV_QUERY);
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (e.matches) closeNav();
+    };
+    desktop.addEventListener('change', handleChange);
+    return () => desktop.removeEventListener('change', handleChange);
   }, [isOpen]);
 
   if (!isOpen && !isMounted) {

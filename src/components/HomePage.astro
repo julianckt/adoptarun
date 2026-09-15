@@ -12,14 +12,16 @@ import CharitySection from '@/components/CharitySection.astro';
 import BottomCtaSection from '@/components/BottomCtaSection.astro';
 import RouteCard from '@/components/RouteCard.astro';
 import ShaderBackgroundWrapper from '@/components/ShaderBackground/ShaderBackgroundWrapper.astro';
-import type { SanityRoute, SanityCharity } from '@/sanity/types';
+import type { SanityRoute, SanityCharity, SanitySiteCopy } from '@/sanity/types';
+import { findSpotlightCharity, resolveTallyValues } from '@/utils/homepage-content';
 
 export interface Props {
   routes: SanityRoute[] | null;
   charities: SanityCharity[] | null;
+  siteCopy: SanitySiteCopy | null;
 }
 
-const { routes, charities } = Astro.props;
+const { routes, charities, siteCopy } = Astro.props;
 
 const fallbackRoute: SanityRoute = {
   _id: 'sample-wan-chai',
@@ -43,9 +45,8 @@ const fallbackRoute: SanityRoute = {
 };
 
 const activeRoute = routes?.[0] || fallbackRoute;
-const spcaCharity = charities?.find(
-  (c) => c.slug?.current?.includes('spca') || c.name?.toLowerCase().includes('spca')
-) || charities?.[0];
+const spcaCharity = findSpotlightCharity(charities);
+const tally = resolveTallyValues(siteCopy);
 ---
 
 <main>
@@ -89,7 +90,7 @@ const spcaCharity = charities?.find(
   <!-- Homepage Curtain: Opaque container that reveals shader on transparent sections -->
   <div class="homepage-curtain">
     <!-- Homepage About Section (includes live community movement counters) -->
-    <AboutSection />
+    <AboutSection {...tally} />
 
     <!-- Section 03: 3-Step Caretaker Journey -->
     <JourneySection />
