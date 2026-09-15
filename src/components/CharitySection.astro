@@ -112,13 +112,13 @@ const charityDescription =
   }
 
   .charity-actions {
-    --reveal-delay: 120ms;
+    --reveal-delay: 80ms;
   }
 
   /* Hidden state only applies once the script arms the section, so no-JS shows everything */
   :global(.charity-section.is-armed) [data-charity-reveal]:not(.is-revealed) {
     opacity: 0;
-    transform: translateY(var(--space-03));
+    transform: translateY(var(--space-04));
     filter: blur(calc(var(--space-01) / 2));
   }
 
