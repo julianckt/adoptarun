@@ -17,7 +17,8 @@ const {
 
 <div class="site-header-sentinel" aria-hidden="true"></div>
 <header class:list={['site-header', className]} {...restProps}>
-  <div class="site-header-grid">
+  <!-- One landmark for the whole row: the CTA, links and menu toggle are all navigation -->
+  <nav class="site-header-grid" aria-label="Primary">
     <!-- Column 1: Primary brand CTA -->
     <a href="/signup" class="nav-brand-cta">
       <span class="brand-run">run</span> <span class="brand-with">with us</span>
@@ -33,16 +34,16 @@ const {
     </div>
 
     <!-- Column 4: Stacked links (routes, charities) -->
-    <div class="nav-col-stack nav-col-routes">
-      <a href="/routes" class="nav-link">routes</a>
-      <a href="/charities" class="nav-link">charities</a>
-    </div>
+    <ul class="nav-col-stack nav-col-routes">
+      <li><a href="/routes" class="nav-link">routes</a></li>
+      <li><a href="/charities" class="nav-link">charities</a></li>
+    </ul>
 
     <!-- Column 5: Stacked links (donate, log a run) -->
-    <div class="nav-col-stack nav-col-actions">
-      <a href="/donate" class="nav-link">donate</a>
-      <a href="/log" class="nav-link">log a run</a>
-    </div>
+    <ul class="nav-col-stack nav-col-actions">
+      <li><a href="/donate" class="nav-link">donate</a></li>
+      <li><a href="/log" class="nav-link">log a run</a></li>
+    </ul>
 
     <!-- Mobile Hamburger Toggle -->
     <button
@@ -58,7 +59,7 @@ const {
         <span class="nav-burger-bar"></span>
       </span>
     </button>
-  </div>
+  </nav>
 
   <MobileNavDrawer client:load />
 </header>

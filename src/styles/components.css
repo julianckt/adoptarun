@@ -1,5 +1,15 @@
 @layer components {
 
+  /* Screen-reader-only text: out of layout and paint, still in the accessibility tree */
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   /* Base Button */
   .btn {
     display: inline-flex;
@@ -122,6 +132,11 @@
     .hairline-link,
     .hairline-link::after {
       transition: none;
+    }
+
+    .btn:active,
+    .hairline-link:active {
+      transform: none;
     }
   }
 
@@ -724,6 +739,17 @@
     line-height: var(--leading-body);
     cursor: pointer;
     padding: var(--space-01);
+    position: relative;
+  }
+
+  /* Invisible 24px hit area (WCAG 2.5.8) centred on the glyph; the bar's gap keeps it clear of the link */
+  .announcement-dismiss::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: max(100%, var(--space-06));
+    height: max(100%, var(--space-06));
+    transform: translate(-50%, -50%);
   }
 
   .announcement-dismiss:hover {
@@ -736,7 +762,10 @@
     align-items: flex-end;
     /* Right-align links in column */
     text-align: right;
-    gap: 2px;
+    gap: var(--space-01);
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .nav-col-routes {
@@ -748,6 +777,9 @@
   }
 
   .nav-link {
+    /* Block, so the <li> wraps the link exactly and adds no line-box height */
+    display: block;
+    position: relative;
     font-family: var(--font-body);
     font-size: var(--font-size-label);
     line-height: var(--leading-action);
@@ -760,6 +792,23 @@
 
   .nav-link:hover {
     color: var(--color-accent);
+  }
+
+  /* Invisible hit areas (WCAG 2.5.8): each link reaches into the header padding on its outer
+     edge, half the inter-link gap on its inner edge and half the column gap sideways, so
+     neighbours never overlap while the text and focus ring stay put. */
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    inset-inline: calc(-1 * var(--space-06) / 2);
+  }
+
+  .nav-col-stack li:first-child .nav-link::before {
+    inset-block: calc(-1 * var(--space-04)) calc(-1 * var(--space-01) / 2);
+  }
+
+  .nav-col-stack li:last-child .nav-link::before {
+    inset-block: calc(-1 * var(--space-01) / 2) calc(-1 * var(--space-04));
   }
 
   /* Hamburger: two hairline bars, the lower one short. It reaches full
@@ -1122,6 +1171,16 @@
       animation-duration: 0.01ms !important;
       animation-delay: 0s !important;
     }
+
+    /* Hover and press keep their colour change but no longer shift the row */
+    .mobile-nav-link:hover,
+    .mobile-nav-link:focus-visible,
+    .mobile-nav-link:active,
+    .mobile-nav-link:hover svg,
+    .mobile-nav-link:focus-visible svg,
+    .mobile-nav-link:active svg {
+      transform: none;
+    }
   }
 
   /* -------------------------------------------------------------
@@ -1257,6 +1316,16 @@
   .site-footer-list a:focus-visible svg {
     color: var(--footer-accent);
     transform: translate(var(--space-01), calc(-1 * var(--space-01)));
+  }
+
+  /* Hover keeps its colour change but no longer shifts links or arrows */
+  @media (prefers-reduced-motion: reduce) {
+    .site-footer-email:hover svg,
+    .site-footer-list a:hover,
+    .site-footer-list a:hover svg,
+    .site-footer-list a:focus-visible svg {
+      transform: none;
+    }
   }
 
   .site-footer-base {

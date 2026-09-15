@@ -25,27 +25,27 @@ export interface Props {
 const { charity, class: className, ...restProps } = Astro.props;
 
 const charityTitle = 'Proudly Supporting';
-const charityName = charity?.name || 'SPCA';
 const charityDescription =
   charity?.charityDescription ||
   'The Society for the Prevention of Cruelty to Animals (SPCA) champions the welfare of all animals in Hong Kong. By adopting our animal-shaped GPS art routes, every kilometer you run raises awareness, rescue funds, and compassionate community support for shelter animals in need.';
 const photo = resolveCharityPhoto(charity);
 ---
 
-<section id="charity-spotlight" class:list={['charity-section', className]} aria-label="Partner Charities Spotlight - SPCA" {...restProps}>
+<section id="charity-spotlight" class:list={['charity-section', className]} aria-labelledby="charity-heading" {...restProps}>
   <div class="charity-container">
     <!-- Section Header (Triggered reveal) -->
     <header id="charity-header" class="charity-header" data-charity-reveal>
-      <h2 class="charity-subtitle">{charityTitle}</h2>
+      <!-- The SP/CA letters are aria-hidden, so the name is announced once, here -->
+      <h2 id="charity-heading" class="charity-subtitle">{charityTitle} <span class="visually-hidden">SPCA</span></h2>
     </header>
 
     <!-- Centerpiece: Overlapping SPCA typography with expanding central framed photo -->
-    <div class="charity-centerpiece" aria-label={`${charityName} Spotlight`}>
+    <div class="charity-centerpiece">
       <!-- Left letter block: SP -->
       <span class="charity-letter charity-letter--left" aria-hidden="true">SP</span>
 
       <!-- Expanding central photo frame overlapping SP and CA -->
-      <div class="charity-photo-frame" role="img" aria-label="SPCA rescue puppy resting head gently in human hand">
+      <div class="charity-photo-frame">
         <img
           src={photo.src}
           alt={photo.alt}
@@ -67,7 +67,7 @@ const photo = resolveCharityPhoto(charity);
         {charityDescription}
       </p>
       <div class="charity-actions" data-charity-reveal>
-        <a href="/charities" class="hairline-link hairline-link--orange charity-cta-link" aria-label="View all partner charities">
+        <a href="/charities" class="hairline-link hairline-link--orange charity-cta-link">
           view all partner charities &rarr;
         </a>
       </div>
