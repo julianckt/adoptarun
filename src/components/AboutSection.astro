@@ -367,8 +367,8 @@ const {
     }
   }
 
-  /* Phone: DESIGN.md gutters step down; the tally steps up to 28px (1.4 × body), meeting the
-     fitted headline's floor so the two read as a pair on the smallest phones */
+  /* Phone: DESIGN.md gutters step down; the tally keeps its desktop token (fluid title, 32px here),
+     sitting level with the fitted headline so the two read as a pair */
   @media (max-width: 640px) {
     .about-content {
       padding: var(--space-10) var(--space-06);
@@ -385,7 +385,6 @@ const {
     }
 
     .about-tally {
-      font-size: calc(var(--font-size-body) * 1.4);
       text-wrap: pretty;
     }
   }
@@ -478,20 +477,21 @@ const {
         animation-name: about-trace;
       }
 
+      /* Each underscore lands before the next begins, with a short pause between them */
       .mark-distance::after {
-        animation-range: cover 26% cover 32%;
+        animation-range: cover 26% cover 30%;
       }
 
       .mark-runs::after {
-        animation-range: cover 28% cover 34%;
+        animation-range: cover 32% cover 36%;
       }
 
       .mark-runners::after {
-        animation-range: cover 30% cover 36%;
+        animation-range: cover 38% cover 42%;
       }
 
       .mark-raised::after {
-        animation-range: cover 32% cover 38%;
+        animation-range: cover 44% cover 48%;
       }
     }
 
