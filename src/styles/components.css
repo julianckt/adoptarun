@@ -350,6 +350,132 @@
     }
   }
 
+  /* -------------------------------------------------------------
+     Group Run Route Card: a group-run-green bookmark hangs from the
+     card's top edge carrying date + start time; district and
+     telemetry sit top-right; signups sit bottom-left of the map.
+     ------------------------------------------------------------- */
+  .route-card--group-run .route-card-plate {
+    overflow: visible;
+  }
+
+  .route-card--group-run .route-card-top {
+    gap: var(--space-05);
+    padding: var(--space-00) var(--space-05) var(--space-00) var(--space-00);
+  }
+
+  .route-card-bookmark {
+    position: relative;
+    z-index: 3;
+    flex-shrink: 0;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-02);
+    margin: calc(-1 * var(--space-02)) var(--space-00) var(--space-00) var(--space-05);
+    padding: calc(var(--space-03) + var(--space-02)) var(--space-04) var(--space-04);
+    background-color: var(--color-group-run-green);
+    color: var(--color-canvas-black);
+    text-align: center;
+  }
+
+  .route-card-bookmark-flag {
+    justify-self: stretch;
+    margin-bottom: var(--space-01);
+    padding-bottom: var(--space-02);
+    border-bottom: thin solid color-mix(in srgb, var(--color-canvas-black) 30%, transparent);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 700;
+    line-height: var(--leading-body);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .route-card-bookmark-weekday,
+  .route-card-bookmark-month {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    line-height: var(--leading-body);
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+  }
+
+  .route-card-bookmark-day {
+    font-family: var(--font-display);
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 72;
+    font-weight: 700;
+    font-size: clamp(var(--font-size-tagline), 15cqi, var(--font-size-title));
+    line-height: var(--leading-compressed);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .route-card-bookmark-time {
+    justify-self: stretch;
+    margin-top: var(--space-01);
+    padding-top: var(--space-02);
+    border-top: thin solid color-mix(in srgb, var(--color-canvas-black) 30%, transparent);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    font-weight: 600;
+    line-height: var(--leading-body);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .route-card-bookmark-period {
+    margin-left: var(--space-01);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    text-transform: lowercase;
+  }
+
+  .route-card-head {
+    min-width: 0;
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-04);
+    padding-top: var(--space-05);
+    text-align: right;
+  }
+
+  .route-card-head .route-card-telemetry {
+    padding-top: var(--space-00);
+  }
+
+  .route-card-signups {
+    position: relative;
+    z-index: 2;
+    align-self: flex-start;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-03);
+    padding: var(--space-00) var(--space-05) var(--space-04);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 600;
+    line-height: var(--leading-body);
+    color: var(--color-group-run-green);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .route-card-signups::before {
+    content: "";
+    inline-size: var(--space-03);
+    block-size: var(--space-03);
+    background-color: var(--color-group-run-green);
+  }
+
+  .route-card-signups + .route-card-band {
+    margin-top: var(--space-00);
+  }
+
   /* Group Run Badge Foundation */
   .badge-group-run {
     display: inline-flex;
