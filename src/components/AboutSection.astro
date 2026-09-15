@@ -367,8 +367,8 @@ const {
     }
   }
 
-  /* Phone: DESIGN.md gutters step down; the tally steps to metric size, a clear step above the
-     paragraph and still below the fitted headline (28px floor) */
+  /* Phone: DESIGN.md gutters step down; the tally steps up to 28px (1.4 × body), meeting the
+     fitted headline's floor so the two read as a pair on the smallest phones */
   @media (max-width: 640px) {
     .about-content {
       padding: var(--space-10) var(--space-06);
@@ -385,7 +385,7 @@ const {
     }
 
     .about-tally {
-      font-size: var(--font-size-metric);
+      font-size: calc(var(--font-size-body) * 1.4);
       text-wrap: pretty;
     }
   }
@@ -458,19 +458,20 @@ const {
       animation-timeline: --about-tally;
     }
 
-    /* One sequence down the page: the three photos open (script, keyed to the sentence's centre
-       at 72% / 62% / 52% of the viewport), then the paragraph rises in as the Art photo starts,
-       the tally a beat later, and the underscores trace in as the tally lands. Ranges are set so
-       each element starts rising with its top around 70% of the viewport and settles near 55%. */
+    /* One sequence down the page: the three photos open in a tight cascade (script, keyed to the
+       sentence's centre at 72% / 66% / 60% of the viewport), then the paragraph rises in as the
+       Art photo starts, the tally a beat later, and the underscores trace in while the tally is
+       still settling. Each text element starts rising with its top around 80% of the viewport
+       and settles near 65%. */
     @media (prefers-reduced-motion: no-preference) {
       .about-description {
         animation-name: about-rise;
-        animation-range: cover 25% cover 40%;
+        animation-range: cover 18% cover 32%;
       }
 
       .about-tally {
         animation-name: about-rise;
-        animation-range: cover 27% cover 41%;
+        animation-range: cover 19% cover 32%;
       }
 
       .tally-mark::after {
@@ -478,19 +479,19 @@ const {
       }
 
       .mark-distance::after {
-        animation-range: cover 37% cover 45%;
+        animation-range: cover 26% cover 32%;
       }
 
       .mark-runs::after {
-        animation-range: cover 40% cover 48%;
+        animation-range: cover 28% cover 34%;
       }
 
       .mark-runners::after {
-        animation-range: cover 43% cover 51%;
+        animation-range: cover 30% cover 36%;
       }
 
       .mark-raised::after {
-        animation-range: cover 46% cover 54%;
+        animation-range: cover 32% cover 38%;
       }
     }
 
@@ -498,7 +499,7 @@ const {
       .about-description,
       .about-tally {
         animation-name: about-fade;
-        animation-range: cover 25% cover 40%;
+        animation-range: cover 18% cover 32%;
       }
     }
   }
@@ -582,11 +583,12 @@ const {
 
     // Fractions of viewport height the sentence's centre must rise past to open each photo. Keyed to
     // the sentence itself (not the section edge) so the rhythm is the same on every device, and
-    // spaced so each photo starts while the previous one is mid-motion. The paragraph and tally
-    // ranges in CSS pick up straight after the third. Each photo closes again once the centre drops
-    // back below its threshold plus a small band, so boundaries never flicker.
-    const stages = [0.72, 0.62, 0.52];
-    const HYSTERESIS = 0.05;
+    // spaced tightly so the three read as one cascade, each starting early in the previous one's
+    // motion. The paragraph and tally ranges in CSS pick up straight after the third. Each photo
+    // closes again once the centre drops back below its threshold plus a small band (kept under
+    // the stage spacing), so boundaries never flicker.
+    const stages = [0.72, 0.66, 0.6];
+    const HYSTERESIS = 0.04;
     const active = stages.map(() => false);
 
     let scrollQueued = false;
