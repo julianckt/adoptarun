@@ -6,8 +6,9 @@
  * - Natural unpinned document flow framed by top and bottom hairlines.
  * - Centerpiece is a smoothed scroll scrub: the photo frame grows ahead of the letters and
  *   its moving edges push SP and CA aside; the letters trail slightly for a sense of weight.
- * - Header and footer text reveal on a quiet scroll-linked fade (rise + blur-to-sharp) that
- *   reverses when scrolling back, so it plays every time the section is entered.
+ * - Header and footer text reveal on a triggered, fixed-duration fade (rise + blur-to-sharp).
+ *   The trigger fires both ways: text reveals on entering the viewport from either direction
+ *   and resets on leaving, so it replays every pass.
  * - CSS defaults are the settled end state, so no-JS and reduced-motion show the final layout.
  * - Sourced from Sanity getCharities() with graceful static fallback.
  * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
@@ -31,8 +32,8 @@ const charityDescription =
 
 <section id="charity-spotlight" class:list={['charity-section', className]} aria-label="Partner Charities Spotlight - SPCA" {...restProps}>
   <div class="charity-container">
-    <!-- Section Header (Scroll-linked reveal) -->
-    <header id="charity-header" class="charity-header" data-charity-reveal="0.24">
+    <!-- Section Header (Triggered reveal) -->
+    <header id="charity-header" class="charity-header" data-charity-reveal>
       <h2 class="charity-subtitle">{charityTitle}</h2>
     </header>
 
@@ -58,12 +59,12 @@ const charityDescription =
       <span class="charity-letter charity-letter--right" aria-hidden="true">CA</span>
     </div>
 
-    <!-- Bottom Mission Copy & Action Link (Scroll-linked reveal) -->
+    <!-- Bottom Mission Copy & Action Link (Triggered reveal) -->
     <footer id="charity-footer" class="charity-footer">
-      <p class="charity-description" data-charity-reveal="0.2">
+      <p class="charity-description" data-charity-reveal>
         {charityDescription}
       </p>
-      <div class="charity-actions" data-charity-reveal="0.16">
+      <div class="charity-actions" data-charity-reveal>
         <a href="/charities" class="hairline-link hairline-link--orange charity-cta-link" aria-label="View all partner charities">
           view all partner charities &rarr;
         </a>
@@ -102,12 +103,23 @@ const charityDescription =
     position: relative;
   }
 
-  /* Quiet scroll-linked reveal: --reveal runs 0 → 1 (defaults to fully shown) */
+  /* Triggered reveal: the script toggles .is-revealed as each element crosses the trigger line */
   [data-charity-reveal] {
-    opacity: var(--reveal, 1);
-    transform: translateY(calc((1 - var(--reveal, 1)) * var(--space-05)));
-    filter: blur(calc((1 - var(--reveal, 1)) * var(--space-01)));
-    will-change: opacity, transform, filter;
+    transition: opacity 700ms var(--ease-out-expo),
+                transform 700ms var(--ease-out-expo),
+                filter 700ms var(--ease-out-expo);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .charity-actions {
+    --reveal-delay: 120ms;
+  }
+
+  /* Hidden state only applies once the script arms the section, so no-JS shows everything */
+  :global(.charity-section.is-armed) [data-charity-reveal]:not(:global(.is-revealed)) {
+    opacity: 0;
+    transform: translateY(var(--space-05));
+    filter: blur(var(--space-01));
   }
 
   .charity-header {
@@ -256,7 +268,10 @@ const charityDescription =
 
   /* Reduced Motion: script never runs, so the settled defaults above apply */
   @media (prefers-reduced-motion: reduce) {
-    [data-charity-reveal],
+    [data-charity-reveal] {
+      transition: none;
+    }
+
     .charity-letter,
     .charity-photo-frame,
     .charity-photo-img {
@@ -272,8 +287,16 @@ const charityDescription =
     if (!section || !frame) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const reveals = Array.from(section.querySelectorAll<HTMLElement>('[data-charity-reveal]'));
-    const revealSpans = reveals.map((el) => Number(el.dataset.charityReveal) || 0.3);
+    // Text reveals fire on entry from either direction and reset on exit, so they replay every pass.
+    // The trigger line sits 15% above the viewport bottom.
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => entry.target.classList.toggle('is-revealed', entry.isIntersecting));
+      },
+      { rootMargin: '0px 0px -15% 0px', threshold: 0 }
+    );
+    section.querySelectorAll('[data-charity-reveal]').forEach((el) => revealObserver.observe(el));
+    section.classList.add('is-armed');
 
     // Photo scale at the start of the scrub; it reaches 1 at 75% of the scroll range.
     const PHOTO_START = 0.62;
@@ -281,11 +304,9 @@ const charityDescription =
     // Per-frame approach rates (at 60fps). Letters are slower than the photo so they trail its edges.
     const PHOTO_RATE = 0.102;
     const LETTER_RATE = 0.072;
-    const TEXT_RATE = 0.08;
 
     const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-    const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
     const approach = (current: number, target: number, rate: number, dt: number) =>
       current + (target - current) * (1 - Math.pow(1 - rate, dt / (1000 / 60)));
 
@@ -304,14 +325,7 @@ const charityDescription =
       const progress = clamp01((startY - (rect.top + rect.height * 0.5)) / (startY - endY));
       const photo = PHOTO_START + (1 - PHOTO_START) * easeOutCubic(clamp01(progress / PHOTO_LEAD));
 
-      // Text progress: each element finishes once its top has travelled data-charity-reveal of the
-      // viewport height (smaller = finishes earlier)
-      const texts = reveals.map((el, i) => {
-        const top = el.getBoundingClientRect().top;
-        return easeInOutSine(clamp01((vh - top) / (vh * revealSpans[i])));
-      });
-
-      return { photo, texts };
+      return { photo };
     }
 
     // Letters hug the photo's visual edge: a scaled frame's edge moves by size * (scale - 1) / 2
@@ -321,13 +335,11 @@ const charityDescription =
     const state = {
       photo: initial.photo,
       split: edgeFor(initial.photo),
-      texts: initial.texts.slice(),
     };
 
     function write() {
       section!.style.setProperty('--photo-scale', state.photo.toFixed(4));
       section!.style.setProperty('--letter-split', state.split.toFixed(2) + 'px');
-      reveals.forEach((el, i) => el.style.setProperty('--reveal', state.texts[i].toFixed(4)));
     }
 
     write();
@@ -343,13 +355,10 @@ const charityDescription =
       state.photo = approach(state.photo, targets.photo, PHOTO_RATE, dt);
       const edge = edgeFor(state.photo);
       state.split = approach(state.split, edge, LETTER_RATE, dt);
-      state.texts = state.texts.map((v, i) => approach(v, targets.texts[i], TEXT_RATE, dt));
       write();
 
       const settled =
-        Math.abs(state.photo - targets.photo) < 0.0005 &&
-        Math.abs(state.split - edge) < 0.1 &&
-        state.texts.every((v, i) => Math.abs(v - targets.texts[i]) < 0.001);
+        Math.abs(state.photo - targets.photo) < 0.0005 && Math.abs(state.split - edge) < 0.1;
 
       if (settled) {
         running = false;
