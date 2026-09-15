@@ -64,17 +64,6 @@ const groupRunStart =
       })()
     : null;
 const showSignups = isGroupRun && typeof groupRunSignupCount === 'number';
-
-const telemetry = (formattedDuration || formattedElevation) && (
-  <dl class="route-card-telemetry">
-    {formattedDuration && (
-      <div class="route-card-metric"><dt>est.</dt><dd>{formattedDuration}</dd></div>
-    )}
-    {formattedElevation && (
-      <div class="route-card-metric"><dt>elev.</dt><dd>{formattedElevation}</dd></div>
-    )}
-  </dl>
-);
 ---
 
 <article
@@ -114,7 +103,16 @@ const telemetry = (formattedDuration || formattedElevation) && (
             <h3 class="route-card-district">{district}</h3>
             {displayTags && <p class="route-card-tags">{displayTags}</p>}
           </div>
-          {telemetry}
+          {(formattedDuration || formattedElevation) && (
+          <dl class="route-card-telemetry">
+            {formattedDuration && (
+              <div class="route-card-metric"><dt>est.</dt><dd>{formattedDuration}</dd></div>
+            )}
+            {formattedElevation && (
+              <div class="route-card-metric"><dt>elev.</dt><dd>{formattedElevation}</dd></div>
+            )}
+          </dl>
+        )}
         </div>
       </div>
     ) : (
@@ -123,7 +121,16 @@ const telemetry = (formattedDuration || formattedElevation) && (
           <h3 class="route-card-district">{district}</h3>
           {displayTags && <p class="route-card-tags">{displayTags}</p>}
         </div>
-        {telemetry}
+        {(formattedDuration || formattedElevation) && (
+          <dl class="route-card-telemetry">
+            {formattedDuration && (
+              <div class="route-card-metric"><dt>est.</dt><dd>{formattedDuration}</dd></div>
+            )}
+            {formattedElevation && (
+              <div class="route-card-metric"><dt>elev.</dt><dd>{formattedElevation}</dd></div>
+            )}
+          </dl>
+        )}
       </div>
     )}
 
