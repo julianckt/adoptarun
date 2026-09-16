@@ -15,10 +15,15 @@
  */
 export interface Props {
   class?: string;
+  ctaDescription?: string;
   [key: string]: any;
 }
 
-const { class: className, ...restProps } = Astro.props;
+const {
+  class: className,
+  ctaDescription = "every kilometer drawn on the city's pavement raises rescue funds and champions a kinder city.",
+  ...restProps
+} = Astro.props;
 ---
 
 <section id="bottom-cta" class:list={['finale', className]} aria-labelledby="finale-heading" {...restProps}>
@@ -33,7 +38,7 @@ const { class: className, ...restProps } = Astro.props;
     </h2>
 
     <p class="finale-subtext">
-      every kilometer drawn on the city's pavement raises rescue funds and champions a kinder city.
+      {ctaDescription}
     </p>
 
     <div class="finale-actions">

@@ -12,7 +12,10 @@ export const siteCopyType = defineType({
     { name: 'counters', title: 'Movement Counters' },
     { name: 'journey', title: 'Journey Steps' },
     { name: 'faqs', title: 'FAQs' },
-    { name: 'about', title: 'About & Slogans' },
+    { name: 'about', title: 'About Section' },
+    { name: 'cta', title: 'Bottom Action Banner' },
+    { name: 'footer', title: 'Footer & Contact' },
+    { name: 'seo', title: 'SEO & Social Share' },
   ],
   fields: [
     // --- Group: Announcement Ticker ---
@@ -55,47 +58,30 @@ export const siteCopyType = defineType({
       title: 'Hero Headline',
       type: 'string',
       group: 'hero',
+      description: 'Headline in lieu of the wordmark (currently kept for future use; wordmark is rendered in hero).',
       initialValue: 'the new way to push yourself in training and in giving back',
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'heroSubtitle',
-      title: 'Hero Subtitle / Description',
+      title: 'Hero Subtitle / Tagline',
+      type: 'text',
+      rows: 2,
+      group: 'hero',
+      description: 'Tagline displayed immediately below the hero wordmark.',
+      initialValue: 'the new way to push yourself in training and in giving back',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'heroDescription',
+      title: 'Hero Bottom Description',
       type: 'text',
       rows: 3,
       group: 'hero',
+      description: 'Description paragraph displayed in the bottom bar of the hero section.',
       initialValue:
-        'by bringing people together through long-distance running and community art, our project aims to help champion a kinder city.',
-    }),
-    defineField({
-      name: 'heroCtaText',
-      title: 'Primary CTA Text',
-      type: 'string',
-      group: 'hero',
-      initialValue: 'run with us',
+        'by bringing people together through long-distance running and community art, our project aims to help champion a kinder city — a city where our shared compassion moves us forward.',
       validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'heroCtaLink',
-      title: 'Primary CTA Link',
-      type: 'string',
-      group: 'hero',
-      initialValue: '/signup',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'heroSecondaryCtaText',
-      title: 'Secondary CTA Text',
-      type: 'string',
-      group: 'hero',
-      initialValue: 'log a run',
-    }),
-    defineField({
-      name: 'heroSecondaryCtaLink',
-      title: 'Secondary CTA Link',
-      type: 'string',
-      group: 'hero',
-      initialValue: '/log',
     }),
 
     // --- Group: Movement Counters ---
@@ -127,11 +113,13 @@ export const siteCopyType = defineType({
       validation: (rule) => rule.required().min(0),
     }),
     defineField({
-      name: 'countersSubtitle',
-      title: 'Counters Suffix / Subtitle',
-      type: 'string',
+      name: 'totalHKDRaised',
+      title: 'Total HKD Raised',
+      type: 'number',
       group: 'counters',
-      initialValue: 'km covered across 21 runs by 33 participants and counting',
+      description: 'Total donations and rescue funds raised in HKD across community runs.',
+      initialValue: 0,
+      validation: (rule) => rule.required().min(0),
     }),
 
     // --- Group: Journey Steps ---
@@ -140,13 +128,26 @@ export const siteCopyType = defineType({
       title: 'Journey Section Headline',
       type: 'string',
       group: 'journey',
+      description: 'Headline for the journey section (currently kept for future use; branded badge lockup is rendered in UI).',
       initialValue: 'the 3-step caretaker journey',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'journeySubtitle',
+      title: 'Journey Subtitle / Mission Text',
+      type: 'text',
+      rows: 2,
+      group: 'journey',
+      description: 'Mission statement rendered beneath the journey lockup.',
+      initialValue: 'make commitments to yourself and to your community – run the route and own the impact',
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'journeySteps',
       title: 'Journey Steps',
       type: 'array',
       group: 'journey',
+      validation: (rule) => rule.required().min(1),
       of: [
         defineArrayMember({
           type: 'object',
@@ -254,31 +255,120 @@ export const siteCopyType = defineType({
       ],
     }),
 
-    // --- Group: About & Slogans ---
+    // --- Group: About Section ---
     defineField({
       name: 'missionStatement',
-      title: 'Mission Statement',
+      title: 'Mission Statement / About Description',
       type: 'text',
       group: 'about',
-      rows: 3,
+      rows: 4,
+      description: 'Community description paragraph displayed in the About section alongside movement counters.',
       initialValue:
-        'By bringing people together through long-distance running and community art, our project aims to help champion a kinder city where our shared compassion moves us forward.',
+        'We are a budding community project, trying to bring together runners across Hong Kong. Seeking to infuse fun and flair into running all the whilst doing good for the community around us. Get involved in our growing movement and turn your compassion into action!',
+      validation: (rule) => rule.required(),
     }),
+
+    // --- Group: Bottom Action Banner ---
     defineField({
-      name: 'essenceStatement',
-      title: 'Essence Statement',
+      name: 'ctaDescription',
+      title: 'Action Banner Description',
       type: 'text',
-      group: 'about',
-      rows: 3,
+      group: 'cta',
+      rows: 2,
+      description: 'Description text rendered above the primary and secondary CTA buttons in the bottom action banner.',
       initialValue:
-        'Creating large-scale pieces of digital art through GPS tracking by running, jogging or walking an artwork to adopt and take care of it!',
+        "every kilometer drawn on the city's pavement raises rescue funds and champions a kinder city.",
+      validation: (rule) => rule.required(),
     }),
+
+    // --- Group: Footer & Contact ---
     defineField({
-      name: 'actionSlogan',
-      title: 'Action Slogan',
+      name: 'footerContactEmail',
+      title: 'Contact Email Address',
       type: 'string',
-      group: 'about',
-      initialValue: 'Adopt the run. Complete the route. Own the impact.',
+      group: 'footer',
+      description: 'Main public inquiries and support email address shown in the site footer.',
+      initialValue: 'adoptarunhk@gmail.com',
+      validation: (rule) => rule.required().email(),
+    }),
+    defineField({
+      name: 'footerSocialLinks',
+      title: 'Footer Community & Social Links',
+      type: 'array',
+      group: 'footer',
+      description: 'Social and community links displayed in the Community column of the footer.',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'socialLink',
+          title: 'Social Link',
+          fields: [
+            defineField({
+              name: 'text',
+              title: 'Link Text',
+              type: 'string',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'url',
+              title: 'URL',
+              type: 'url',
+              validation: (rule) =>
+                rule.required().uri({
+                  scheme: ['http', 'https'],
+                }),
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'text',
+              subtitle: 'url',
+            },
+          },
+        }),
+      ],
+      initialValue: [
+        { _key: 'strava', text: 'strava club', url: 'https://strava.com/clubs/adoptarun' },
+        { _key: 'instagram', text: 'instagram', url: 'https://instagram.com/adoptarun' },
+        { _key: 'github', text: 'github', url: 'https://github.com/julianckt/adoptarun' },
+      ],
+    }),
+
+    // --- Group: SEO & Social Share ---
+    defineField({
+      name: 'seoTitle',
+      title: 'Default SEO Title',
+      type: 'string',
+      group: 'seo',
+      description:
+        'Page title displayed in browser tabs and search engine snippets (recommended: 50–60 characters).',
+      initialValue: 'adopt a run — gps art community movement',
+      validation: (rule) =>
+        rule.required().max(70).warning('Titles longer than 70 characters may be truncated by search engines'),
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'Default SEO Meta Description',
+      type: 'text',
+      rows: 3,
+      group: 'seo',
+      description:
+        'Summary snippet shown in Google search results and social media cards when sharing links (recommended: 120–160 characters).',
+      initialValue:
+        'an international gps-art community movement debuting in hong kong. bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.',
+      validation: (rule) =>
+        rule.required().max(200).warning('Descriptions longer than 160 characters are typically truncated by search engines'),
+    }),
+    defineField({
+      name: 'ogImage',
+      title: 'Social Share Image (OpenGraph)',
+      type: 'image',
+      group: 'seo',
+      description:
+        'Custom social preview image displayed when sharing the site on Twitter, Facebook, WhatsApp, or iMessage. Recommended format: 1200×630px JPG or PNG.',
+      options: {
+        hotspot: true,
+      },
     }),
   ],
   preview: {

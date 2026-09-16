@@ -16,6 +16,40 @@
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
+import type { JourneyStep } from '@/sanity/types';
+
+export interface Props {
+  subtitle?: string;
+  steps?: JourneyStep[];
+}
+
+const DEFAULT_STEPS: JourneyStep[] = [
+  {
+    _key: 'step1',
+    stepNumber: 'one.',
+    title: 'match+\ncommit',
+    description: 'match with an animal route, and choose a charity cause to pair with and commit to',
+  },
+  {
+    _key: 'step2',
+    stepNumber: 'two.',
+    title: 'grow+\nnurture',
+    description: 'bring your animal to life with your running steps and fundraise to nurture your cause',
+  },
+  {
+    _key: 'step3',
+    stepNumber: 'three.',
+    title: 'forever\nguardian',
+    description: 'own your success in running and in impact! Hand off your run to its next caretaker',
+  },
+];
+
+const {
+  subtitle = 'make commitments to yourself and to your community – run the route and own the impact',
+  steps = DEFAULT_STEPS,
+} = Astro.props;
+
+const resolvedSteps = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
 ---
 
 <section id="journey-section" class="journey-section" aria-labelledby="journey-heading">
@@ -33,25 +67,17 @@
           </span>
         </span>
       </h2>
-      <p class="journey-mission-text">make commitments to yourself and to your community – run the route and own the impact</p>
+      <p class="journey-mission-text">{subtitle}</p>
     </header>
 
     <ol class="journey-list">
-      <li class="journey-step">
-        <span class="journey-step-numeral">one.</span>
-        <h3 class="journey-step-title">match+<br />commit</h3>
-        <p class="journey-step-desc">match with an animal route, and choose a charity cause to pair with and commit to</p>
-      </li>
-      <li class="journey-step">
-        <span class="journey-step-numeral">two.</span>
-        <h3 class="journey-step-title">grow+<br />nurture</h3>
-        <p class="journey-step-desc">bring your animal to life with your running steps and fundraise to nurture your cause</p>
-      </li>
-      <li class="journey-step">
-        <span class="journey-step-numeral">three.</span>
-        <h3 class="journey-step-title">forever<br />guardian</h3>
-        <p class="journey-step-desc">own your success in running and in impact! Hand off your run to its next caretaker</p>
-      </li>
+      {resolvedSteps.map((step) => (
+        <li class="journey-step">
+          <span class="journey-step-numeral">{step.stepNumber}</span>
+          <h3 class="journey-step-title">{step.title}</h3>
+          <p class="journey-step-desc">{step.description}</p>
+        </li>
+      ))}
     </ol>
   </div>
 </section>
@@ -202,6 +228,7 @@
     letter-spacing: normal;
     color: var(--color-canvas-white);
     margin: 0;
+    white-space: pre-line;
   }
 
   .journey-step-desc {

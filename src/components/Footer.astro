@@ -1,20 +1,35 @@
 ---
+import type { SanitySiteCopy, FooterSocialLink } from '@/sanity/types';
+
 export interface Props {
   class?: string;
   /** 'full' renders contact, nav and legal rows; 'minimal' renders only the legal row. */
   variant?: 'full' | 'minimal';
+  siteCopy?: SanitySiteCopy | null;
   [key: string]: any;
 }
 
-const { class: className, variant = 'full', ...restProps } = Astro.props;
+const DEFAULT_SOCIAL_LINKS: FooterSocialLink[] = [
+  { _key: 'strava', text: 'strava club', url: 'https://strava.com/clubs/adoptarun' },
+  { _key: 'instagram', text: 'instagram', url: 'https://instagram.com/adoptarun' },
+  { _key: 'github', text: 'github', url: 'https://github.com/julianckt/adoptarun' },
+];
+
+const { class: className, variant = 'full', siteCopy, ...restProps } = Astro.props;
 const isMinimal = variant === 'minimal';
+
+const contactEmail = siteCopy?.footerContactEmail?.trim() || 'adoptarunhk@gmail.com';
+const socialLinks =
+  siteCopy?.footerSocialLinks && siteCopy.footerSocialLinks.length > 0
+    ? siteCopy.footerSocialLinks
+    : DEFAULT_SOCIAL_LINKS;
 ---
 
 <footer class:list={['site-footer', { 'site-footer--minimal': isMinimal }, className]} {...restProps}>
   {!isMinimal && (<>
   <p class="site-footer-contact">
     <span>Contact us at</span>
-    <a class="site-footer-email" href="mailto:adoptarunhk@gmail.com">adoptarunhk@gmail.com<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a>
+    <a class="site-footer-email" href={`mailto:${contactEmail}`}>{contactEmail}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a>
   </p>
   <div class="site-footer-body">
     <nav aria-label="Footer">
@@ -29,9 +44,9 @@ const isMinimal = variant === 'minimal';
     </nav>
     <nav aria-label="Community">
       <ul class="site-footer-list">
-        <li><a href="https://strava.com/clubs/adoptarun" target="_blank" rel="noopener noreferrer">strava club<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-        <li><a href="https://instagram.com/adoptarun" target="_blank" rel="noopener noreferrer">instagram<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-        <li><a href="https://github.com/julianckt/adoptarun" target="_blank" rel="noopener noreferrer">github<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+        {socialLinks.map((link) => (
+          <li><a href={link.url} target="_blank" rel="noopener noreferrer">{link.text}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+        ))}
       </ul>
     </nav>
   </div>

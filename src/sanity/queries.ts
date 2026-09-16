@@ -107,15 +107,13 @@ export const SITE_COPY_QUERY = defineQuery(
     announcementTickerLink,
     heroTitle,
     heroSubtitle,
-    heroCtaText,
-    heroCtaLink,
-    heroSecondaryCtaText,
-    heroSecondaryCtaLink,
+    heroDescription,
     totalKmCovered,
     totalRunsCompleted,
     totalParticipantsCount,
-    countersSubtitle,
+    totalHKDRaised,
     journeyHeadline,
+    journeySubtitle,
     journeySteps[] {
       _key,
       stepNumber,
@@ -129,8 +127,16 @@ export const SITE_COPY_QUERY = defineQuery(
       category
     },
     missionStatement,
-    essenceStatement,
-    actionSlogan
+    ctaDescription,
+    footerContactEmail,
+    footerSocialLinks[] {
+      _key,
+      text,
+      url
+    },
+    seoTitle,
+    seoDescription,
+    ogImage
   }`
 );
 

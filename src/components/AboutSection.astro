@@ -32,15 +32,21 @@ interface Props {
   totalKmCovered?: number | string;
   totalRunsCompleted?: number | string;
   totalParticipantsCount?: number | string;
+  totalHKDRaised?: number | string;
   totalAmountRaised?: number | string;
+  missionStatement?: string;
 }
 
 const {
   totalKmCovered = '00',
   totalRunsCompleted = '00',
   totalParticipantsCount = '00',
+  totalHKDRaised,
   totalAmountRaised = '00',
+  missionStatement = 'We are a budding community project, trying to bring together runners across Hong Kong. Seeking to infuse fun and flair into running all the whilst doing good for the community around us. Get involved in our growing movement and turn your compassion into action!',
 } = Astro.props;
+
+const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmountRaised;
 ---
 
 <section id="about-section" class="about-container" aria-label="About adopt a run">
@@ -70,10 +76,10 @@ const {
 
     <div class="about-row">
       <p class="about-description">
-        We are a budding community project, trying to bring together runners across Hong Kong. Seeking to infuse fun and flair into running all the whilst doing good for the community around us. Get involved in our growing movement and turn your compassion into action!
+        {missionStatement}
       </p>
 
-      <p class="about-tally">together we’ve run <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised">HK$<span class="tally-value">{totalAmountRaised}</span></span> <span class="tally-end">and counting.</span></p>
+      <p class="about-tally">together we’ve run <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised">HK$<span class="tally-value">{displayRaised}</span></span> <span class="tally-end">and counting.</span></p>
     </div>
   </div>
 </section>

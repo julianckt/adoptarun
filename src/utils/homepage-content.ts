@@ -12,6 +12,7 @@ export interface TallyValues {
   totalKmCovered?: number;
   totalRunsCompleted?: number;
   totalParticipantsCount?: number;
+  totalHKDRaised?: number;
 }
 
 const tallyNumber = (value: unknown): number | undefined => {
@@ -24,6 +25,7 @@ export function resolveTallyValues(siteCopy: Partial<SanitySiteCopy> | null | un
     totalKmCovered: tallyNumber(siteCopy?.totalKmCovered),
     totalRunsCompleted: tallyNumber(siteCopy?.totalRunsCompleted),
     totalParticipantsCount: tallyNumber(siteCopy?.totalParticipantsCount),
+    totalHKDRaised: tallyNumber(siteCopy?.totalHKDRaised),
   };
 }
 

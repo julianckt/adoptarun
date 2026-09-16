@@ -4,6 +4,7 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import type { SanitySiteCopy } from '@/sanity/types';
 import { getSiteCopy } from '@/sanity/queries';
+import { hasImageAsset, urlForImage } from '@/sanity/image';
 
 const DEFAULT_OG_IMAGE = '/images/og-default.jpg';
 
@@ -23,8 +24,8 @@ export interface Props {
 }
 
 const {
-  title = 'adopt a run — gps art community movement',
-  description = 'an international gps-art community movement debuting in hong kong. bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.',
+  title: propTitle,
+  description: propDescription,
   ogImage = DEFAULT_OG_IMAGE,
   ogImageAlt = 'adopt a run wordmark on an orange and coral gradient',
   noindex = false,
@@ -40,10 +41,26 @@ const {
 const sanitySiteCopy = await getSiteCopy().catch(() => null);
 const resolvedSiteCopy = sanitySiteCopy ?? propSiteCopy ?? null;
 
+const title = propTitle ?? resolvedSiteCopy?.seoTitle ?? 'adopt a run — gps art community movement';
+const description =
+  propDescription ??
+  resolvedSiteCopy?.seoDescription ??
+  'an international gps-art community movement debuting in hong kong. bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.';
+
+let resolvedOgImage = ogImage;
+if (ogImage === DEFAULT_OG_IMAGE && resolvedSiteCopy?.ogImage && hasImageAsset(resolvedSiteCopy.ogImage)) {
+  resolvedOgImage = urlForImage(resolvedSiteCopy.ogImage)
+    .width(1200)
+    .height(630)
+    .fit('crop')
+    .auto('format')
+    .url();
+}
+
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://adoptarun.org');
-const ogImageURL = new URL(ogImage, canonicalURL);
+const ogImageURL = new URL(resolvedOgImage, canonicalURL);
 // Dimensions are only known for the bundled default artwork.
-const isDefaultOgImage = ogImage === DEFAULT_OG_IMAGE;
+const isDefaultOgImage = resolvedOgImage === DEFAULT_OG_IMAGE;
 ---
 
 <!doctype html>
@@ -107,7 +124,7 @@ const isDefaultOgImage = ogImage === DEFAULT_OG_IMAGE;
   <body class:list={['adoptarun-shell', className]} {...restProps}>
     {!hideHeader && <Header siteCopy={resolvedSiteCopy} />}
     <slot />
-    {!hideFooter && <Footer variant={footerVariant} />}
+    {!hideFooter && <Footer variant={footerVariant} siteCopy={resolvedSiteCopy} />}
     <!-- Preview-only extras (the Visual Editing island on /preview); public pages leave this empty. -->
     <slot name="body-end" />
 

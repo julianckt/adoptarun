@@ -46,6 +46,10 @@ const fallbackRoute: SanityRoute = {
 const activeRoute = routes?.[0] || fallbackRoute;
 const spcaCharity = findSpotlightCharity(charities);
 const tally = resolveTallyValues(siteCopy);
+const heroSubtitle = siteCopy?.heroSubtitle?.trim() || 'the new way to push yourself in training and in giving back';
+const heroDescription =
+  siteCopy?.heroDescription?.trim() ||
+  'by bringing people together through long-distance running and community art, our project aims to help champion a kinder city — a city where our shared compassion moves us forward.';
 ---
 
 <main>
@@ -62,7 +66,7 @@ const tally = resolveTallyValues(siteCopy);
             <span class="c-wordmark-line"><span class="c-wordmark-adopt">adopt</span></span>
             <span class="c-wordmark-line"><span class="c-wordmark-a">a</span><span class="c-wordmark-space">&nbsp;</span><span class="c-wordmark-run">run</span></span>
           </h1>
-          <p class="hero-tagline">the new way to push yourself in training and in giving back</p>
+          <p class="hero-tagline">{heroSubtitle}</p>
         </div>
 
         <!-- Right Column: Route Cards (repeated twice) -->
@@ -75,7 +79,7 @@ const tally = resolveTallyValues(siteCopy);
       <!-- Hero Bottom Bar -->
       <div class="hero-bottom">
         <p class="hero-mission">
-          by bringing people together through long-distance running and community art, our project aims to help champion a kinder city — a city where our shared compassion moves us forward.
+          {heroDescription}
         </p>
         <a href="#about-section" class="hero-learn-more" aria-label="Learn more about adopt a run">
           learn more &darr;
@@ -89,10 +93,10 @@ const tally = resolveTallyValues(siteCopy);
   <!-- Homepage Curtain: Opaque container that reveals shader on transparent sections -->
   <div class="homepage-curtain">
     <!-- Homepage About Section (includes live community movement counters) -->
-    <AboutSection {...tally} />
+    <AboutSection {...tally} missionStatement={siteCopy?.missionStatement} />
 
     <!-- Section 03: 3-Step Caretaker Journey -->
-    <JourneySection />
+    <JourneySection subtitle={siteCopy?.journeySubtitle} steps={siteCopy?.journeySteps} />
   </div>
 
   <!-- Section 04: Featured GPS Art Routes (Outside Curtain, transparent over Shader Preset B) -->
@@ -105,7 +109,7 @@ const tally = resolveTallyValues(siteCopy);
   </div>
 
   <!-- Section 06: Action Banner CTA (Outside Curtain, Transparent over Shader Preset A) -->
-  <BottomCtaSection />
+  <BottomCtaSection ctaDescription={siteCopy?.ctaDescription} />
 </main>
 
 <script>

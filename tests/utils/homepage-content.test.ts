@@ -15,22 +15,35 @@ const charity = (overrides: Partial<SanityCharity>): SanityCharity =>
 
 describe('resolveTallyValues', () => {
   it('passes Sanity counter numbers through', () => {
-    const siteCopy = { totalKmCovered: 187, totalRunsCompleted: 21, totalParticipantsCount: 33 } as SanitySiteCopy;
+    const siteCopy = {
+      totalKmCovered: 187,
+      totalRunsCompleted: 21,
+      totalParticipantsCount: 33,
+      totalHKDRaised: 12500,
+    } as SanitySiteCopy;
     expect(resolveTallyValues(siteCopy)).toEqual({
       totalKmCovered: 187,
       totalRunsCompleted: 21,
       totalParticipantsCount: 33,
+      totalHKDRaised: 12500,
     });
   });
 
   it('keeps zero as real data', () => {
-    const siteCopy = { totalKmCovered: 0, totalRunsCompleted: 0, totalParticipantsCount: 0 } as SanitySiteCopy;
+    const siteCopy = {
+      totalKmCovered: 0,
+      totalRunsCompleted: 0,
+      totalParticipantsCount: 0,
+      totalHKDRaised: 0,
+    } as SanitySiteCopy;
     expect(resolveTallyValues(siteCopy).totalKmCovered).toBe(0);
+    expect(resolveTallyValues(siteCopy).totalHKDRaised).toBe(0);
   });
 
   it('strips stega from preview values before reading the number', () => {
-    const siteCopy = { totalKmCovered: `187${stega}` } as unknown as SanitySiteCopy;
+    const siteCopy = { totalKmCovered: `187${stega}`, totalHKDRaised: `5000${stega}` } as unknown as SanitySiteCopy;
     expect(resolveTallyValues(siteCopy).totalKmCovered).toBe(187);
+    expect(resolveTallyValues(siteCopy).totalHKDRaised).toBe(5000);
   });
 
   it('leaves missing figures undefined so the placeholder stays', () => {
@@ -38,6 +51,7 @@ describe('resolveTallyValues', () => {
       totalKmCovered: undefined,
       totalRunsCompleted: undefined,
       totalParticipantsCount: undefined,
+      totalHKDRaised: undefined,
     });
     expect(resolveTallyValues({ totalKmCovered: 12 }).totalRunsCompleted).toBeUndefined();
   });

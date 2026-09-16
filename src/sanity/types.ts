@@ -94,6 +94,12 @@ export interface FaqItem {
   category?: 'adoption' | 'logging' | 'charity' | 'general';
 }
 
+export interface FooterSocialLink {
+  _key?: string;
+  text: string;
+  url: string;
+}
+
 export interface SanitySiteCopy {
   _id: string;
   _type: 'siteCopy';
@@ -102,18 +108,20 @@ export interface SanitySiteCopy {
   announcementTickerLink?: string;
   heroTitle: string;
   heroSubtitle: string;
-  heroCtaText: string;
-  heroCtaLink: string;
-  heroSecondaryCtaText?: string;
-  heroSecondaryCtaLink?: string;
+  heroDescription: string;
   totalKmCovered: number;
   totalRunsCompleted: number;
   totalParticipantsCount: number;
-  countersSubtitle?: string;
+  totalHKDRaised: number;
   journeyHeadline: string;
+  journeySubtitle: string;
   journeySteps: JourneyStep[];
   faqs?: FaqItem[];
-  missionStatement?: string;
-  essenceStatement?: string;
-  actionSlogan?: string;
+  missionStatement: string;
+  ctaDescription: string;
+  footerContactEmail: string;
+  footerSocialLinks?: FooterSocialLink[];
+  seoTitle: string;
+  seoDescription: string;
+  ogImage?: SanityImageAsset | any;
 }
