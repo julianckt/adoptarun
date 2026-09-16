@@ -17,7 +17,7 @@ export function formatRouteDistance(distanceKm: number | string | undefined | nu
 }
 
 /**
- * Format route estimated duration into standard display string (e.g. '10min') or null if empty.
+ * Format route estimated duration into standard display string (e.g. '45min', '1hr', '1hr25min') or null if empty/0.
  */
 export function formatRouteDuration(
   estimatedDurationMin?: number | string | null
@@ -29,16 +29,29 @@ export function formatRouteDuration(
   ) {
     return null;
   }
-  if (typeof estimatedDurationMin === 'number') {
-    return `${estimatedDurationMin}min`;
+  const minutes =
+    typeof estimatedDurationMin === 'number'
+      ? estimatedDurationMin
+      : parseInt(String(estimatedDurationMin).replace(/min|hr|h|m/gi, '').trim(), 10);
+
+  if (Number.isNaN(minutes) || minutes <= 0) {
+    return null;
   }
-  const str = String(estimatedDurationMin).trim();
-  if (!str) return null;
-  return str.endsWith('min') ? str : `${str}min`;
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours > 0 && remainingMinutes > 0) {
+    return `${hours}hr${remainingMinutes}min`;
+  }
+  if (hours > 0) {
+    return `${hours}hr`;
+  }
+  return `${remainingMinutes}min`;
 }
 
 /**
- * Format route elevation gain into standard display string (e.g. '+4m', '-2m') or null if empty.
+ * Format route elevation gain into standard display string (e.g. '±4m', '±120m') or null if empty.
  */
 export function formatRouteElevation(
   elevationGainM?: number | string | null
@@ -50,15 +63,17 @@ export function formatRouteElevation(
   ) {
     return null;
   }
-  if (typeof elevationGainM === 'number') {
-    return elevationGainM >= 0 ? `+${elevationGainM}m` : `${elevationGainM}m`;
+  const numericVal =
+    typeof elevationGainM === 'number'
+      ? elevationGainM
+      : parseFloat(String(elevationGainM).replace(/[±+\-m]/g, '').trim());
+
+  if (Number.isNaN(numericVal)) {
+    return null;
   }
-  let str = String(elevationGainM).trim();
-  if (!str) return null;
-  if (!str.startsWith('+') && !str.startsWith('-')) {
-    str = `+${str}`;
-  }
-  return str.endsWith('m') ? str : `${str}m`;
+
+  const rounded = Math.round(Math.abs(numericVal));
+  return `±${rounded}m`;
 }
 
 /**

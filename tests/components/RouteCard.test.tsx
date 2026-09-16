@@ -40,34 +40,50 @@ describe('RouteCard Behavioral Contracts', () => {
     });
 
     describe('formatRouteDuration', () => {
-      it('formats numeric estimated minutes', () => {
+      it('formats numeric estimated minutes under an hour', () => {
         expect(formatRouteDuration(10)).toBe('10min');
         expect(formatRouteDuration(45)).toBe('45min');
+      });
+
+      it('formats exact hours without minutes', () => {
+        expect(formatRouteDuration(60)).toBe('1hr');
+        expect(formatRouteDuration(120)).toBe('2hr');
+      });
+
+      it('formats combined hours and minutes without spaces', () => {
+        expect(formatRouteDuration(85)).toBe('1hr25min');
+        expect(formatRouteDuration(135)).toBe('2hr15min');
       });
 
       it('formats string minutes with or without suffix', () => {
         expect(formatRouteDuration('10')).toBe('10min');
         expect(formatRouteDuration('10min')).toBe('10min');
+        expect(formatRouteDuration('85')).toBe('1hr25min');
       });
 
-      it('returns null when duration is not provided or empty', () => {
+      it('returns null when duration is not provided, 0, or empty', () => {
         expect(formatRouteDuration(undefined)).toBeNull();
         expect(formatRouteDuration(null)).toBeNull();
         expect(formatRouteDuration('')).toBeNull();
+        expect(formatRouteDuration(0)).toBeNull();
+        expect(formatRouteDuration(-5)).toBeNull();
       });
     });
 
     describe('formatRouteElevation', () => {
-      it('formats numeric elevation with positive prefix', () => {
-        expect(formatRouteElevation(4)).toBe('+4m');
-        expect(formatRouteElevation(120)).toBe('+120m');
-        expect(formatRouteElevation(0)).toBe('+0m');
+      it('formats numeric elevation with ± prefix and integer meters', () => {
+        expect(formatRouteElevation(4)).toBe('±4m');
+        expect(formatRouteElevation(120)).toBe('±120m');
+        expect(formatRouteElevation(0)).toBe('±0m');
+        expect(formatRouteElevation(42.4)).toBe('±42m');
+        expect(formatRouteElevation(42.6)).toBe('±43m');
       });
 
       it('formats string elevation with or without prefix and suffix', () => {
-        expect(formatRouteElevation('4')).toBe('+4m');
-        expect(formatRouteElevation('+4m')).toBe('+4m');
-        expect(formatRouteElevation('-10m')).toBe('-10m');
+        expect(formatRouteElevation('4')).toBe('±4m');
+        expect(formatRouteElevation('+4m')).toBe('±4m');
+        expect(formatRouteElevation('-10m')).toBe('±10m');
+        expect(formatRouteElevation('±42m')).toBe('±42m');
       });
 
       it('returns null when elevation is not provided or empty', () => {
@@ -133,7 +149,6 @@ describe('RouteCard Behavioral Contracts', () => {
       region: 'Kowloon',
       city: 'Hong Kong',
       difficulty: 'easy',
-      colorTheme: 'route-orange',
       featured: false,
       distanceKm: 5.18,
       elevationGain: 42,
@@ -149,25 +164,38 @@ describe('RouteCard Behavioral Contracts', () => {
       it('correctly formats all telemetry readouts and tags from Sanity test document', () => {
         expect(formatRouteDistance(sanityTestDoc.distanceKm)).toBe('5.2km');
         expect(formatRouteDuration(sanityTestDoc.estimatedDurationMin)).toBe('31min');
-        expect(formatRouteElevation(sanityTestDoc.elevationGain)).toBe('+42m');
+        expect(formatRouteElevation(sanityTestDoc.elevationGain)).toBe('±42m');
         expect(formatRouteDifficulty(sanityTestDoc.difficulty)).toBe('Easy');
         expect(formatRouteTags(sanityTestDoc.tags)).toBe('');
       });
     });
 
-    describe('Minimap Basemap & Theme Contract', () => {
+    describe('Minimap Basemap & Group Run Contract', () => {
       it('supports full-bleed basemap SVG markup with route-trace class', () => {
         const fullBleedSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 356 216" fill="none"><g class="route-basemap"><path d="M0 0"/></g><path class="route-trace" d="M10 10"/></svg>`;
         const routeWithBasemap: SanityRoute = {
           ...sanityTestDoc,
           miniMapSvg: fullBleedSvg,
-          colorTheme: 'route-coral',
         };
 
         expect(routeWithBasemap.miniMapSvg).toContain('viewBox="0 0 356 216"');
         expect(routeWithBasemap.miniMapSvg).toContain('class="route-basemap"');
         expect(routeWithBasemap.miniMapSvg).toContain('class="route-trace"');
-        expect(routeWithBasemap.colorTheme).toBe('route-coral');
+      });
+
+      it('supports group run fields activating group run contract', () => {
+        const groupRunDoc: SanityRoute = {
+          ...sanityTestDoc,
+          isGroupRun: true,
+          groupRunDateTime: '2026-10-15T19:30:00+08:00',
+          groupRunSignupCount: 18,
+          groupRunMeetupPoint: 'Wan Chai Ferry Pier',
+        };
+
+        expect(groupRunDoc.isGroupRun).toBe(true);
+        expect(groupRunDoc.groupRunDateTime).toBeDefined();
+        expect(groupRunDoc.groupRunSignupCount).toBe(18);
+        expect(groupRunDoc.groupRunMeetupPoint).toBe('Wan Chai Ferry Pier');
       });
     });
   });

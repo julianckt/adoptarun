@@ -42,7 +42,6 @@ export interface SanityRoute {
   region: 'Hong Kong Island' | 'Kowloon' | 'New Territories' | 'Outlying Islands';
   city: string;
   difficulty: 'beginner' | 'easy' | 'intermediate' | 'advanced';
-  colorTheme?: 'route-orange' | 'route-coral' | 'route-blush';
   featured: boolean;
   distanceKm: number;
   elevationGain: number;

@@ -11,10 +11,16 @@ import {
 export interface Props {
   class?: string;
   route: SanityRoute;
+  colorTheme?: 'route-orange' | 'route-coral' | 'route-blush';
   [key: string]: any;
 }
 
-const { class: className, route, ...restProps } = Astro.props;
+const {
+  class: className,
+  route,
+  colorTheme = 'route-orange',
+  ...restProps
+} = Astro.props;
 
 const {
   district,
@@ -23,7 +29,6 @@ const {
   estimatedDurationMin,
   elevationGain,
   difficulty = 'beginner',
-  colorTheme = 'route-orange',
   isGroupRun = false,
   groupRunDateTime,
   groupRunSignupCount,
