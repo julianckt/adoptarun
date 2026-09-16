@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useRef, useContext } from 'react';
-import { type FileInputProps, set, unset, PatchEvent, useFormCallbacks, useClient } from 'sanity';
-import { DocumentPaneContext } from 'sanity/_singletons';
+import { type FileInputProps, set, unset, PatchEvent, useClient } from 'sanity';
+import { DocumentPaneContext, DocumentIdContext } from 'sanity/_singletons';
 import { Card, Stack, Flex, Text, Badge, Box, Button, Spinner } from '@sanity/ui';
 import { parseGpxWithBasemap, type ParsedGpxResult } from '../../geo/gpx-parser';
 
 export interface GpxUploadInputProps extends Partial<FileInputProps> {
   onParsed?: (result: ParsedGpxResult) => void;
   documentOnChange?: (event: PatchEvent) => void;
+  documentId?: string;
   client?: any;
 }
 
@@ -20,11 +21,65 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sanityClient = useClient({ apiVersion: '2025-02-19' });
-  const { onChange: rootOnChange } = useFormCallbacks();
   const documentPane = useContext(DocumentPaneContext);
+  const documentIdContext = useContext(DocumentIdContext);
 
   const activeClient = props.client || sanityClient;
-  const targetDocumentOnChange = props.documentOnChange || documentPane?.onChange || rootOnChange;
+  const dispatchRootPatches = useCallback(
+    async (result: ParsedGpxResult) => {
+      const patches = [
+        set(result.distanceKm, ['distanceKm']),
+        set(result.elevationGain, ['elevationGain']),
+        set(result.estimatedDurationMin, ['estimatedDurationMin']),
+        set(result.routePolyline, ['routePolyline']),
+        set(result.miniMapSvg, ['miniMapSvg']),
+        set(result.elevationProfileJson, ['elevationProfile']),
+      ];
+
+      // 1. Explicit document onChange prop (e.g. tests or custom pane wrapper)
+      if (props.documentOnChange) {
+        props.documentOnChange(PatchEvent.from(patches));
+      }
+
+      // 2. Studio Document Pane onChange (Structure Tool form level dispatcher)
+      if (documentPane?.onChange) {
+        documentPane.onChange(PatchEvent.from(patches));
+      }
+
+      // 3. Fallback direct client patch (handles Presentation Tool / visual editing where DocumentPaneContext is absent)
+      const targetId =
+        props.documentId ||
+        documentPane?.displayed?._id ||
+        documentPane?.documentId ||
+        documentIdContext?.id;
+
+      if (activeClient && targetId && typeof activeClient.patch === 'function') {
+        try {
+          await activeClient
+            .patch(targetId)
+            .set({
+              distanceKm: result.distanceKm,
+              elevationGain: result.elevationGain,
+              estimatedDurationMin: result.estimatedDurationMin,
+              routePolyline: result.routePolyline,
+              miniMapSvg: result.miniMapSvg,
+              elevationProfile: result.elevationProfileJson,
+            })
+            .commit({ autoGenerateArrayKeys: true });
+        } catch (patchErr: any) {
+          console.warn('Direct document patch fallback warning:', patchErr);
+        }
+      }
+    },
+    [
+      activeClient,
+      documentIdContext?.id,
+      documentPane?.displayed?._id,
+      documentPane?.documentId,
+      documentPane?.onChange,
+      props,
+    ]
+  );
 
   const processGpxFile = useCallback(
     async (file: File) => {
@@ -54,18 +109,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
         setParsed(result);
 
         // Dispatch patches to root document fields to auto-populate metrics
-        if (targetDocumentOnChange) {
-          targetDocumentOnChange(
-            PatchEvent.from([
-              set(result.distanceKm, ['distanceKm']),
-              set(result.elevationGain, ['elevationGain']),
-              set(result.estimatedDurationMin, ['estimatedDurationMin']),
-              set(result.routePolyline, ['routePolyline']),
-              set(result.miniMapSvg, ['miniMapSvg']),
-              set(result.elevationProfileJson, ['elevationProfile']),
-            ])
-          );
-        }
+        await dispatchRootPatches(result);
 
         if (props.onParsed) {
           props.onParsed(result);
@@ -104,23 +148,39 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
         setIsProcessing(false);
       }
     },
-    [activeClient, props, targetDocumentOnChange]
+    [activeClient, dispatchRootPatches, props]
   );
 
   const handleReparseExistingAsset = useCallback(async () => {
-    const assetRef = props.value?.asset?._ref;
+    const assetRef = props.value?.asset?._ref || (props.value as any)?._ref;
     if (!assetRef || !activeClient) return;
 
     setIsProcessing(true);
     setError(null);
 
     try {
-      const assetDoc = await activeClient.getDocument(assetRef);
-      if (!assetDoc?.url) {
+      let assetDoc = await activeClient.getDocument(assetRef);
+      if (!assetDoc && typeof activeClient.fetch === 'function') {
+        assetDoc = await activeClient.fetch('*[_id == $id][0]', { id: assetRef });
+      }
+
+      const fileUrl =
+        assetDoc?.url ||
+        (assetDoc?.path ? `https://cdn.sanity.io/${assetDoc.path}` : null);
+
+      if (!fileUrl) {
         throw new Error('Unable to resolve GPX asset URL from Sanity CDN');
       }
 
-      const response = await fetch(assetDoc.url);
+      let response: Response;
+      try {
+        response = await fetch(fileUrl);
+      } catch (fetchErr: any) {
+        throw new Error(
+          `Failed to load GPX file from Sanity CDN (${fileUrl}): ${fetchErr?.message || fetchErr}`
+        );
+      }
+
       if (!response.ok) {
         throw new Error(`Failed to fetch GPX asset (${response.status} ${response.statusText})`);
       }
@@ -130,18 +190,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
       setParsed(result);
       setFileName(assetDoc.originalFilename || 'Existing GPX Asset');
 
-      if (targetDocumentOnChange) {
-        targetDocumentOnChange(
-          PatchEvent.from([
-            set(result.distanceKm, ['distanceKm']),
-            set(result.elevationGain, ['elevationGain']),
-            set(result.estimatedDurationMin, ['estimatedDurationMin']),
-            set(result.routePolyline, ['routePolyline']),
-            set(result.miniMapSvg, ['miniMapSvg']),
-            set(result.elevationProfileJson, ['elevationProfile']),
-          ])
-        );
-      }
+      await dispatchRootPatches(result);
 
       if (props.onParsed) {
         props.onParsed(result);
@@ -151,7 +200,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     } finally {
       setIsProcessing(false);
     }
-  }, [activeClient, props, targetDocumentOnChange]);
+  }, [activeClient, dispatchRootPatches, props]);
 
   const handleRemove = useCallback(() => {
     if (props.onChange) {
@@ -191,8 +240,9 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     fileInputRef.current?.click();
   };
 
-  const hasAttachedAsset = Boolean(props.value?.asset?._ref);
-  const displayLabel = fileName || (hasAttachedAsset ? `Asset: ${props.value?.asset?._ref}` : null);
+  const assetRef = props.value?.asset?._ref || (props.value as any)?._ref;
+  const hasAttachedAsset = Boolean(assetRef);
+  const displayLabel = fileName || (hasAttachedAsset ? `Asset: ${assetRef}` : null);
 
   return (
     <Stack gap={3}>
@@ -225,6 +275,16 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
               {parsed && (
                 <Badge tone="positive">
                   Fields Populated
+                </Badge>
+              )}
+              {parsed?.basemapSource === 'local-hk' && (
+                <Badge tone="positive">
+                  Local HK Basemap
+                </Badge>
+              )}
+              {parsed?.basemapSource === 'overpass' && (
+                <Badge tone="primary">
+                  OSM Overpass
                 </Badge>
               )}
             </Flex>

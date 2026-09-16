@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
@@ -12,6 +12,13 @@ import {
   calculateAspectBoundingBox,
   fetchOsmBasemap,
   extractTrackpointsFromXml,
+  isWithinHongKong,
+  isValidHkDataset,
+  queryHkBasemapFromDataset,
+  loadHkBasemapDataset,
+  setHkBasemapDataset,
+  clearHkBasemapCache,
+  HK_BOUNDING_BOX,
 } from '../../src/geo/gpx-parser';
 
 const FIXTURES_DIR = resolve(__dirname, '../fixtures/gpx');
@@ -457,6 +464,179 @@ describe('GPX Parser & Telemetry Module', () => {
     it('throws when passed empty string or non-string', () => {
       expect(() => parseGpx('')).toThrow('Invalid GPX input: string required');
       expect(() => parseGpx(null as any)).toThrow('Invalid GPX input: string required');
+    });
+  });
+
+  describe('Local Hong Kong Basemap & Overpass Fallback', () => {
+    afterEach(() => {
+      clearHkBasemapCache();
+    });
+
+    it('isWithinHongKong accurately validates Hong Kong boundaries', () => {
+      // Central / Victoria Peak (Hong Kong)
+      expect(
+        isWithinHongKong({
+          minLat: 22.27,
+          maxLat: 22.29,
+          minLng: 114.14,
+          maxLng: 114.16,
+        })
+      ).toBe(true);
+
+      // Lantau Peak (Hong Kong)
+      expect(
+        isWithinHongKong({
+          minLat: 22.25,
+          maxLat: 22.26,
+          minLng: 113.92,
+          maxLng: 113.93,
+        })
+      ).toBe(true);
+
+      // London (Outside HK)
+      expect(
+        isWithinHongKong({
+          minLat: 51.5,
+          maxLat: 51.52,
+          minLng: -0.13,
+          maxLng: -0.11,
+        })
+      ).toBe(false);
+
+      // Guangzhou / Shenzhen border north of 22.60
+      expect(
+        isWithinHongKong({
+          minLat: 22.65,
+          maxLat: 22.7,
+          minLng: 114.1,
+          maxLng: 114.2,
+        })
+      ).toBe(false);
+
+      // Full territory constant
+      expect(isWithinHongKong(HK_BOUNDING_BOX)).toBe(true);
+    });
+
+    it('loadHkBasemapDataset loads dataset from disk and caches in memory', async () => {
+      clearHkBasemapCache();
+      const dataset = await loadHkBasemapDataset();
+      expect(dataset).not.toBeNull();
+      expect(dataset?.roads.length).toBeGreaterThan(0);
+
+      // Verify custom dataset setter overrides cache
+      setHkBasemapDataset({
+        version: 1,
+        bbox: [22.15, 113.8, 22.6, 114.45],
+        roads: [],
+        water: [],
+      });
+      const overridden = await loadHkBasemapDataset();
+      expect(overridden?.roads.length).toBe(0);
+    });
+
+    it('isValidHkDataset validates dataset structure strictly', () => {
+      expect(isValidHkDataset(null)).toBe(false);
+      expect(isValidHkDataset({})).toBe(false);
+      expect(isValidHkDataset({ elements: [] })).toBe(false);
+      expect(
+        isValidHkDataset({
+          version: 1,
+          bbox: [22.15, 113.8, 22.6, 114.45],
+          roads: [],
+          water: [],
+        })
+      ).toBe(true);
+    });
+
+    it('queryHkBasemapFromDataset filters intersecting features and decodes polylines', () => {
+      const mockDataset = {
+        version: 1,
+        bbox: [22.15, 113.8, 22.6, 114.45] as [number, number, number, number],
+        roads: [
+          {
+            b: [22.28, 114.15, 22.285, 114.155] as [number, number, number, number],
+            p: encodePolyline([
+              [22.28, 114.15],
+              [22.285, 114.155],
+            ]),
+          },
+          {
+            // Far away road in Sai Kung
+            b: [22.38, 114.27, 22.385, 114.275] as [number, number, number, number],
+            p: encodePolyline([
+              [22.38, 114.27],
+              [22.385, 114.275],
+            ]),
+          },
+        ],
+        water: [
+          {
+            b: [22.281, 114.151, 22.284, 114.154] as [number, number, number, number],
+            p: encodePolyline([
+              [22.281, 114.151],
+              [22.284, 114.154],
+            ]),
+          },
+        ],
+      };
+
+      const queryBbox = {
+        minLat: 22.279,
+        maxLat: 22.286,
+        minLng: 114.149,
+        maxLng: 114.156,
+      };
+
+      const result = queryHkBasemapFromDataset(mockDataset, queryBbox);
+      expect(result.roads.length).toBe(1);
+      expect(result.roads[0][0][0]).toBeCloseTo(22.28, 4);
+      expect(result.water.length).toBe(1);
+      expect(result.water[0][0][0]).toBeCloseTo(22.281, 4);
+    });
+
+    it('parses Hong Kong GPX using local dataset with basemapSource: local-hk', async () => {
+      const xml = readFileSync(resolve(FIXTURES_DIR, 'garmin-sample.gpx'), 'utf-8');
+      const mockFetch = vi.fn();
+
+      const result = await parseGpxWithBasemap(xml, { fetchFn: mockFetch as any });
+      expect(result.basemapSource).toBe('local-hk');
+      // Overpass fetch should NEVER be called when local dataset is used
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result.miniMapSvg).toContain('class="route-trace"');
+      expect(result.miniMapSvg).toContain('<g class="route-basemap">');
+    });
+
+    it('falls back to Overpass API for non-Hong Kong GPX routes with basemapSource: overpass', async () => {
+      const nonHkXml = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="LondonRunner">
+  <trk><trkseg>
+    <trkpt lat="51.5074" lon="-0.1278"><ele>10</ele><time>2026-09-01T07:00:00Z</time></trkpt>
+    <trkpt lat="51.5084" lon="-0.1288"><ele>11</ele><time>2026-09-01T07:00:30Z</time></trkpt>
+  </trkseg></trk>
+</gpx>`;
+
+      const mockOverpassResponse = {
+        elements: [
+          {
+            type: 'way',
+            tags: { highway: 'primary' },
+            geometry: [
+              { lat: 51.507, lon: -0.127 },
+              { lat: 51.508, lon: -0.128 },
+            ],
+          },
+        ],
+      };
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockOverpassResponse,
+      });
+
+      const result = await parseGpxWithBasemap(nonHkXml, { fetchFn: mockFetch as any });
+      expect(result.basemapSource).toBe('overpass');
+      expect(mockFetch).toHaveBeenCalled();
+      expect(result.miniMapSvg).toContain('<g class="route-basemap">');
     });
   });
 });

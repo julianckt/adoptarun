@@ -296,8 +296,16 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     expect(screen.getByText('Fields Populated')).toBeDefined();
   });
 
-  it('displays strict error in UI when Overpass basemap fetch fails', async () => {
+  it('displays strict error in UI when Overpass basemap fetch fails for route outside Hong Kong', async () => {
     clearBasemapCache();
+    const nonHkGpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="TestGPX">
+  <trk><trkseg>
+    <trkpt lat="51.5074" lon="-0.1278"><ele>10</ele><time>2026-09-01T07:00:00Z</time></trkpt>
+    <trkpt lat="51.5084" lon="-0.1288"><ele>11</ele><time>2026-09-01T07:00:30Z</time></trkpt>
+  </trkseg></trk>
+</gpx>`;
+
     global.fetch = vi.fn(async (url: any) => {
       const urlStr = String(url);
       if (urlStr.includes('overpass-api.de')) {
@@ -307,17 +315,29 @@ describe('GpxUploadInput Sanity Studio Component', () => {
           statusText: 'Service Unavailable',
         } as any;
       }
-      return { ok: true, text: async () => sampleGpx } as any;
+      return { ok: true, text: async () => nonHkGpx } as any;
     });
 
     renderWithTheme(<GpxUploadInput />);
-    const file = new File([sampleGpx], 'route.gpx', { type: 'application/gpx+xml' });
+    const file = new File([nonHkGpx], 'london-route.gpx', { type: 'application/gpx+xml' });
     const fileInput = screen.getByTestId('gpx-file-input');
 
     fireEvent.change(fileInput, { target: { files: [file] } });
 
     await waitFor(() => {
       expect(screen.getByText(/Failed to fetch OpenStreetMap basemap/)).toBeDefined();
+    });
+  });
+
+  it('displays Local HK Basemap badge when route is within Hong Kong and parsed locally', async () => {
+    renderWithTheme(<GpxUploadInput />);
+    const file = new File([sampleGpx], 'hk-route.gpx', { type: 'application/gpx+xml' });
+    const fileInput = screen.getByTestId('gpx-file-input');
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Local HK Basemap')).toBeDefined();
     });
   });
 
@@ -382,5 +402,70 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     expect(setArgs.miniMapSvg).toBeDefined();
     expect(setArgs.distanceKm).toBeGreaterThan(0);
     expect(setArgs.routePolyline).toBeDefined();
+  });
+
+  it('displays descriptive error when GPX CDN fetch fails during re-parse', async () => {
+    const mockClient = {
+      getDocument: vi.fn().mockResolvedValue({
+        _id: 'file-asset-fail',
+        url: 'https://cdn.sanity.io/files/project/dataset/fail.gpx',
+      }),
+    };
+    global.fetch = vi.fn(async (url: any) => {
+      const urlStr = String(url);
+      if (urlStr.includes('cdn.sanity.io')) {
+        throw new TypeError('Load failed');
+      }
+      return { ok: true, json: async () => ({ elements: [] }) } as any;
+    });
+
+    renderWithTheme(
+      <GpxUploadInput
+        value={{
+          _type: 'file',
+          asset: { _type: 'reference', _ref: 'file-asset-fail' },
+        } as any}
+        client={mockClient}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('gpx-reparse-button'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Failed to load GPX file from Sanity CDN/i)
+      ).toBeDefined();
+    });
+  });
+
+  it('reconstructs URL from path if assetDoc.url is missing during re-parse', async () => {
+    const mockClient = {
+      getDocument: vi.fn().mockResolvedValue({
+        _id: 'file-asset-path-only',
+        path: 'files/project/dataset/path-only.gpx',
+        originalFilename: 'path-only.gpx',
+      }),
+    };
+    const documentOnChange = vi.fn();
+
+    renderWithTheme(
+      <GpxUploadInput
+        value={{
+          _type: 'file',
+          asset: { _type: 'reference', _ref: 'file-asset-path-only' },
+        } as any}
+        client={mockClient}
+        documentOnChange={documentOnChange}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('gpx-reparse-button'));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://cdn.sanity.io/files/project/dataset/path-only.gpx'
+      );
+      expect(documentOnChange).toHaveBeenCalled();
+    });
   });
 });

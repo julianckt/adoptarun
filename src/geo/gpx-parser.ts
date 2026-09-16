@@ -24,6 +24,7 @@ export interface ParsedGpxResult {
   trackpointCount: number;
   startTime: string | null;
   endTime: string | null;
+  basemapSource?: 'local-hk' | 'overpass' | 'none';
 }
 
 /**
@@ -145,6 +146,164 @@ export interface GeoBoundingBox {
 export interface BasemapData {
   roads: [number, number][][];
   water: [number, number][][];
+}
+
+/**
+ * Approximate bounding box for the entire territory of Hong Kong.
+ */
+export const HK_BOUNDING_BOX: GeoBoundingBox = {
+  minLat: 22.15,
+  maxLat: 22.6,
+  minLng: 113.8,
+  maxLng: 114.45,
+};
+
+/**
+ * Checks if a geographic bounding box is entirely within Hong Kong territory.
+ */
+export function isWithinHongKong(bbox: GeoBoundingBox): boolean {
+  return (
+    bbox.minLat >= HK_BOUNDING_BOX.minLat &&
+    bbox.maxLat <= HK_BOUNDING_BOX.maxLat &&
+    bbox.minLng >= HK_BOUNDING_BOX.minLng &&
+    bbox.maxLng <= HK_BOUNDING_BOX.maxLng
+  );
+}
+
+export interface CompactWay {
+  b: [number, number, number, number]; // [minLat, minLng, maxLat, maxLng]
+  p: string; // Google encoded polyline
+}
+
+export interface HkBasemapDataset {
+  version: number;
+  generatedAt?: string;
+  bbox: [number, number, number, number];
+  roads: CompactWay[];
+  water: CompactWay[];
+}
+
+let hkDatasetCache: HkBasemapDataset | null = null;
+
+export function clearHkBasemapCache(): void {
+  hkDatasetCache = null;
+}
+
+export function setHkBasemapDataset(dataset: HkBasemapDataset | null): void {
+  hkDatasetCache = dataset;
+}
+
+export function isValidHkDataset(data: any): data is HkBasemapDataset {
+  return Boolean(
+    data &&
+      typeof data === 'object' &&
+      Array.isArray(data.roads) &&
+      Array.isArray(data.water)
+  );
+}
+
+export interface LoadHkBasemapOptions {
+  datasetUrl?: string;
+  datasetFetchFn?: typeof fetch;
+}
+
+/**
+ * Loads the pre-processed Hong Kong basemap dataset.
+ * Supports browser fetch (with static studio fallback) and Node.js file system reading for tests/build.
+ */
+export async function loadHkBasemapDataset(
+  options: LoadHkBasemapOptions = {}
+): Promise<HkBasemapDataset | null> {
+  if (hkDatasetCache) {
+    return hkDatasetCache;
+  }
+
+  const { datasetUrl = '/data/hk-basemap.json', datasetFetchFn } = options;
+
+  // 1. Node.js environment (tests, scripts, SSR) - read directly from disk if not explicitly given a custom fetch function
+  if (!datasetFetchFn && typeof process !== 'undefined' && process.versions?.node) {
+    try {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const candidates = [
+        path.resolve(process.cwd(), 'static/data/hk-basemap.json'),
+        path.resolve(process.cwd(), 'public/data/hk-basemap.json'),
+      ];
+      for (const p of candidates) {
+        if (fs.existsSync(p)) {
+          const content = fs.readFileSync(p, 'utf-8');
+          const parsed = JSON.parse(content);
+          if (isValidHkDataset(parsed)) {
+            hkDatasetCache = parsed;
+            return hkDatasetCache;
+          }
+        }
+      }
+    } catch {
+      // Fall through to fetch if filesystem read failed
+    }
+  }
+
+  // 2. Fetch via datasetFetchFn or global fetch in browser/web worker
+  const activeFetch = datasetFetchFn || (typeof fetch !== 'undefined' ? fetch : undefined);
+  if (activeFetch) {
+    try {
+      let res = await activeFetch(datasetUrl);
+      if (!res.ok && !datasetUrl.startsWith('http')) {
+        res = await activeFetch(`https://adoptarun.sanity.studio${datasetUrl.startsWith('/') ? '' : '/'}${datasetUrl}`);
+      }
+      if (res && res.ok) {
+        const parsed = await res.json();
+        if (isValidHkDataset(parsed)) {
+          hkDatasetCache = parsed;
+          return hkDatasetCache;
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load local Hong Kong basemap dataset via fetch:', err);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Fast in-memory spatial bounding box query against the pre-processed HK basemap dataset.
+ * Intersects road and water bounding boxes and decodes only the matching polylines.
+ */
+export function queryHkBasemapFromDataset(
+  dataset: HkBasemapDataset,
+  bbox: GeoBoundingBox
+): BasemapData {
+  const roads: [number, number][][] = [];
+  const water: [number, number][][] = [];
+
+  if (Array.isArray(dataset.roads)) {
+    for (let i = 0; i < dataset.roads.length; i++) {
+      const b = dataset.roads[i].b;
+      // Bounding box intersection check
+      if (!(b[1] > bbox.maxLng || b[3] < bbox.minLng || b[0] > bbox.maxLat || b[2] < bbox.minLat)) {
+        const coords = decodePolyline(dataset.roads[i].p);
+        if (coords.length > 1) {
+          roads.push(coords);
+        }
+      }
+    }
+  }
+
+  if (Array.isArray(dataset.water)) {
+    for (let i = 0; i < dataset.water.length; i++) {
+      const b = dataset.water[i].b;
+      if (!(b[1] > bbox.maxLng || b[3] < bbox.minLng || b[0] > bbox.maxLat || b[2] < bbox.minLat)) {
+        const coords = decodePolyline(dataset.water[i].p);
+        if (coords.length > 1) {
+          water.push(coords);
+        }
+      }
+    }
+  }
+
+  return { roads, water };
 }
 
 /**
@@ -361,7 +520,7 @@ export async function fetchOsmBasemap(
         delete requestInit.signal;
         response = await fetchFn(OVERPASS_URL, requestInit);
       } else {
-        throw fetchErr;
+        throw new Error(`Failed to fetch OpenStreetMap basemap (${fetchErr?.message || fetchErr})`);
       }
     }
 
@@ -455,21 +614,59 @@ export function generateMiniMapSvg(coordinates: [number, number][]): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="${pathD}"/></svg>`;
 }
 
+export interface ParseGpxWithBasemapOptions extends ParseGpxOptions, FetchOsmBasemapOptions {
+  preferLocalHkBasemap?: boolean;
+  hkDataset?: HkBasemapDataset;
+  datasetUrl?: string;
+}
+
 /**
  * Parses raw GPX XML and asynchronously enriches it with an OpenStreetMap vector basemap.
+ * Prioritizes pre-processed local Hong Kong dataset when route is within HK bounds,
+ * falling back seamlessly to OpenStreetMap Overpass API, and finally to route-only SVG.
  */
 export async function parseGpxWithBasemap(
   gpxXml: string,
-  options: ParseGpxOptions & FetchOsmBasemapOptions = {}
+  options: ParseGpxWithBasemapOptions = {}
 ): Promise<ParsedGpxResult> {
   const baseResult = parseGpx(gpxXml, options);
   const bbox = calculateAspectBoundingBox(baseResult.coordinates, 356 / 216, 0.12);
-  const basemap = await fetchOsmBasemap(bbox, options);
-  const miniMapSvg = generateMiniMapWithBasemapSvg(baseResult.coordinates, basemap);
+
+  let basemap: BasemapData | null = null;
+  let basemapSource: 'local-hk' | 'overpass' | 'none' = 'none';
+
+  // 1. Try local Hong Kong dataset if route is within HK bounds
+  const preferLocal = options.preferLocalHkBasemap !== false;
+  if (preferLocal && isWithinHongKong(bbox)) {
+    try {
+      const dataset = options.hkDataset || (await loadHkBasemapDataset(options));
+      if (dataset) {
+        const localData = queryHkBasemapFromDataset(dataset, bbox);
+        if (localData.roads.length > 0 || localData.water.length > 0) {
+          basemap = localData;
+          basemapSource = 'local-hk';
+        }
+      }
+    } catch (localErr) {
+      console.warn('Local HK basemap query failed, falling back to Overpass API:', localErr);
+    }
+  }
+
+  // 2. Fallback to Overpass API if not resolved locally
+  if (!basemap) {
+    basemap = await fetchOsmBasemap(bbox, options);
+    basemapSource = 'overpass';
+  }
+
+  // 3. Render vector basemap SVG (or fallback to clean route-only SVG)
+  const miniMapSvg = basemap
+    ? generateMiniMapWithBasemapSvg(baseResult.coordinates, basemap)
+    : generateMiniMapSvg(baseResult.coordinates);
 
   return {
     ...baseResult,
     miniMapSvg,
+    basemapSource,
   };
 }
 

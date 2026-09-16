@@ -51,7 +51,7 @@ describe('Shell Nano Stores', () => {
       const longText = 'A'.repeat(150);
       setAnnouncement(longText, '/signup');
       const state = $announcementTicker.get();
-      expect(state.text.length).toBe(120);
+      expect(state.text?.length).toBe(120);
       expect(state.text).toBe('A'.repeat(120));
     });
 

@@ -59,7 +59,7 @@ export const routeType = defineType({
           { title: 'New Territories', value: 'New Territories' },
           { title: 'Outlying Islands', value: 'Outlying Islands' },
         ],
-        layout: 'dropdown',
+        layout: 'radio',
       },
       validation: (rule) => rule.required(),
     }),
@@ -80,27 +80,10 @@ export const routeType = defineType({
           { title: 'Easy', value: 'easy' },
           { title: 'Intermediate', value: 'intermediate' },
           { title: 'Advanced', value: 'advanced' },
-          { title: 'Endurance', value: 'endurance' },
         ],
         layout: 'radio',
       },
       initialValue: 'easy',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'colorTheme',
-      title: 'Card Fill Color Theme',
-      type: 'string',
-      description: 'Sanctioned card surface fill per DESIGN.md.',
-      options: {
-        list: [
-          { title: 'Route Orange (Default)', value: 'route-orange' },
-          { title: 'Route Coral (Endurance / Landmark)', value: 'route-coral' },
-          { title: 'Route Blush (Promenade / Scenic)', value: 'route-blush' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'route-orange',
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -147,6 +130,7 @@ export const routeType = defineType({
         input: GpxUploadInput,
       },
       description: 'Official master GPX track file for this artwork.',
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'routePolyline',
@@ -164,6 +148,7 @@ export const routeType = defineType({
       fieldset: 'geo',
       rows: 4,
       description: 'Static SVG trace path string for fast SSG card previews.',
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'elevationProfile',
@@ -172,6 +157,7 @@ export const routeType = defineType({
       fieldset: 'geo',
       rows: 3,
       description: 'Sampled elevation array string for the interactive elevation scrubber.',
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'stravaRouteUrl',
@@ -230,6 +216,7 @@ export const routeType = defineType({
       fieldset: 'groupRun',
       description: 'When enabled, displays the Group Run Green banner across route cards.',
       initialValue: false,
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'groupRunDateTime',
