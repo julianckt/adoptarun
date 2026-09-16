@@ -72,7 +72,7 @@ export interface SanityCharity {
   slug: SanitySlug;
   websiteUrl: string;
   logo: SanityImageReference;
-  coverPhoto?: SanityImageReference;
+  coverPhoto: SanityImageReference;
   charityDescription: string;
   causeDescription: string;
   impactUnitName: string;

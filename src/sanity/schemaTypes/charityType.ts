@@ -1,5 +1,7 @@
 import { defineType, defineField } from 'sanity';
 import { HeartIcon } from '@sanity/icons/Heart';
+import { CharitySlugInput } from '../../components/sanity/CharitySlugInput';
+import { generateSlug } from '../utils/route-naming';
 
 export const charityType = defineType({
   name: 'charity',
@@ -24,13 +26,18 @@ export const charityType = defineType({
       title: 'Slug',
       type: 'slug',
       fieldset: 'organization',
-      options: { source: 'name', maxLength: 96 },
+      components: {
+        input: CharitySlugInput,
+      },
+      options: {
+        source: 'name',
+        maxLength: 96,
+        slugify: (input) => generateSlug(input),
+        isUnique: (slug, context) => context.defaultIsUnique(slug, context),
+      },
       validation: (rule) =>
         rule.required().custom((slug) => {
           if (!slug?.current) return 'Slug is required';
-          if (!/^[a-z0-9-]+$/.test(slug.current)) {
-            return 'Slug must be lowercase alphanumeric characters with hyphens only';
-          }
           return true;
         }),
     }),
@@ -39,6 +46,7 @@ export const charityType = defineType({
       title: 'Website URL',
       type: 'url',
       fieldset: 'organization',
+      description: 'Official organization website (HTTP or HTTPS).',
       validation: (rule) =>
         rule.required().uri({ scheme: ['http', 'https'] }).error('Must be a valid HTTP/HTTPS URL'),
     }),
@@ -53,10 +61,12 @@ export const charityType = defineType({
           name: 'alt',
           title: 'Alternative Text',
           type: 'string',
+          description: 'Descriptive text of the logo for screen readers and accessibility.',
           initialValue: 'Charity partner logo',
+          validation: (rule) => rule.required().error('Alternative text is required for accessibility'),
         }),
       ],
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().error('Charity logo is required'),
     }),
     defineField({
       name: 'coverPhoto',
@@ -69,9 +79,12 @@ export const charityType = defineType({
           name: 'alt',
           title: 'Alternative Text',
           type: 'string',
+          description: 'Descriptive text of the photograph for screen readers and accessibility.',
           initialValue: 'Charity mission cover photo',
+          validation: (rule) => rule.required().error('Alternative text is required for accessibility'),
         }),
       ],
+      validation: (rule) => rule.required().error('Cover photo is required'),
     }),
     defineField({
       name: 'charityDescription',
@@ -115,9 +128,19 @@ export const charityType = defineType({
       type: 'string',
       fieldset: 'impact',
       description:
-        'Display template string with tokens {amount} and {impact} (e.g., "HK${amount} provides {impact} meals for rescue animals").',
+        'Sentence template shown to runners summarizing their donation impact. Use dynamic tokens {amount} (the HKD donation value) and {impact} (the calculated impact units = amount × multiplier). Examples: "HK${amount} provides {impact} meals for rescue animals" or "HK${amount} funds {impact} days of shelter care".',
       initialValue: 'HK${amount} provides {impact} meals for rescue animals',
-      validation: (rule) => rule.required(),
+      validation: (rule) =>
+        rule.required().custom((value) => {
+          if (!value || !value.trim()) return 'Impact display template is required';
+          if (!value.includes('{amount}')) {
+            return 'Template must include the {amount} token (e.g. HK${amount})';
+          }
+          if (!value.includes('{impact}')) {
+            return 'Template must include the {impact} token (e.g. {impact} meals)';
+          }
+          return true;
+        }),
     }),
   ],
   preview: {

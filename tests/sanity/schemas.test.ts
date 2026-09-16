@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { schemaTypes, routeType, charityType, siteCopyType } from '../../src/sanity/schemaTypes';
 import { structure } from '../../src/sanity/structure';
 import {
@@ -132,6 +132,106 @@ describe('Sanity CMS Schemas & Configuration', () => {
       expect(fieldNames).toContain('impactUnitName');
       expect(fieldNames).toContain('impactMultiplierPerHkd');
       expect(fieldNames).toContain('impactDisplayTemplate');
+    });
+
+    it('enforces validation on every field in charityType', () => {
+      for (const field of charityType.fields || []) {
+        expect(field.validation, `Field "${field.name}" must have a validation rule`).toBeDefined();
+        expect(typeof field.validation).toBe('function');
+      }
+    });
+
+    it('attaches CharitySlugInput component to slug', () => {
+      const slugField = (charityType.fields || []).find((f) => f.name === 'slug');
+      expect(slugField?.components?.input).toBeDefined();
+    });
+
+    it('configures isUnique check on charity slug options', async () => {
+      const slugField = (charityType.fields || []).find((f) => f.name === 'slug') as any;
+      expect(slugField?.options?.isUnique).toBeDefined();
+      expect(typeof slugField?.options?.isUnique).toBe('function');
+
+      const mockDefaultIsUnique = vi.fn().mockResolvedValue(true);
+      const mockContext = { defaultIsUnique: mockDefaultIsUnique };
+      const result = await slugField.options.isUnique('spca-hk', mockContext);
+      expect(mockDefaultIsUnique).toHaveBeenCalledWith('spca-hk', mockContext);
+      expect(result).toBe(true);
+    });
+
+    it('validates slug requires current without enforcing hyphens', () => {
+      const slugField = (charityType.fields || []).find((f) => f.name === 'slug');
+      let customFn: any;
+      const mockRule: any = {
+        required: () => mockRule,
+        custom: (fn: any) => {
+          customFn = fn;
+          return mockRule;
+        },
+      };
+
+      if (typeof slugField?.validation === 'function') {
+        slugField.validation(mockRule);
+      }
+
+      expect(customFn).toBeDefined();
+      expect(customFn(null)).toBe('Slug is required');
+      expect(customFn({ current: '' })).toBe('Slug is required');
+      // Arbitrary valid slug without hyphens is allowed
+      expect(customFn({ current: 'spca' })).toBe(true);
+      expect(customFn({ current: 'spcahk' })).toBe(true);
+      expect(customFn({ current: 'spca-hk' })).toBe(true);
+    });
+
+    it('enforces required alt text on both logo and coverPhoto', () => {
+      const logoField = (charityType.fields || []).find((f) => f.name === 'logo') as any;
+      const coverPhotoField = (charityType.fields || []).find((f) => f.name === 'coverPhoto') as any;
+
+      expect(logoField?.fields).toBeDefined();
+      expect(coverPhotoField?.fields).toBeDefined();
+
+      const logoAlt = logoField.fields.find((f: any) => f.name === 'alt');
+      const coverAlt = coverPhotoField.fields.find((f: any) => f.name === 'alt');
+
+      expect(logoAlt?.validation).toBeDefined();
+      expect(typeof logoAlt?.validation).toBe('function');
+      expect(coverAlt?.validation).toBeDefined();
+      expect(typeof coverAlt?.validation).toBe('function');
+
+      const mockRule: any = {
+        required: vi.fn(() => mockRule),
+        error: vi.fn(() => mockRule),
+      };
+
+      logoAlt.validation(mockRule);
+      expect(mockRule.required).toHaveBeenCalled();
+
+      coverAlt.validation(mockRule);
+      expect(mockRule.required).toHaveBeenCalled();
+    });
+
+    it('validates impactDisplayTemplate requires {amount} and {impact} placeholders', () => {
+      const templateField = (charityType.fields || []).find((f) => f.name === 'impactDisplayTemplate');
+      expect(templateField).toBeDefined();
+
+      let customFn: any;
+      const mockRule: any = {
+        required: () => mockRule,
+        custom: (fn: any) => {
+          customFn = fn;
+          return mockRule;
+        },
+      };
+
+      if (typeof templateField?.validation === 'function') {
+        templateField.validation(mockRule);
+      }
+
+      expect(customFn).toBeDefined();
+      expect(customFn('')).toBe('Impact display template is required');
+      expect(customFn('HK$100 provides meals')).toContain('{amount}');
+      expect(customFn('HK${amount} provides meals')).toContain('{impact}');
+      expect(customFn('Provides {impact} meals')).toContain('{amount}');
+      expect(customFn('HK${amount} provides {impact} meals for animals')).toBe(true);
     });
   });
 
