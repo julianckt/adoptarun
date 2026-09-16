@@ -100,12 +100,22 @@ export interface FooterSocialLink {
   url: string;
 }
 
-export interface SanitySiteCopy {
+export interface SanitySettings {
   _id: string;
-  _type: 'siteCopy';
+  _type: 'settings';
   announcementEnabled: boolean;
   announcementTickerText?: string;
   announcementTickerLink?: string;
+  footerContactEmail: string;
+  footerSocialLinks?: FooterSocialLink[];
+  seoTitle: string;
+  seoDescription: string;
+  ogImage?: SanityImageReference | any;
+}
+
+export interface SanitySiteCopy {
+  _id: string;
+  _type: 'siteCopy';
   heroTitle: string;
   heroSubtitle: string;
   heroDescription: string;
@@ -119,9 +129,5 @@ export interface SanitySiteCopy {
   faqs?: FaqItem[];
   missionStatement: string;
   ctaDescription: string;
-  footerContactEmail: string;
-  footerSocialLinks?: FooterSocialLink[];
-  seoTitle: string;
-  seoDescription: string;
-  ogImage?: SanityImageAsset | any;
 }
+

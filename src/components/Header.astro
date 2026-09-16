@@ -1,10 +1,12 @@
 ---
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
-import type { SanitySiteCopy } from '@/sanity/types';
+import type { SanitySettings, SanitySiteCopy } from '@/sanity/types';
 
 export interface Props {
   class?: string;
+  settings?: SanitySettings | null;
+  /** @deprecated Use `settings` prop instead */
   siteCopy?: SanitySiteCopy | null;
   announcementText?: string;
   announcementLink?: string;
@@ -14,6 +16,7 @@ export interface Props {
 
 const {
   class: className,
+  settings,
   siteCopy,
   announcementText: propText,
   announcementLink: propLink,
@@ -21,11 +24,12 @@ const {
   ...restProps
 } = Astro.props;
 
-const bannerText = (propText ?? siteCopy?.announcementTickerText ?? '').trim();
-const bannerLink = (propLink ?? siteCopy?.announcementTickerLink ?? '').trim() || undefined;
+const source = settings ?? (siteCopy as unknown as SanitySettings);
+const bannerText = (propText ?? source?.announcementTickerText ?? '').trim();
+const bannerLink = (propLink ?? source?.announcementTickerLink ?? '').trim() || undefined;
 
-const isBannerActive = siteCopy
-  ? Boolean(siteCopy.announcementEnabled && bannerText)
+const isBannerActive = source
+  ? Boolean(source.announcementEnabled && bannerText)
   : Boolean(bannerText);
 
 const isVisible = showAnnouncement !== undefined ? showAnnouncement : isBannerActive;

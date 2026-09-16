@@ -1,16 +1,17 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import HomePage from '@/components/HomePage.astro';
-import { getRoutes, getCharities, getSiteCopy } from '@/sanity/queries';
+import { getRoutes, getCharities, getSiteCopy, getSettings } from '@/sanity/queries';
 
 // Static build: the public client only ever returns published content with stega off.
-const [routes, charities, siteCopy] = await Promise.all([
+const [routes, charities, siteCopy, settings] = await Promise.all([
   getRoutes().catch(() => null),
   getCharities().catch(() => null),
   getSiteCopy().catch(() => null),
+  getSettings().catch(() => null),
 ]);
 ---
 
-<BaseLayout class="has-shader-bg" siteCopy={siteCopy}>
+<BaseLayout class="has-shader-bg" settings={settings}>
   <HomePage routes={routes} charities={charities} siteCopy={siteCopy} />
 </BaseLayout>

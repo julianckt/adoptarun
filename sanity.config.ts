@@ -80,6 +80,16 @@ export default defineConfig({
               ],
             }),
           }),
+          settings: defineLocations({
+            message: 'This document contains global site settings, announcement banner, and footer links',
+            tone: 'positive',
+            locations: [
+              {
+                title: 'Home',
+                href: '/preview',
+              },
+            ],
+          }),
           siteCopy: defineLocations({
             message: 'This document is used on the home page',
             tone: 'positive',

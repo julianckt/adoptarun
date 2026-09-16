@@ -2,8 +2,8 @@
 import '@/styles/global.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
-import type { SanitySiteCopy } from '@/sanity/types';
-import { getSiteCopy } from '@/sanity/queries';
+import type { SanitySettings, SanitySiteCopy } from '@/sanity/types';
+import { getSettings } from '@/sanity/queries';
 import { hasImageAsset, urlForImage } from '@/sanity/image';
 
 const DEFAULT_OG_IMAGE = '/images/og-default.jpg';
@@ -19,6 +19,8 @@ export interface Props {
   hideHeader?: boolean;
   hideFooter?: boolean;
   footerVariant?: 'full' | 'minimal';
+  settings?: SanitySettings | null;
+  /** @deprecated Use `settings` prop instead */
   siteCopy?: SanitySiteCopy | null;
   [key: string]: any;
 }
@@ -33,23 +35,24 @@ const {
   hideHeader = false,
   hideFooter = false,
   footerVariant = Astro.url.pathname === '/' || Astro.url.pathname === '' ? 'full' : 'minimal',
+  settings: propSettings,
   siteCopy: propSiteCopy,
   ...restProps
 } = Astro.props;
 
-// Use Sanity as default, falling back to siteCopy prop if Sanity fetch fails
-const sanitySiteCopy = await getSiteCopy().catch(() => null);
-const resolvedSiteCopy = sanitySiteCopy ?? propSiteCopy ?? null;
+// Use Sanity as default, falling back to settings or legacy siteCopy prop if Sanity fetch fails
+const sanitySettings = await getSettings().catch(() => null);
+const resolvedSettings = propSettings ?? sanitySettings ?? (propSiteCopy as unknown as SanitySettings) ?? null;
 
-const title = propTitle ?? resolvedSiteCopy?.seoTitle ?? 'adopt a run — gps art community movement';
+const title = propTitle ?? resolvedSettings?.seoTitle ?? 'adopt a run — gps art community movement';
 const description =
   propDescription ??
-  resolvedSiteCopy?.seoDescription ??
+  resolvedSettings?.seoDescription ??
   'an international gps-art community movement debuting in hong kong. bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.';
 
 let resolvedOgImage = ogImage;
-if (ogImage === DEFAULT_OG_IMAGE && resolvedSiteCopy?.ogImage && hasImageAsset(resolvedSiteCopy.ogImage)) {
-  resolvedOgImage = urlForImage(resolvedSiteCopy.ogImage)
+if (ogImage === DEFAULT_OG_IMAGE && resolvedSettings?.ogImage && hasImageAsset(resolvedSettings.ogImage)) {
+  resolvedOgImage = urlForImage(resolvedSettings.ogImage)
     .width(1200)
     .height(630)
     .fit('crop')
@@ -122,9 +125,9 @@ const isDefaultOgImage = resolvedOgImage === DEFAULT_OG_IMAGE;
     <meta name="twitter:image:alt" content={ogImageAlt} />
   </head>
   <body class:list={['adoptarun-shell', className]} {...restProps}>
-    {!hideHeader && <Header siteCopy={resolvedSiteCopy} />}
+    {!hideHeader && <Header settings={resolvedSettings} />}
     <slot />
-    {!hideFooter && <Footer variant={footerVariant} siteCopy={resolvedSiteCopy} />}
+    {!hideFooter && <Footer variant={footerVariant} settings={resolvedSettings} />}
     <!-- Preview-only extras (the Visual Editing island on /preview); public pages leave this empty. -->
     <slot name="body-end" />
 

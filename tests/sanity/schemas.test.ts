@@ -1,11 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { schemaTypes, routeType, charityType, siteCopyType } from '../../src/sanity/schemaTypes';
+import { schemaTypes, routeType, charityType, siteCopyType, settingsType } from '../../src/sanity/schemaTypes';
 import { structure } from '../../src/sanity/structure';
 import {
   ROUTES_QUERY,
   ROUTE_BY_SLUG_QUERY,
   CHARITIES_QUERY,
   CHARITY_BY_SLUG_QUERY,
+  SETTINGS_QUERY,
   SITE_COPY_QUERY,
 } from '../../src/sanity/queries';
 import { urlForImage, hasImageAsset, safeUrlForImage } from '../../src/sanity/image';
@@ -15,12 +16,13 @@ import sanityConfig from '../../sanity.config';
 
 describe('Sanity CMS Schemas & Configuration', () => {
   describe('Schema Registry', () => {
-    it('exports all 3 content schemas', () => {
+    it('exports all 4 content schemas', () => {
       const typeNames = schemaTypes.map((t) => t.name);
       expect(typeNames).toContain('route');
       expect(typeNames).toContain('charity');
+      expect(typeNames).toContain('settings');
       expect(typeNames).toContain('siteCopy');
-      expect(schemaTypes.length).toBe(3);
+      expect(schemaTypes.length).toBe(4);
     });
   });
 
@@ -235,75 +237,39 @@ describe('Sanity CMS Schemas & Configuration', () => {
     });
   });
 
-  describe('SiteCopy Singleton Schema (siteCopyType)', () => {
-    it('has studio tabs defined for announcement, hero, counters, journey, faqs, about, cta, footer, and seo', () => {
-      expect(siteCopyType.name).toBe('siteCopy');
-      const groupNames = (siteCopyType.groups || []).map((g) => g.name);
-      expect(groupNames).toContain('announcement');
-      expect(groupNames).toContain('hero');
-      expect(groupNames).toContain('counters');
-      expect(groupNames).toContain('journey');
-      expect(groupNames).toContain('faqs');
-      expect(groupNames).toContain('about');
-      expect(groupNames).toContain('cta');
-      expect(groupNames).toContain('footer');
+  describe('Settings Singleton Schema (settingsType)', () => {
+    it('has studio tabs defined for seo, announcement, and footer', () => {
+      expect(settingsType.name).toBe('settings');
+      const groupNames = (settingsType.groups || []).map((g) => g.name);
       expect(groupNames).toContain('seo');
+      expect(groupNames).toContain('announcement');
+      expect(groupNames).toContain('footer');
+      expect(groupNames.length).toBe(3);
     });
 
-    it('contains movement counters fields and excludes countersSubtitle', () => {
-      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
-      expect(fieldNames).toContain('totalKmCovered');
-      expect(fieldNames).toContain('totalRunsCompleted');
-      expect(fieldNames).toContain('totalParticipantsCount');
-      expect(fieldNames).toContain('totalHKDRaised');
-      expect(fieldNames).not.toContain('countersSubtitle');
-    });
-
-    it('contains hero headline, subtitle, and description while excluding unused CTA fields', () => {
-      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
-      expect(fieldNames).toContain('heroTitle');
-      expect(fieldNames).toContain('heroSubtitle');
-      expect(fieldNames).toContain('heroDescription');
-      expect(fieldNames).not.toContain('heroCtaText');
-      expect(fieldNames).not.toContain('heroCtaLink');
-      expect(fieldNames).not.toContain('heroSecondaryCtaText');
-      expect(fieldNames).not.toContain('heroSecondaryCtaLink');
-    });
-
-    it('contains journey headline, journey subtitle, and journey steps', () => {
-      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
-      expect(fieldNames).toContain('journeyHeadline');
-      expect(fieldNames).toContain('journeySubtitle');
-      expect(fieldNames).toContain('journeySteps');
-    });
-
-    it('contains missionStatement in about and excludes essenceStatement and actionSlogan', () => {
-      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
-      expect(fieldNames).toContain('missionStatement');
-      expect(fieldNames).not.toContain('essenceStatement');
-      expect(fieldNames).not.toContain('actionSlogan');
-    });
-
-    it('contains bottom CTA, footer, and SEO fields', () => {
-      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
-      expect(fieldNames).toContain('ctaDescription');
-      expect(fieldNames).toContain('footerContactEmail');
-      expect(fieldNames).toContain('footerSocialLinks');
+    it('contains SEO and social share fields', () => {
+      const fieldNames = (settingsType.fields || []).map((f) => f.name);
       expect(fieldNames).toContain('seoTitle');
       expect(fieldNames).toContain('seoDescription');
       expect(fieldNames).toContain('ogImage');
     });
 
     it('contains announcement banner fields and excludes fallback slogan', () => {
-      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
+      const fieldNames = (settingsType.fields || []).map((f) => f.name);
       expect(fieldNames).toContain('announcementEnabled');
       expect(fieldNames).toContain('announcementTickerText');
       expect(fieldNames).toContain('announcementTickerLink');
       expect(fieldNames).not.toContain('announcementDefaultSlogan');
     });
 
+    it('contains footer contact and social links', () => {
+      const fieldNames = (settingsType.fields || []).map((f) => f.name);
+      expect(fieldNames).toContain('footerContactEmail');
+      expect(fieldNames).toContain('footerSocialLinks');
+    });
+
     it('validates announcementTickerText required when announcementEnabled is true', () => {
-      const textDef = (siteCopyType.fields || []).find((f) => f.name === 'announcementTickerText');
+      const textDef = (settingsType.fields || []).find((f) => f.name === 'announcementTickerText');
       expect(textDef).toBeDefined();
 
       let customFn: any;
@@ -338,6 +304,67 @@ describe('Sanity CMS Schemas & Configuration', () => {
       // Passes when announcementEnabled is false, even if text is empty
       expect(customFn('', { parent: { announcementEnabled: false } })).toBe(true);
       expect(customFn(undefined, { parent: { announcementEnabled: false } })).toBe(true);
+    });
+  });
+
+  describe('SiteCopy Singleton Schema (siteCopyType)', () => {
+    it('has studio tabs defined for homepage and faqs', () => {
+      expect(siteCopyType.name).toBe('siteCopy');
+      const groupNames = (siteCopyType.groups || []).map((g) => g.name);
+      expect(groupNames).toContain('homepage');
+      expect(groupNames).toContain('faqs');
+      expect(groupNames.length).toBe(2);
+    });
+
+    it('contains homepage fields ordered by appearance and excludes settings fields', () => {
+      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
+
+      // Hero
+      expect(fieldNames).toContain('heroTitle');
+      expect(fieldNames).toContain('heroSubtitle');
+      expect(fieldNames).toContain('heroDescription');
+
+      // Movement Counters & Mission
+      expect(fieldNames).toContain('totalKmCovered');
+      expect(fieldNames).toContain('totalRunsCompleted');
+      expect(fieldNames).toContain('totalParticipantsCount');
+      expect(fieldNames).toContain('totalHKDRaised');
+      expect(fieldNames).toContain('missionStatement');
+
+      // Journey
+      expect(fieldNames).toContain('journeyHeadline');
+      expect(fieldNames).toContain('journeySubtitle');
+      expect(fieldNames).toContain('journeySteps');
+
+      // Bottom CTA
+      expect(fieldNames).toContain('ctaDescription');
+
+      // FAQs
+      expect(fieldNames).toContain('faqs');
+
+      // Excluded settings fields
+      expect(fieldNames).not.toContain('announcementEnabled');
+      expect(fieldNames).not.toContain('announcementTickerText');
+      expect(fieldNames).not.toContain('announcementTickerLink');
+      expect(fieldNames).not.toContain('seoTitle');
+      expect(fieldNames).not.toContain('seoDescription');
+      expect(fieldNames).not.toContain('ogImage');
+      expect(fieldNames).not.toContain('footerContactEmail');
+      expect(fieldNames).not.toContain('footerSocialLinks');
+    });
+
+    it('verifies homepage field order matches page visual flow', () => {
+      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
+      const heroIdx = fieldNames.indexOf('heroTitle');
+      const countersIdx = fieldNames.indexOf('totalKmCovered');
+      const missionIdx = fieldNames.indexOf('missionStatement');
+      const journeyIdx = fieldNames.indexOf('journeyHeadline');
+      const ctaIdx = fieldNames.indexOf('ctaDescription');
+
+      expect(heroIdx).toBeLessThan(countersIdx);
+      expect(countersIdx).toBeLessThan(missionIdx);
+      expect(missionIdx).toBeLessThan(journeyIdx);
+      expect(journeyIdx).toBeLessThan(ctaIdx);
     });
   });
 
@@ -420,9 +447,11 @@ describe('Sanity CMS Schemas & Configuration', () => {
       expect(typeof ROUTE_BY_SLUG_QUERY).toBe('string');
       expect(typeof CHARITIES_QUERY).toBe('string');
       expect(typeof CHARITY_BY_SLUG_QUERY).toBe('string');
+      expect(typeof SETTINGS_QUERY).toBe('string');
       expect(typeof SITE_COPY_QUERY).toBe('string');
       expect(ROUTES_QUERY).toContain('*[_type == "route"]');
       expect(CHARITIES_QUERY).toContain('*[_type == "charity"]');
+      expect(SETTINGS_QUERY).toContain('*[_type == "settings"');
       expect(SITE_COPY_QUERY).toContain('*[_type == "siteCopy"');
     });
   });

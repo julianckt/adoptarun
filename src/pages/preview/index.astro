@@ -13,7 +13,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import HomePage from '@/components/HomePage.astro';
 import { createPreviewClient } from '@/sanity/client';
 import { hasDraftSession, PREVIEW_FRAME_ANCESTORS_CSP } from '@/sanity/preview';
-import { getRoutes, getCharities, getSiteCopy } from '@/sanity/queries';
+import { getRoutes, getCharities, getSiteCopy, getSettings } from '@/sanity/queries';
 
 const client = SANITY_API_READ_TOKEN ? createPreviewClient(SANITY_API_READ_TOKEN) : null;
 
@@ -25,14 +25,15 @@ Astro.response.headers.set('Cache-Control', 'private, no-store');
 Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 Astro.response.headers.set('Content-Security-Policy', PREVIEW_FRAME_ANCESTORS_CSP);
 
-const [routes, charities, siteCopy] = await Promise.all([
+const [routes, charities, siteCopy, settings] = await Promise.all([
   getRoutes(client).catch(() => null),
   getCharities(client).catch(() => null),
   getSiteCopy(client).catch(() => null),
+  getSettings(client).catch(() => null),
 ]);
 ---
 
-<BaseLayout title="preview — adopt a run" class="has-shader-bg" noindex siteCopy={siteCopy}>
+<BaseLayout title="preview — adopt a run" class="has-shader-bg" noindex settings={settings}>
   <HomePage routes={routes} charities={charities} siteCopy={siteCopy} />
   <VisualEditing slot="body-end" enabled zIndex={1000} />
 </BaseLayout>

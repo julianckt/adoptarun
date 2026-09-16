@@ -1,10 +1,12 @@
 ---
-import type { SanitySiteCopy, FooterSocialLink } from '@/sanity/types';
+import type { SanitySettings, SanitySiteCopy, FooterSocialLink } from '@/sanity/types';
 
 export interface Props {
   class?: string;
   /** 'full' renders contact, nav and legal rows; 'minimal' renders only the legal row. */
   variant?: 'full' | 'minimal';
+  settings?: SanitySettings | null;
+  /** @deprecated Use `settings` prop instead */
   siteCopy?: SanitySiteCopy | null;
   [key: string]: any;
 }
@@ -15,13 +17,14 @@ const DEFAULT_SOCIAL_LINKS: FooterSocialLink[] = [
   { _key: 'github', text: 'github', url: 'https://github.com/julianckt/adoptarun' },
 ];
 
-const { class: className, variant = 'full', siteCopy, ...restProps } = Astro.props;
+const { class: className, variant = 'full', settings, siteCopy, ...restProps } = Astro.props;
 const isMinimal = variant === 'minimal';
 
-const contactEmail = siteCopy?.footerContactEmail?.trim() || 'adoptarunhk@gmail.com';
+const source = settings ?? (siteCopy as unknown as SanitySettings);
+const contactEmail = source?.footerContactEmail?.trim() || 'adoptarunhk@gmail.com';
 const socialLinks =
-  siteCopy?.footerSocialLinks && siteCopy.footerSocialLinks.length > 0
-    ? siteCopy.footerSocialLinks
+  source?.footerSocialLinks && source.footerSocialLinks.length > 0
+    ? source.footerSocialLinks
     : DEFAULT_SOCIAL_LINKS;
 ---
 

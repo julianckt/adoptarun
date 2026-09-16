@@ -1,7 +1,7 @@
 import { defineQuery } from 'groq';
 import type { SanityClient } from '@sanity/client';
 import { sanityClient } from './client';
-import type { SanityRoute, SanityCharity, SanitySiteCopy } from './types';
+import type { SanityRoute, SanityCharity, SanitySiteCopy, SanitySettings } from './types';
 
 export const ROUTES_QUERY = defineQuery(
   `*[_type == "route"] | order(isGroupRun desc, featured desc, distanceKm asc) {
@@ -98,13 +98,29 @@ export const CHARITY_BY_SLUG_QUERY = defineQuery(
   }`
 );
 
-export const SITE_COPY_QUERY = defineQuery(
-  `*[_type == "siteCopy" && _id in ["siteCopy", "drafts.siteCopy"]][0] {
+export const SETTINGS_QUERY = defineQuery(
+  `*[_type == "settings" && _id in ["settings", "drafts.settings"]][0] {
     _id,
     _type,
     announcementEnabled,
     announcementTickerText,
     announcementTickerLink,
+    footerContactEmail,
+    footerSocialLinks[] {
+      _key,
+      text,
+      url
+    },
+    seoTitle,
+    seoDescription,
+    ogImage
+  }`
+);
+
+export const SITE_COPY_QUERY = defineQuery(
+  `*[_type == "siteCopy" && _id in ["siteCopy", "drafts.siteCopy"]][0] {
+    _id,
+    _type,
     heroTitle,
     heroSubtitle,
     heroDescription,
@@ -127,16 +143,7 @@ export const SITE_COPY_QUERY = defineQuery(
       category
     },
     missionStatement,
-    ctaDescription,
-    footerContactEmail,
-    footerSocialLinks[] {
-      _key,
-      text,
-      url
-    },
-    seoTitle,
-    seoDescription,
-    ogImage
+    ctaDescription
   }`
 );
 
@@ -164,6 +171,11 @@ export async function getCharityBySlug(
   return await client.fetch(CHARITY_BY_SLUG_QUERY, { slug });
 }
 
+export async function getSettings(client: SanityClient = sanityClient): Promise<SanitySettings | null> {
+  return await client.fetch(SETTINGS_QUERY);
+}
+
 export async function getSiteCopy(client: SanityClient = sanityClient): Promise<SanitySiteCopy | null> {
   return await client.fetch(SITE_COPY_QUERY);
 }
+
