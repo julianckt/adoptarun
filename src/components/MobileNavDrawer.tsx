@@ -167,7 +167,7 @@ export const MobileNavDrawer: React.FC = () => {
                 >
                   {label}
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                    <path d="M4 12L12 4M5 4h7v7" />
+                    <use href="#icon-arrow-up-right" />
                   </svg>
                 </a>
               </li>

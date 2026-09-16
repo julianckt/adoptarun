@@ -27,7 +27,7 @@ describe('createPreviewClient', () => {
     expect(config.perspective).toBe('drafts');
     expect(config.token).toBe('viewer-token');
     expect(config.stega.enabled).toBe(true);
-    expect(config.stega.studioUrl).toBe('/studio');
+    expect(config.stega.studioUrl).toBe('https://adoptarun.sanity.studio');
   });
 
   it('leaves the public client untouched', async () => {

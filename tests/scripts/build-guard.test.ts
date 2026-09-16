@@ -58,14 +58,14 @@ describe('checkBuild', () => {
     ]);
   });
 
-  it('allows on-demand routes and the embedded Studio', () => {
-    const dynamic = new Map([['index.html', page('<a href="/studio">s</a><a href="/preview">p</a><a href="/api/health">h</a>')]]);
+  it('allows on-demand routes', () => {
+    const dynamic = new Map([['index.html', page('<a href="/preview">p</a><a href="/api/health">h</a>')]]);
     expect(checkBuild(dynamic, () => false)).toEqual([]);
   });
 
-  it('skips the Studio bundle, which legitimately ships editing tooling', () => {
+  it('flags editing tooling if accidentally emitted to any page', () => {
     const studio = new Map([['studio/index.html', page('visual-editing ​')]]);
-    expect(checkBuild(studio, () => true)).toEqual([]);
+    expect(checkBuild(studio, () => true).length).toBeGreaterThan(0);
   });
 });
 

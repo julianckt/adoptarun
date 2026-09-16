@@ -1,220 +1,205 @@
-# Handoff: Featured Routes — Responsive Refinement ("Phone stack, tablet rows")
+# Handoff: Cross-Browser Scroll Animations for Journey & Bottom CTA (Issue #2)
 
 ## 1. Objective
 
-Refine and ship the responsive redesign of the homepage **Featured Routes** section (`src/components/FeaturedRoutesSection.astro`). The user reviewed three live variants in an `/impeccable live` session and chose **variant 1: "phone stack, tablet rows"**, plus a follow-up steer (heading/link cleanup, alignment, fluid sizing). They want another agent to implement it permanently and refine it further.
+Implement cross-browser entrance and scroll reveal animations for the **Journey Section** (`src/components/JourneySection.astro`) and **Bottom CTA Section** (`src/components/BottomCtaSection.astro`).
 
-**Nothing from that session is in the source tree.** Live mode was exited without accepting, so the working tree was restored to `HEAD` (branch `ui/claude-frontend-polish`, clean at `1a61f53`). The chosen design is fully specified below. Treat §4 as the starting implementation, not a finished result: it was never visually reviewed and never checked at real device sizes.
+Currently, both sections use CSS Scroll-Driven Animations (`animation-timeline: view()`), which fail to fire in Safari (including Safari 18 on macOS Sonoma / Sequoia and iOS 18 Safari) and Firefox, leaving elements in a static, un-animated fallback state.
 
----
-
-## 2. User Requirements (confirmed in session)
-
-1. **No carousel.** The current mobile/tablet horizontal swipe carousel (the `@media (max-width: 1199px)` block in the component's `<style>`) must go. There aren't enough routes for a carousel to look good.
-2. **Max 3 featured routes.** `selectFeaturedRoutes(routes, 3)` already enforces this; keep it.
-3. **Premium, refined feel.** Stay inside the existing identity (DESIGN.md): warm Canvas White section, Canvas Black text, route-card fills (orange/coral/blush), Degular Display at 0.8 leading for headings, Runda ≤ 500 weight, zero radius, hairline seams, lowercase actions.
-4. **Heading + link cleanup (steer):** "featured routes" and "more routes →" should be tidy and aligned; the link should sit with the heading, not in a separate footer.
-5. **Alignment (steer):** Card edges must line up with the heading/container edges. The current `repeat(3, minmax(0, 380px))` plus `justify-content: space-between` spreads the gaps unevenly.
-6. **More responsive to size changes (steer):** Things should scale fluidly as the window resizes, not jump at one breakpoint.
+A fresh agent should implement a resilient cross-browser progressive enhancement or fallback so Safari and Firefox users experience the intended scroll-linked or entrance animations without compromising Chrome's native compositor performance.
 
 ---
 
-## 3. Chosen Design: Variant 1 "Phone stack, tablet rows"
+## 2. Context & Current Status
 
-| Width | Layout |
-|---|---|
-| **≥ 1200px (desktop)** | Three equal fluid columns of the standard vertical `RouteCard` (trace window on top, info below). Cards stretch to fill (~397px each at max width vs. today's fixed 380px) and share equal heights per row. |
-| **768–1199px (tablet)** | **One column of horizontal cards**: trace minimap on the left (45% width, stretches to card height, min 240px), info on the right. |
-| **< 768px (phone)** | **One column of full-width vertical cards**: minimap on top at 356:216 aspect, info below. |
-
-Across all widths:
-- **Header row:** the `<h2>` "featured routes" and the "more routes →" link share one row on a common last baseline (`justify-content: space-between`). The link wraps beneath only when the row runs out of room. The old `<footer>` is removed.
-- **Heading size:** `clamp(40px token, 7vw, 80px token)` with `text-wrap: balance`.
-- **Card type scales with the card's own width** via container queries on `.route-card-info`: district `clamp(24, 13cqi, 48)` and distance `clamp(40, 22cqi, 80)`, all as tokens. This stops the 80px distance numeral from overflowing narrow cards.
-- **Section padding and gaps are fluid:** block padding clamps 64→96 / 48→64, inline padding `--space-fluid-lg`, grid gap `--space-fluid-md`.
-- **Semantics:** the grid becomes `<ul>`/`<li>` (three routes = a list). Keep `id="routes-featured"` and `aria-label="Featured Routes"` on the `<section>`.
-
-A "Phone minimap" knob was offered with **Tall** (356:216, the default) and **Short** (356:128). The user did not choose, so bake **Tall**; Short is a candidate refinement.
+In the preceding session, three deployment issues were investigated:
+1. **Issue 1 (RESOLVED)**: On Chrome, the header lacked translucent backing and only showed a dark gradient scrim because `isolation: isolate` on `.site-header` isolated the backdrop root for `::before`. Fixed by removing `isolation: isolate`, giving `.site-header-grid` `position: relative; z-index: 1`, and removing negative z-index from the veil.
+2. **Issue 3 (RESOLVED)**: On iPhone Safari, the WebGL shader background and mobile nav menu background did not extend underneath the floating address bar pill and home indicator. Fixed by extending `.shader-background-viewport`, `ShaderBackground.tsx`, and `.mobile-nav-backdrop` through `bottom: calc(-1 * var(--safe-inset-bottom))` and `min-height: 100lvh`, and updating `body.has-shader-bg > main`'s `clip-path` bottom boundary.
+3. **Issue 2 (RESOLVED)**: On Safari and Firefox, the Journey Section and Bottom CTA animations did not fire because Safari lacks native CSS Scroll-Driven Animations. Resolved by adding `scroll-timeline-polyfill` dynamically via `src/utils/scroll-timeline-loader.ts` for non-Chromium browsers, driving animations bi-directionally via WAAPI ViewTimeline while Chromium browsers preserve 100% native compositor performance with 0 KB overhead.
 
 ---
 
-## 4. Starting Implementation (translated to permanent component code)
+## 3. Root Cause Analysis
 
-The live preview CSS used `[data-impeccable-variant]` prefixes and throwaway `.fa-*` classes. Below it is rewritten against the component's own class names, for the component's scoped `<style>`. **`RouteCard` is a separate Astro component**, so its internals must be targeted with `:global(...)` from this file's scoped styles; the existing file already does this at `@media (max-width: 440px)`.
+### Journey Section (`src/components/JourneySection.astro:L331-416`)
+The section animates:
+- Masthead mesh badge wipe open (`journey-wipe` on `.journey-badge-square`)
+- Wordmark, numerals, titles, and step descriptions rising out of blur (`journey-rise`)
+- Step connecting hairline rules drawing left-to-right (`journey-trace` on `.journey-step::before`)
 
-### 4.1 Markup (replace the `<section>` body)
-
-```astro
-<section
-  id="routes-featured"
-  class:list={['featured-routes-section', className]}
-  aria-label="Featured Routes"
-  {...restProps}
->
-  <div class="featured-routes-container">
-    <header class="featured-routes-header">
-      <h2 class="featured-routes-title">featured routes</h2>
-      <a href="/routes" class="hairline-link hairline-link--black featured-routes-more">
-        more routes &rarr;
-      </a>
-    </header>
-
-    <ul class="featured-routes-grid">
-      {displayRoutes.map((route) => (
-        <li class="featured-routes-item"><RouteCard route={route} /></li>
-      ))}
-    </ul>
-  </div>
-</section>
-```
-
-Update the file's header doc comment: it still describes the swipe carousel and the bottom-right link.
-
-### 4.2 Styles (replace the whole `<style>` block)
-
+All of these are declared inside:
 ```css
-.featured-routes-section {
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-  background-color: transparent;
-  color: var(--color-canvas-black);
-  padding-block: clamp(var(--space-10), 8vw, var(--space-12)) clamp(var(--space-09), 5vw, var(--space-10));
-  padding-inline: var(--space-fluid-lg);
-}
-
-.featured-routes-container {
-  max-width: calc(var(--space-13) * 7.75); /* 1240px, was a literal */
-  margin-inline: auto;
-}
-
-/* Title and link share one baseline; the link wraps beneath only when the row runs out of room */
-.featured-routes-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: last baseline;
-  justify-content: space-between;
-  gap: var(--space-04) var(--space-06);
-  margin-bottom: var(--space-fluid-xl);
-}
-
-.featured-routes-title {
-  font-family: var(--font-display);
-  font-optical-sizing: none;
-  font-variation-settings: 'opsz' 72;
-  font-size: clamp(var(--font-size-tagline), 7vw, var(--font-size-headline));
-  font-weight: 500;
-  line-height: var(--leading-compressed);
-  letter-spacing: normal;
-  text-wrap: balance;
-  color: var(--color-canvas-black);
-  margin: 0;
-}
-
-.featured-routes-more { flex-shrink: 0; }
-
-.featured-routes-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-fluid-md);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Fluid card at every width: fills its track, equal heights per row, type scales with the card */
-.featured-routes-grid :global(.route-card) { width: 100%; height: 100%; }
-.featured-routes-grid :global(.route-card-minimap) { height: auto; aspect-ratio: 356 / 216; }
-.featured-routes-grid :global(.route-card-minimap-svg),
-.featured-routes-grid :global(.route-card-minimap-svg svg) { display: block; width: 100%; height: 100%; }
-.featured-routes-grid :global(.route-card-info) {
-  height: auto;
-  gap: var(--space-07);
-  container-type: inline-size;
-}
-.featured-routes-grid :global(.route-card-district) {
-  font-size: clamp(var(--font-size-metric), 13cqi, var(--font-size-wordmark));
-}
-.featured-routes-grid :global(.route-card-distance) {
-  font-size: clamp(var(--font-size-tagline), 22cqi, var(--font-size-headline));
-  letter-spacing: normal;
-}
-
-/* Tablet: one column of horizontal cards */
-@media (max-width: 1199px) {
-  .featured-routes-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-06); }
-  .featured-routes-grid :global(.route-card) { flex-direction: row; gap: var(--space-05); }
-  .featured-routes-grid :global(.route-card-minimap) {
-    width: 45%;
-    aspect-ratio: auto;
-    align-self: stretch;
-    min-height: calc(var(--space-13) * 1.5);
+@supports (animation-timeline: view()) {
+  .journey-badge-square,
+  ... {
+    animation-timeline: --journey-masthead; /* or --journey-step */
   }
-  .featured-routes-grid :global(.route-card-info) { flex: 1; min-width: 0; padding-top: 0; }
-}
-
-/* Phone: one column of full-width vertical cards */
-@media (max-width: 767px) {
-  .featured-routes-grid :global(.route-card) { flex-direction: column; }
-  .featured-routes-grid :global(.route-card-minimap) {
-    width: 100%;
-    min-height: 0;
-    aspect-ratio: 356 / 216;
-  }
-  .featured-routes-grid :global(.route-card-info) { padding-top: var(--space-03); }
 }
 ```
 
-This deletes the carousel rules, the `82vw` phone override, and the `1240px` literal.
+### Bottom CTA Section (`src/components/BottomCtaSection.astro:L282-332`)
+The section animates:
+- 3-line stacked headline (`adopt the run. / complete the route. / own the impact.`)
+- Mission subtext
+- CTA button cluster (`run with us →` and `pass the torch →`)
+
+All of these are declared inside:
+```css
+@supports (animation-timeline: view()) {
+  .finale-line,
+  .finale-subtext,
+  .finale-actions {
+    animation-timeline: view();
+    animation-fill-mode: both;
+    animation-duration: auto;
+    animation-timing-function: var(--ease-out-expo);
+  }
+}
+```
+
+### The Safari Compatibility Reality
+- The user noted: *"I understand this is to do with one of the scroll codes not working in old versions of firefox and safari - but I am using a new safari on a new mac."*
+- **The reality**: CSS Scroll-Driven Animations (`animation-timeline: view()`, `animation-timeline: scroll()`, and `view-timeline`) are **not supported in any stable release of Safari**, including Safari 18 on macOS Sequoia and iOS 18.
+- The feature is currently only supported in Chromium-based browsers (Chrome, Edge, Brave, Opera).
+- Because `@supports (animation-timeline: view())` evaluates to `false` in Safari, Safari completely ignores the animation block. The CSS was written to keep the settled state as default, so elements appear statically without animating.
 
 ---
 
-## 5. Known Risks & Open Questions for Refinement
+## 4. Proposed Solution & Architecture
 
-1. **Not visually verified.** The design was only seen in the live overlay and never inspected at 375 / 768 / 1024 / 1440px. Do one batched desktop + mobile visual pass after implementing, but only if the user asks you to launch the browser (CLAUDE.md §3: don't launch the browser by default).
-2. **Desktop is no longer pixel-identical.** Cards stretch to ~397px and get equal heights. The fixed `height: 480px` in `components.css` `.route-card` is overridden by `height: 100%` here. Confirm the user is happy with this, or cap card width.
-3. **Container-query type scaling** (`cqi` on `.route-card-info`) is new to this codebase. Check that `container-type: inline-size` doesn't collapse the info block's width inside the flex row (it has `flex: 1; min-width: 0`, which should be fine). Also check that the 13cqi and 22cqi coefficients read well at every width.
-4. **Tablet horizontal card density.** The info column at 768px is ~55% of ~720px. Check that the district, blurb, telemetry, difficulty and distance don't crowd. `.route-card-info` in `components.css` still has `justify-content: space-between`.
-5. **The `.route-card-distance` base style in `src/styles/components.css` has `letter-spacing: -0.02em`**, which violates DESIGN.md's "no custom tracking" rule. This section overrides it to `normal`, but the global rule remains. Consider fixing it at the source; it affects the hero cards too. Check first with the user, since it's outside this section's scope.
-6. **Touch target.** The "more routes →" hairline link is text-height (~16–20px). Consider a larger hit area on `(pointer: coarse)` without shifting the hairline underline. Check `.hairline-link` in `components.css` lines ~51–125 for how the underline pseudo-elements are positioned.
-7. **Phone minimap height.** Tall is the default; Short (356:128) was the alternative knob. It would cut the phone scroll height for three stacked cards noticeably.
-8. **No route detail pages exist** (`src/pages/` has no `routes/`), so cards stay non-link articles. Don't add card links.
+### Recommended Approach: Progressive Enhancement with IntersectionObserver Fallback
+
+Keep native CSS scroll-driven animations for Chromium browsers (zero JS main-thread cost, runs on compositor thread), and provide a lightweight, resilient `IntersectionObserver` fallback for Safari and Firefox.
+
+#### 4.1 Feature Detection
+In a lightweight client script inside `JourneySection.astro` and `BottomCtaSection.astro` (or a shared utility in `src/utils/scroll-observer.ts`):
+```ts
+const supportsScrollTimeline =
+  typeof CSS !== 'undefined' &&
+  typeof CSS.supports === 'function' &&
+  CSS.supports('animation-timeline', 'view()');
+
+if (!supportsScrollTimeline) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-revealed');
+          observer.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
+  );
+
+  document
+    .querySelectorAll('.journey-masthead, .journey-step, .finale-inner')
+    .forEach((el) => observer.observe(el));
+}
+```
+
+#### 4.2 CSS Fallback Rules
+When `animation-timeline: view()` is unsupported, elements with `.is-revealed` trigger standard CSS keyframe animations:
+```css
+/* Fallback for Safari & Firefox */
+@supports not (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Initially hidden before reveal */
+    .journey-masthead:not(.is-revealed) .journey-badge-square,
+    .journey-masthead:not(.is-revealed) .journey-badge-number,
+    .journey-masthead:not(.is-revealed) .journey-lead-text,
+    .journey-masthead:not(.is-revealed) .journey-wordmark,
+    .journey-masthead:not(.is-revealed) .journey-mission-text,
+    .journey-step:not(.is-revealed)::before,
+    .journey-step:not(.is-revealed) .journey-step-numeral,
+    .journey-step:not(.is-revealed) .journey-step-title,
+    .journey-step:not(.is-revealed) .journey-step-desc {
+      opacity: 0;
+    }
+
+    .journey-masthead.is-revealed .journey-badge-square {
+      animation: journey-wipe 0.6s var(--ease-out-expo) both;
+    }
+
+    .journey-masthead.is-revealed .journey-badge-number,
+    .journey-masthead.is-revealed .journey-lead-text,
+    .journey-masthead.is-revealed .journey-wordmark {
+      animation: journey-rise 0.7s var(--ease-out-expo) 0.1s both;
+    }
+
+    .journey-step.is-revealed::before {
+      animation: journey-trace 0.6s var(--ease-out-expo) both;
+    }
+
+    .journey-step.is-revealed .journey-step-numeral,
+    .journey-step.is-revealed .journey-step-title,
+    .journey-step.is-revealed .journey-step-desc {
+      animation: journey-rise 0.7s var(--ease-out-expo) 0.15s both;
+    }
+
+    /* Finale / Bottom CTA */
+    .finale-inner:not(.is-revealed) .finale-line,
+    .finale-inner:not(.is-revealed) .finale-subtext,
+    .finale-inner:not(.is-revealed) .finale-actions {
+      opacity: 0;
+    }
+
+    .finale-inner.is-revealed .finale-line:nth-child(1) {
+      animation: finale-rise 0.8s var(--ease-out-expo) 0.05s both;
+    }
+    .finale-inner.is-revealed .finale-line:nth-child(2) {
+      animation: finale-rise 0.8s var(--ease-out-expo) 0.15s both;
+    }
+    .finale-inner.is-revealed .finale-line:nth-child(3) {
+      animation: finale-rise 0.8s var(--ease-out-expo) 0.25s both;
+    }
+    .finale-inner.is-revealed .finale-subtext,
+    .finale-inner.is-revealed .finale-actions {
+      animation: finale-rise 0.8s var(--ease-out-expo) 0.35s both;
+    }
+  }
+}
+```
+
+#### 4.3 Alternative Considered: Official Polyfill
+The Chrome Labs `@flackr/scroll-timeline` polyfill could be evaluated, but may introduce unnecessary runtime overhead and potential edge cases with Safari's dynamic viewport / overscroll physics compared to a clean, lightweight `IntersectionObserver` trigger.
 
 ---
 
-## 6. Constraints (from CLAUDE.md / AGENTS.md)
+## 5. Key Files to Inspect and Modify
 
-- Work on branch `ui/claude-frontend-polish`. **Local commits only**: no push, no PR.
-- Tokens only (`src/styles/tokens.css`). No literal px/rem/hex in new CSS. `calc()` of tokens and `vw`/`cqi` inside `clamp()` are fine.
-- `npm run check:design` must report **0 anti-patterns** before calling UI work done. It was clean with the live-preview version of this CSS.
-- Also run `npm run typecheck`, `npm test`, `npm run build`.
-- Don't write Vitest tests asserting CSS or parsing `.astro` templates (CLAUDE.md §3).
-- Don't read `docs/archive/`.
+- `src/components/JourneySection.astro`: Contains the 3-step journey markup, keyframes (`journey-wipe`, `journey-rise`, `journey-trace`), and `@supports (animation-timeline: view())` rules.
+- `src/components/BottomCtaSection.astro`: Contains the headline lines, subtext, actions, keyframes (`finale-rise`), and `@supports (animation-timeline: view())` rules.
+- `src/styles/tokens.css`: Animation easing (`--ease-out-expo`), spacing tokens, and timing tokens.
+- `DESIGN.md`: Motion principles, zero-radius architecture, and token enforcement.
 
 ---
 
-## 7. Tooling Gotchas (if you use `/impeccable live` again)
+## 6. Constraints & Repository Invariants
 
-- **Stale session trap:** a finished session cached in the browser's localStorage (`impeccable-live-session`) can freeze the overlay in "generating" on every load (picker dead, Esc does nothing). Fix: in the DevTools console on localhost:4321, run `['impeccable-live-session','impeccable-live-session-handled','impeccable-live-session-scroll'].forEach(k => localStorage.removeItem(k)); location.reload();`. Both sessions from this conversation (`fe312ad9`, `5df381c2`) were closed as `discarded` in the journal, so they won't resurrect.
-- **Double-Go:** pressing Go twice queues a second `generate` whose scaffold points inside the first wrapper. Don't apply it as-is (nested wrappers). Either rename the existing wrapper's session id to the new one, or reply `error`.
-- **Astro scoped styles leak into variants:** variant markup inside the component gets the component's `data-astro-cid`, so reusing the original class names in a preview variant pulls in the original rules, including the carousel. Use fresh class names in previews.
-- The dev server usually already runs at http://localhost:4321; probe before starting another.
-
----
-
-## 8. Suggested Skills
-
-- **`/impeccable adapt src/components/FeaturedRoutesSection.astro`**: continue the responsive refinement with the adapt playbook (content-driven breakpoints, touch targets, landscape).
-- **`/impeccable polish src/components/FeaturedRoutesSection.astro`**: final rhythm, hierarchy and micro-detail pass once the layout settles.
-- **`/impeccable live`**: optional, for comparing refinement variants in the browser. Read §7 first.
-- **`/mattpocock-skills:code-review`**: review the branch diff against CLAUDE.md standards before committing.
+- **Tokens Only**: Strictly comply with `DESIGN.md` using tokens from `src/styles/tokens.css` (never literal `px` or `rem` font sizes).
+- **Design Check**: `npm run check:design` must report **0 anti-patterns** before calling work done.
+- **Sandbox Execution**: Always run `npm test`, `npm run check:design`, and build commands with `BypassSandbox: true` on first attempt.
+- **Testing Seams**: Verify behavior without regex-parsing `.astro` templates or asserting on CSS strings in Vitest.
+- **No push / no PR**: Local edits only; do not run `git push`.
 
 ---
 
-## 9. Suggested Sequence
+## 7. Suggested Skills
 
-1. Implement §4.1 and §4.2 in `src/components/FeaturedRoutesSection.astro`; update its doc comment.
-2. `npm run check:design`, then `npm run typecheck`, `npm test`, `npm run build`.
-3. Ask the user whether to do a visual pass. If yes, check 375 / 768 / 1024 / 1440px and landscape phone, then work through §5 items 2–4 and 6–7.
-4. Raise §5.5 (global `letter-spacing` violation) with the user before touching `components.css`.
-5. Commit locally on `ui/claude-frontend-polish`.
+- **`/impeccable polish`**: Polish animation choreography, stagger delays, and micro-interactions.
+- **`modern-web-guidance`**: Search for current best practices on `@supports (animation-timeline: view())` graceful degradation.
+- **`code-review`**: Side-by-side spec and standards review before concluding the task.
+
+---
+
+## 8. Suggested Verification Plan
+
+1. **Automated Verification**:
+   - `npm run check:design` (0 anti-patterns)
+   - `npm test` (all 213+ vitest unit tests pass)
+   - `npm run build` (clean Astro production build)
+2. **Browser Verification**:
+   - **Chrome**: Confirm native scroll-driven animations continue to scrub/progress as the user scrolls through Journey and Bottom CTA.
+   - **Safari (Desktop & iOS)**: Confirm elements smoothly animate into view via the `IntersectionObserver` fallback when scrolled into view.
+   - **Reduced Motion**: Verify that with `prefers-reduced-motion: reduce`, animations are bypassed or simplified to subtle fades without motion/blur.

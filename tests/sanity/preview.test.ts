@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { SanityClientLike } from '@sanity/preview-url-secret';
-import { enableDraftMode, hasDraftSession, DRAFT_MODE_COOKIE, type CookieJar } from '@/sanity/preview';
+import { enableDraftMode, hasDraftSession, DRAFT_MODE_COOKIE, PREVIEW_FRAME_ANCESTORS_CSP, type CookieJar } from '@/sanity/preview';
 
 const VALID_SECRET = 'studio-issued-secret';
 
@@ -65,6 +65,7 @@ describe('enableDraftMode', () => {
 
     expect(response.status).toBe(307);
     expect(response.headers.get('Location')).toBe('/preview');
+    expect(response.headers.get('Content-Security-Policy')).toBe(PREVIEW_FRAME_ANCESTORS_CSP);
     expect(set).toHaveBeenCalledWith(
       DRAFT_MODE_COOKIE,
       VALID_SECRET,

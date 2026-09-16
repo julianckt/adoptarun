@@ -288,13 +288,17 @@ export default function ShaderBackground({
       className={className}
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 'calc(-1 * var(--safe-inset-bottom))',
         width: '100vw',
-        height: '100vh',
+        height: '100lvh',
+        minHeight: '100vh',
         pointerEvents: 'none',
         zIndex: -1,
         opacity: isLoaded ? 1 : 0,
-        transition: 'opacity 2.4s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        transition: 'opacity var(--duration-ambient) cubic-bezier(0.25, 0.1, 0.25, 1)',
         overflow: 'hidden',
       }}
       aria-hidden="true"

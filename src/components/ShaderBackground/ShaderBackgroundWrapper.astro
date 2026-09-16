@@ -15,9 +15,13 @@ const { class: className } = Astro.props;
 <style>
   .shader-background-viewport {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: calc(-1 * var(--safe-inset-bottom));
     width: 100vw;
     height: 100vh;
+    height: 100lvh;
     z-index: -1;
     pointer-events: none;
     background-color: transparent;

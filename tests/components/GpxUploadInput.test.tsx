@@ -353,4 +353,34 @@ describe('GpxUploadInput Sanity Studio Component', () => {
       expect(screen.getByText(/No valid GPS trackpoints found/i)).toBeDefined();
     });
   });
+
+  it('patches root document directly via client.patch when client and documentId are provided', async () => {
+    const mockCommit = vi.fn().mockResolvedValue({});
+    const mockSet = vi.fn().mockReturnValue({ commit: mockCommit });
+    const mockPatch = vi.fn().mockReturnValue({ set: mockSet });
+    const mockClient = {
+      assets: { upload: vi.fn().mockResolvedValue({ _id: 'asset-123' }) },
+      patch: mockPatch,
+    };
+
+    renderWithTheme(
+      <GpxUploadInput client={mockClient} documentId="route-doc-123" />
+    );
+
+    const file = new File([sampleGpx], 'test-route.gpx', { type: 'application/gpx+xml' });
+    const fileInput = screen.getByTestId('gpx-file-input');
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(mockPatch).toHaveBeenCalledWith('route-doc-123');
+      expect(mockSet).toHaveBeenCalled();
+      expect(mockCommit).toHaveBeenCalled();
+    });
+
+    const setArgs = mockSet.mock.calls[0][0];
+    expect(setArgs.miniMapSvg).toBeDefined();
+    expect(setArgs.distanceKm).toBeGreaterThan(0);
+    expect(setArgs.routePolyline).toBeDefined();
+  });
 });

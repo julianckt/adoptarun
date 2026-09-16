@@ -3,7 +3,6 @@ import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import sanity from '@sanity/astro';
 import { loadEnv } from 'vite';
-import path from 'node:path';
 
 const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET, PUBLIC_SANITY_API_VERSION } = loadEnv(
   process.env.NODE_ENV ?? 'development',
@@ -37,18 +36,13 @@ export default defineConfig({
       apiVersion: PUBLIC_SANITY_API_VERSION || '2026-03-01',
       useCdn: false,
       stega: {
-        studioUrl: '/studio',
+        studioUrl: process.env.PUBLIC_SANITY_STUDIO_URL || 'https://adoptarun.sanity.studio',
       },
     }),
   ],
   vite: {
     resolve: {
       dedupe: ['react', 'react-dom', 'styled-components'],
-      alias: {
-        '@sanity/ui/_visual-editing': path.resolve(
-          './node_modules/@sanity/astro/node_modules/@sanity/ui/dist/_visual-editing.js'
-        ),
-      },
     },
   },
 });

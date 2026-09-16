@@ -108,3 +108,13 @@ const tally = resolveTallyValues(siteCopy);
   <!-- Section 06: Action Banner CTA (Outside Curtain, Transparent over Shader Preset A) -->
   <BottomCtaSection />
 </main>
+
+<script>
+  import { initScrollTimeline } from '@/utils/scroll-timeline-loader';
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initScrollTimeline(), { once: true });
+  } else {
+    initScrollTimeline();
+  }
+</script>

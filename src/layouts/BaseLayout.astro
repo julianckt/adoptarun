@@ -102,5 +102,12 @@ const isDefaultOgImage = ogImage === DEFAULT_OG_IMAGE;
     {!hideFooter && <Footer variant={footerVariant} />}
     <!-- Preview-only extras (the Visual Editing island on /preview); public pages leave this empty. -->
     <slot name="body-end" />
+
+    <!-- Unified SVG Sprites -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;" aria-hidden="true">
+      <symbol id="icon-arrow-up-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M4 12L12 4M5 4h7v7" />
+      </symbol>
+    </svg>
   </body>
 </html>

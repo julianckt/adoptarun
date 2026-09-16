@@ -32,7 +32,7 @@ const photo = resolveCharityPhoto(charity);
 ---
 
 <section id="charity-spotlight" class:list={['charity-section', className]} aria-labelledby="charity-heading" {...restProps}>
-  <div class="charity-container">
+  <div class="charity-container page-frame">
     <!-- Section Header (Triggered reveal) -->
     <header id="charity-header" class="charity-header" data-charity-reveal>
       <!-- The SP/CA letters are aria-hidden, so the name is announced once, here -->
@@ -92,24 +92,18 @@ const photo = resolveCharityPhoto(charity);
   }
 
   .charity-container {
-    width: 100%;
-    max-width: 1512px;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-left: max(var(--space-06), var(--safe-inset-left));
-    padding-right: max(var(--space-06), var(--safe-inset-right));
-    box-sizing: border-box;
     position: relative;
   }
 
   /* Triggered reveal: the script toggles .is-revealed as each element crosses the trigger line */
   [data-charity-reveal] {
-    transition: opacity 400ms var(--ease-out-expo),
-                transform 400ms var(--ease-out-expo),
-                filter 400ms var(--ease-out-expo);
+    transition: opacity var(--duration-moderate) var(--ease-out-expo),
+                transform var(--duration-moderate) var(--ease-out-expo),
+                filter var(--duration-moderate) var(--ease-out-expo);
     transition-delay: var(--reveal-delay, 0ms);
   }
 
@@ -132,8 +126,6 @@ const photo = resolveCharityPhoto(charity);
 
   .charity-subtitle {
     font-family: var(--font-display);
-    font-optical-sizing: none;
-    font-variation-settings: 'opsz' 72;
     font-weight: 600;
     font-size: var(--font-fluid-title);
     line-height: var(--leading-default);
@@ -156,8 +148,6 @@ const photo = resolveCharityPhoto(charity);
 
   .charity-letter {
     font-family: var(--font-display);
-    font-optical-sizing: none;
-    font-variation-settings: 'opsz' 72;
     font-weight: 600;
     font-size: calc(var(--font-fluid-colossal) * 0.77);
     line-height: var(--leading-default);
@@ -184,7 +174,6 @@ const photo = resolveCharityPhoto(charity);
     z-index: 2;
     flex-shrink: 0;
     overflow: hidden;
-    border-radius: var(--radius-none);
     background-color: var(--color-surface-canvas);
     /* Negative horizontal margin creates authentic overlap across SP and CA */
     margin-left: calc(-0.77 * clamp(24px, 3.5vw, 56px));

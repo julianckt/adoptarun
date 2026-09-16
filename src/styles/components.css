@@ -1,5 +1,71 @@
 @layer components {
 
+  /* -------------------------------------------------------------
+     Page Layout Frame (backed by --container-max-width)
+     ------------------------------------------------------------- */
+  .page-frame {
+    width: 100%;
+    max-width: var(--container-max-width);
+    margin-inline: auto;
+    box-sizing: border-box;
+    padding-inline: max(var(--space-fluid-xl), var(--safe-inset-left)) max(var(--space-fluid-xl), var(--safe-inset-right));
+  }
+
+  /* -------------------------------------------------------------
+     Typography Utilities
+     ------------------------------------------------------------- */
+  .font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 72;
+  }
+
+  /* -------------------------------------------------------------
+     Shared Icon Helpers
+     ------------------------------------------------------------- */
+  .icon-arrow {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    stroke: currentColor;
+    fill: none;
+    flex-shrink: 0;
+  }
+
+  /* -------------------------------------------------------------
+     Shared Scroll-Driven Motion Keyframes & Timeline Primitives
+     ------------------------------------------------------------- */
+  @keyframes scroll-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--motion-rise-y, var(--space-06)));
+      filter: blur(var(--motion-rise-blur, var(--space-01)));
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes scroll-trace {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes scroll-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
   /* Screen-reader-only text: out of layout and paint, still in the accessibility tree */
   .visually-hidden {
     position: absolute !important;
@@ -18,12 +84,11 @@
     font-family: var(--font-body);
     font-weight: 500;
     text-transform: lowercase;
-    border-radius: var(--radius-none) !important;
     border: none;
     cursor: pointer;
     text-decoration: none;
     line-height: var(--leading-action);
-    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    transition: background-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease, border-color var(--duration-fast) ease, transform var(--duration-instant) ease;
   }
 
   .btn:active {
@@ -43,20 +108,6 @@
     box-shadow: 0 0 24px rgba(245, 174, 102, 0.28);
   }
 
-  /* Secondary Button */
-  .btn-secondary {
-    background-color: var(--color-action-secondary);
-    color: var(--color-action-secondary-text);
-    border: 1px solid var(--color-border-subtle);
-    padding: var(--space-05) var(--space-07);
-    /* 16px 32px */
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--color-border-strong);
-    color: var(--color-pure-white);
-  }
-
   /* Hairline Action Link / Button: Resting subtle hairline underline with left-to-right fill on hover */
   .hairline-link {
     position: relative;
@@ -66,7 +117,6 @@
     padding-inline: var(--space-01);
     background-color: transparent;
     border: 0;
-    border-radius: var(--radius-none) !important;
     color: inherit;
     font-family: var(--font-body);
     font-size: var(--font-size-label);
@@ -76,7 +126,7 @@
     text-transform: lowercase;
     text-decoration: none;
     cursor: pointer;
-    transition: transform 0.1s ease;
+    transition: transform var(--duration-instant) ease;
   }
 
   .hairline-link::before,
@@ -99,7 +149,7 @@
     background-color: currentColor;
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform var(--duration-moderate) var(--ease-out-expo);
   }
 
   .hairline-link:hover::after {
@@ -146,7 +196,6 @@
     color: var(--color-canvas-black);
     padding: var(--space-06);
     /* 24px */
-    border-radius: var(--radius-none) !important;
     position: relative;
     box-shadow: none;
   }
@@ -491,33 +540,6 @@
     margin-top: var(--space-00);
   }
 
-  /* Group Run Badge Foundation */
-  .badge-group-run {
-    display: inline-flex;
-    align-items: center;
-    background-color: var(--color-group-run-green);
-    color: var(--color-canvas-black);
-    padding: var(--space-02) var(--space-03);
-    /* 4px 8px */
-    font-family: var(--font-body);
-    font-weight: 500;
-    font-size: var(--font-fluid-label);
-    line-height: var(--leading-body);
-    text-transform: lowercase;
-    letter-spacing: 0.05em;
-    border-radius: var(--radius-none) !important;
-  }
-
-  /* Media Placeholder Frame */
-  .media-placeholder {
-    background-color: var(--color-placeholder-grey);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-none) !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   /* -------------------------------------------------------------
      Site Header (5-Column Grid & Sticky Shell)
      ------------------------------------------------------------- */
@@ -525,7 +547,6 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    isolation: isolate;
     width: 100%;
     padding-block: max(var(--space-04), var(--safe-inset-top)) var(--space-04);
     padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
@@ -549,7 +570,6 @@
     content: '';
     position: absolute;
     inset: 0;
-    z-index: -1;
     pointer-events: none;
     background: linear-gradient(to bottom,
         var(--color-header-veil-top) 0%,
@@ -558,7 +578,7 @@
     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     border-bottom: 1px solid var(--color-border-subtle);
     opacity: 0;
-    transition: opacity 0.5s var(--ease-out-expo);
+    transition: opacity var(--duration-moderate) var(--ease-out-expo);
   }
 
   /* Soft ambient depth under the veil, offset downward */
@@ -566,11 +586,10 @@
     content: '';
     position: absolute;
     inset: 0;
-    z-index: -2;
     pointer-events: none;
     box-shadow: 0 var(--space-03) var(--space-06) calc(-1 * var(--space-04)) var(--color-header-shadow);
     opacity: 0;
-    transition: opacity 0.5s var(--ease-out-expo);
+    transition: opacity var(--duration-moderate) var(--ease-out-expo);
   }
 
   .site-header[data-stuck]::before,
@@ -579,17 +598,18 @@
   }
 
   .site-header-grid {
-    transition: opacity 0.3s var(--ease-out-expo);
+    position: relative;
+    z-index: 1;
+    transition: opacity var(--duration-normal) var(--ease-out-expo);
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
     /* Col 1, Col 2, Col 3, Col 4, Col 5 */
     align-items: center;
     /* Center align all columns */
     gap: var(--space-06);
-    max-width: 1512px;
+    max-width: var(--container-max-width);
     margin: 0 auto;
     width: 100%;
-    justify-content: flex-start;
   }
 
   .nav-brand-cta {
@@ -599,7 +619,7 @@
     padding-block: var(--space-02);
     display: inline-flex;
     align-items: baseline;
-    gap: var(--space-02);
+    gap: var(--space-03);
     font-family: var(--font-body);
     font-size: var(--font-size-body);
     line-height: var(--leading-wordmark);
@@ -607,8 +627,6 @@
     text-decoration: none;
     text-transform: lowercase;
     white-space: nowrap;
-    row-gap: var(--space-03);
-    column-gap: var(--space-03);
   }
 
   /* "run" in every "run with us" CTA (header, drawer, finale) is set in the wordmark face */
@@ -712,7 +730,6 @@
     justify-content: space-between;
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-none) !important;
     padding: var(--space-02) var(--space-04);
     min-height: 32px;
     gap: var(--space-03);
@@ -786,7 +803,7 @@
     color: var(--color-canvas-white);
     text-decoration: none;
     text-transform: lowercase;
-    transition: color 0.15s ease;
+    transition: color var(--duration-fast) ease;
     text-align: right;
   }
 
@@ -822,7 +839,6 @@
     padding: 0;
     background: transparent;
     border: 0;
-    border-radius: var(--radius-none);
     color: var(--color-canvas-white);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -853,7 +869,7 @@
     height: var(--burger-stroke);
     background: currentColor;
     transform-origin: right center;
-    transition: transform 0.5s var(--ease-out-expo);
+    transition: transform var(--duration-moderate) var(--ease-out-expo);
   }
 
   .nav-burger-bar:first-child {
@@ -877,12 +893,12 @@
 
   .nav-burger--close .nav-burger-bar:first-child {
     transform: translateY(var(--burger-offset)) rotate(45deg);
-    animation: burger-fold-top 0.6s var(--ease-out-expo) 0.12s both;
+    animation: burger-fold-top var(--duration-slow) var(--ease-out-expo) 0.12s both;
   }
 
   .nav-burger--close .nav-burger-bar:last-child {
     transform: translateY(calc(-1 * var(--burger-offset))) rotate(-45deg);
-    animation: burger-fold-bottom 0.6s var(--ease-out-expo) 0.12s both;
+    animation: burger-fold-bottom var(--duration-slow) var(--ease-out-expo) 0.12s both;
   }
 
   @keyframes burger-fold-top {
@@ -937,7 +953,12 @@
      backdrop root and cut the drawer's blur off from the page. */
   .mobile-nav-backdrop {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: calc(-1 * var(--safe-inset-bottom));
+    min-height: 100vh;
+    min-height: 100lvh;
     z-index: 200;
     display: flex;
     flex-direction: column;
@@ -961,7 +982,7 @@
         var(--color-header-veil-bottom) 100%);
     backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
-    animation: nav-veil-in 0.5s var(--ease-out-expo) both;
+    animation: nav-veil-in var(--duration-moderate) var(--ease-out-expo) both;
   }
 
   /* Content sits on the veil; transparent and unclipped */
@@ -971,7 +992,6 @@
     display: flex;
     flex-direction: column;
     min-block-size: 0;
-    border-radius: var(--radius-none);
   }
 
   .mobile-nav-header {
@@ -993,7 +1013,7 @@
     height: 1px;
     background: var(--color-border-subtle);
     transform-origin: left;
-    animation: nav-rule-in 0.9s var(--ease-out-expo) 0.1s both;
+    animation: nav-rule-in var(--duration-deliberate) var(--ease-out-expo) var(--duration-instant) both;
   }
 
   .mobile-nav-close {
@@ -1023,7 +1043,7 @@
 
   .mobile-nav-list li {
     position: relative;
-    animation: nav-item-in 0.6s var(--ease-out-expo) both;
+    animation: nav-item-in var(--duration-slow) var(--ease-out-expo) both;
     animation-delay: calc(0.12s + var(--i, 0) * 0.045s);
   }
 
@@ -1037,7 +1057,7 @@
     height: 1px;
     background: var(--color-border-subtle);
     transform-origin: left;
-    animation: nav-rule-in 0.9s var(--ease-out-expo) both;
+    animation: nav-rule-in var(--duration-deliberate) var(--ease-out-expo) both;
     animation-delay: inherit;
   }
 
@@ -1056,7 +1076,7 @@
     text-decoration: none;
     text-transform: lowercase;
     -webkit-tap-highlight-color: transparent;
-    transition: color 0.3s var(--ease-out-expo), transform 0.45s var(--ease-out-expo);
+    transition: color var(--duration-normal) var(--ease-out-expo), transform var(--duration-moderate) var(--ease-out-expo);
   }
 
   .mobile-nav-link svg {
@@ -1064,7 +1084,7 @@
     width: var(--space-04);
     height: var(--space-04);
     color: var(--color-text-muted);
-    transition: color 0.3s var(--ease-out-expo), transform 0.45s var(--ease-out-expo);
+    transition: color var(--duration-normal) var(--ease-out-expo), transform var(--duration-moderate) var(--ease-out-expo);
   }
 
   .mobile-nav-link:hover,
@@ -1103,7 +1123,7 @@
      (which fades back in beneath the veil), and its X unfolds back into
      the resting hamburger, so on unmount the two rows match pixel for pixel. */
   .mobile-nav-backdrop[data-state='closing'] .mobile-nav-veil {
-    animation: nav-veil-out 0.3s var(--ease-in-expo) 0.08s both;
+    animation: nav-veil-out var(--duration-normal) var(--ease-in-expo) 0.08s both;
   }
 
   .mobile-nav-backdrop[data-state='closing'] .mobile-nav-header::after,
@@ -1112,11 +1132,11 @@
   }
 
   .mobile-nav-backdrop[data-state='closing'] .nav-burger--close .nav-burger-bar:first-child {
-    animation: burger-unfold-top 0.35s var(--ease-out-expo) both;
+    animation: burger-unfold-top var(--duration-normal) var(--ease-out-expo) both;
   }
 
   .mobile-nav-backdrop[data-state='closing'] .nav-burger--close .nav-burger-bar:last-child {
-    animation: burger-unfold-bottom 0.35s var(--ease-out-expo) both;
+    animation: burger-unfold-bottom var(--duration-normal) var(--ease-out-expo) both;
   }
 
   @keyframes burger-unfold-top {
@@ -1248,7 +1268,7 @@
     overflow-wrap: anywhere;
     background: linear-gradient(var(--footer-accent), var(--footer-accent)) left bottom / 100% 1px no-repeat;
     padding-bottom: 0.12em;
-    transition: color 0.4s var(--ease-out-expo);
+    transition: color var(--duration-moderate) var(--ease-out-expo);
   }
 
   .site-footer-email:hover {
@@ -1260,7 +1280,7 @@
     height: 0.5em;
     flex: none;
     color: var(--footer-accent);
-    transition: transform 0.5s var(--ease-out-expo);
+    transition: transform var(--duration-moderate) var(--ease-out-expo);
   }
 
   .site-footer-email:hover svg {
@@ -1297,7 +1317,7 @@
     color: var(--color-text-secondary);
     text-decoration: none;
     text-transform: lowercase;
-    transition: color 0.3s var(--ease-out-expo), transform 0.45s var(--ease-out-expo);
+    transition: color var(--duration-normal) var(--ease-out-expo), transform var(--duration-moderate) var(--ease-out-expo);
   }
 
   .site-footer-list a:hover {
@@ -1309,7 +1329,7 @@
     width: var(--space-04);
     height: var(--space-04);
     color: var(--color-text-muted);
-    transition: color 0.3s var(--ease-out-expo), transform 0.45s var(--ease-out-expo);
+    transition: color var(--duration-normal) var(--ease-out-expo), transform var(--duration-moderate) var(--ease-out-expo);
   }
 
   .site-footer-list a:hover svg,
@@ -1515,7 +1535,7 @@
     text-align: right;
     text-decoration: none;
     white-space: nowrap;
-    transition: color 0.15s ease;
+    transition: color var(--duration-fast) ease;
   }
 
   .hero-learn-more:hover {
@@ -1656,9 +1676,10 @@
 
   /* Confine the fixed shader layer to <main>'s box: clip-path clips fixed descendants, so the
      elastic overscroll beyond the footer shows canvas instead of shader. The top edge is
-     extended a full viewport so overscroll above the hero still reveals the shader. */
+     extended a full viewport so overscroll above the hero still reveals the shader, and the bottom
+     edge extends through the safe area so the shader renders underneath the mobile Safari pills. */
   body.has-shader-bg > main {
-    clip-path: inset(-100vh 0 0 0);
+    clip-path: inset(-100vh 0 calc(-1 * var(--safe-inset-bottom)) 0);
   }
 
   .homepage-curtain {

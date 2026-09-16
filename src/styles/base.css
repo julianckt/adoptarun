@@ -1,24 +1,11 @@
 @layer base {
+  /* Universal Box Reset & Zero Radius */
   *,
   *::before,
   *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-  }
-
-  /* Zero Radius Rule Reset */
-  *,
-  *::before,
-  *::after,
-  button,
-  input,
-  select,
-  textarea,
-  dialog,
-  img,
-  svg,
-  canvas {
     border-radius: var(--radius-none) !important;
   }
 
@@ -59,14 +46,18 @@
   }
 
   /* Degular Display Optical Size Rule: Lock all Degular instances strictly to optical size 72 */
+  .font-display,
   .featured-routes-title,
   .route-card-district,
   .about-sentence,
   .about-tally,
   .journey-badge-number,
   .journey-lead-text,
+  .journey-step-title,
   .charity-letter,
-  .finale-headline {
+  .charity-subtitle,
+  .finale-headline,
+  .stub-title {
     font-optical-sizing: none;
     font-variation-settings: 'opsz' 72;
   }

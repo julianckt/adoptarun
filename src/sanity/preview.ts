@@ -34,6 +34,9 @@ export interface CookieJar {
   set(name: string, value: string, options?: typeof COOKIE_OPTIONS): void;
 }
 
+export const PREVIEW_FRAME_ANCESTORS_CSP =
+  "frame-ancestors 'self' https://adoptarun.sanity.studio https://*.sanity.studio https://*.sanity.work http://localhost:*";
+
 /**
  * Handles Presentation's "enable preview mode" request: validates the secret in the URL,
  * stores it in the session cookie, and redirects into the preview.
@@ -55,7 +58,13 @@ export async function enableDraftMode(
 
   cookies.set(DRAFT_MODE_COOKIE, secret, COOKIE_OPTIONS);
   // validatePreviewUrl only ever returns a same-origin path, so this cannot be an open redirect.
-  return new Response(null, { status: 307, headers: { Location: redirectTo || PREVIEW_PATH } });
+  return new Response(null, {
+    status: 307,
+    headers: {
+      Location: redirectTo || PREVIEW_PATH,
+      'Content-Security-Policy': PREVIEW_FRAME_ANCESTORS_CSP,
+    },
+  });
 }
 
 /** True only when the request carries a preview secret that Sanity still recognises. */

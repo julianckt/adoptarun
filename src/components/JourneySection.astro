@@ -19,7 +19,7 @@
 ---
 
 <section id="journey-section" class="journey-section" aria-labelledby="journey-heading">
-  <div class="journey-container">
+  <div class="journey-container page-frame">
     <header class="journey-masthead">
       <h2 id="journey-heading" class="journey-lockup" aria-label="3 steps to adopt a run">
         <span class="journey-badge-square" aria-hidden="true">
@@ -66,12 +66,7 @@
 
   /* Shares About's frame and gutters so the two sections read as one run of content */
   .journey-container {
-    width: 100%;
-    max-width: 1512px;
-    margin: 0 auto;
     padding-block: var(--space-fluid-xl) var(--space-fluid-3xl);
-    padding-inline: max(var(--space-fluid-xl), var(--safe-inset-left)) max(var(--space-fluid-xl), var(--safe-inset-right));
-    box-sizing: border-box;
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     gap: var(--space-fluid-2xl);
@@ -106,7 +101,6 @@
     background-image: url('/images/journey/mesh-backdrop.jpg');
     background-size: cover;
     background-position: center;
-    border-radius: var(--radius-none);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -118,8 +112,6 @@
   .journey-badge-number {
     display: block;
     font-family: var(--font-display);
-    font-optical-sizing: none;
-    font-variation-settings: 'opsz' 72;
     font-weight: 600;
     font-size: calc(var(--wm-size) * 2);
     line-height: var(--leading-compressed);
@@ -138,8 +130,6 @@
 
   .journey-lead-text {
     font-family: var(--font-display);
-    font-optical-sizing: none;
-    font-variation-settings: 'opsz' 72;
     font-weight: 400;
     font-size: calc(var(--wm-size) * 0.8);
     line-height: var(--leading-compressed);
@@ -206,8 +196,6 @@
 
   .journey-step-title {
     font-family: var(--font-display);
-    font-optical-sizing: none;
-    font-variation-settings: 'opsz' 72;
     font-weight: 500;
     font-size: var(--font-fluid-headline);
     line-height: var(--leading-compressed);
@@ -294,40 +282,6 @@
     }
   }
 
-  @keyframes journey-rise {
-    from {
-      opacity: 0;
-      transform: translateY(var(--space-06));
-      filter: blur(var(--space-01));
-    }
-
-    to {
-      opacity: 1;
-      transform: none;
-      filter: blur(0);
-    }
-  }
-
-  @keyframes journey-trace {
-    from {
-      transform: scaleX(0);
-    }
-
-    to {
-      transform: scaleX(1);
-    }
-  }
-
-  @keyframes journey-fade {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
   @supports (animation-timeline: view()) {
     .journey-badge-square,
     .journey-badge-number,
@@ -365,39 +319,39 @@
       }
 
       .journey-badge-number {
-        animation-name: journey-rise;
+        animation-name: scroll-rise;
         animation-range: entry 40% cover 45%;
       }
 
       .journey-lead-text,
       .journey-wordmark {
-        animation-name: journey-rise;
+        animation-name: scroll-rise;
         animation-range: entry 30% cover 42%;
       }
 
       .journey-mission-text {
-        animation-name: journey-rise;
+        animation-name: scroll-rise;
         animation-range: cover 20% cover 50%;
       }
 
       /* The rule draws in first; the text follows it */
       .journey-step::before {
-        animation-name: journey-trace;
+        animation-name: scroll-trace;
         animation-range: entry 20% cover 40%;
       }
 
       .journey-step-numeral {
-        animation-name: journey-rise;
+        animation-name: scroll-rise;
         animation-range: entry 60% cover 35%;
       }
 
       .journey-step-title {
-        animation-name: journey-rise;
+        animation-name: scroll-rise;
         animation-range: entry 70% cover 42%;
       }
 
       .journey-step-desc {
-        animation-name: journey-rise;
+        animation-name: scroll-rise;
         animation-range: entry 90% cover 48%;
       }
     }
@@ -409,7 +363,7 @@
       .journey-step-numeral,
       .journey-step-title,
       .journey-step-desc {
-        animation-name: journey-fade;
+        animation-name: scroll-fade;
         animation-range: entry 20% cover 40%;
       }
     }

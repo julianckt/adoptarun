@@ -10,3 +10,5 @@ declare namespace App {
     cfContext?: import('@cloudflare/workers-types').ExecutionContext;
   }
 }
+
+declare module 'scroll-timeline-polyfill/dist/scroll-timeline.js';

@@ -3,8 +3,8 @@ import { createClient, type SanityClient } from '@sanity/client';
 export const projectId = import.meta.env?.PUBLIC_SANITY_PROJECT_ID || 'huk9xx07';
 export const dataset = import.meta.env?.PUBLIC_SANITY_DATASET || 'production';
 export const apiVersion = import.meta.env?.PUBLIC_SANITY_API_VERSION || '2026-03-01';
-/** Where stega-encoded overlays deep-link to. Becomes an absolute URL once the Studio moves to Sanity hosting (#28). */
-export const studioUrl = import.meta.env?.PUBLIC_SANITY_STUDIO_URL || '/studio';
+/** Where stega-encoded overlays deep-link to (Sanity-hosted Studio, #28). */
+export const studioUrl = import.meta.env?.PUBLIC_SANITY_STUDIO_URL || 'https://adoptarun.sanity.studio';
 
 /**
  * Public client: published content only, stega always off. Every statically built page uses this,

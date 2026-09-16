@@ -15,7 +15,10 @@
     "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro check && tsc --noEmit",
     "check:design": "node .agents/skills/impeccable/scripts/detect.mjs src/",
     "generate:favicons": "node scripts/generate-favicons.mjs",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "studio:dev": "sanity dev",
+    "studio:build": "sanity build",
+    "studio:deploy": "sanity deploy"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.0",
@@ -34,6 +37,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sanity": "^6.12.0",
+    "scroll-timeline-polyfill": "^1.1.0",
+    "styled-components": "^6.1.15",
     "three": "^0.186.0",
     "three-stdlib": "^2.36.1"
   },

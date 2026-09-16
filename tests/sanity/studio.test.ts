@@ -1,13 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import sanityConfig from '../../sanity.config';
 import sanityCliConfig from '../../sanity.cli';
-import SanityStudio from '../../src/components/sanity/Studio';
 
 describe('Sanity Studio Integration & Configuration', () => {
   describe('sanity.config.ts', () => {
-    it('sets basePath to /studio', () => {
-      // Single workspace config
-      expect((sanityConfig as any).basePath).toBe('/studio');
+    it('does not set basePath (serves from root for hosted Studio)', () => {
+      expect((sanityConfig as any).basePath).toBeUndefined();
     });
 
     it('configures valid project credentials', () => {
@@ -31,42 +29,10 @@ describe('Sanity Studio Integration & Configuration', () => {
       expect((sanityCliConfig as any).api.projectId).toBe('huk9xx07');
       expect((sanityCliConfig as any).api.dataset).toBe('production');
     });
-  });
 
-  describe('Studio.tsx Component', () => {
-    it('exports a valid React component function', () => {
-      expect(typeof SanityStudio).toBe('function');
-    });
-
-    it('returns a JSX element containing the Studio layout', () => {
-      const element = SanityStudio();
-      expect(element).toBeDefined();
-      expect(element.type).toBeDefined();
-    });
-
-    it('provides unstable_history for hash-based routing', () => {
-      const element = SanityStudio();
-      const studioChild = (element as any).props.children;
-      expect(studioChild.props.unstable_history).toBeDefined();
-      expect(typeof studioChild.props.unstable_history.push).toBe('function');
-      expect(studioChild.props.unstable_history.location.pathname).toBe('/studio');
-    });
-
-    it('unstable_history.listen dispatches composite update to listeners', () => {
-      const element = SanityStudio();
-      const studioChild = (element as any).props.children;
-      const history = studioChild.props.unstable_history;
-
-      let receivedUpdate: any = null;
-      const unlisten = history.listen((update: any) => {
-        receivedUpdate = update;
-      });
-
-      history.push('/studio/structure');
-      expect(receivedUpdate).toBeDefined();
-      expect(receivedUpdate.pathname || receivedUpdate.location?.pathname).toBe('/studio/structure');
-      unlisten();
+    it('configures studioHost and deployment appId for Sanity hosting', () => {
+      expect((sanityCliConfig as any).studioHost).toBe('adoptarun');
+      expect((sanityCliConfig as any).deployment?.appId).toBe('mkr9jpmsyclswe4ggdzojc66');
     });
   });
 });
-

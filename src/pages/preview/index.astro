@@ -12,7 +12,7 @@ import { VisualEditing } from '@sanity/astro/visual-editing';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import HomePage from '@/components/HomePage.astro';
 import { createPreviewClient } from '@/sanity/client';
-import { hasDraftSession } from '@/sanity/preview';
+import { hasDraftSession, PREVIEW_FRAME_ANCESTORS_CSP } from '@/sanity/preview';
 import { getRoutes, getCharities, getSiteCopy } from '@/sanity/queries';
 
 const client = SANITY_API_READ_TOKEN ? createPreviewClient(SANITY_API_READ_TOKEN) : null;
@@ -23,6 +23,7 @@ if (!client || !(await hasDraftSession(Astro.cookies, client))) {
 
 Astro.response.headers.set('Cache-Control', 'private, no-store');
 Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+Astro.response.headers.set('Content-Security-Policy', PREVIEW_FRAME_ANCESTORS_CSP);
 
 const [routes, charities, siteCopy] = await Promise.all([
   getRoutes(client).catch(() => null),

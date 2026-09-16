@@ -44,7 +44,7 @@ const {
 ---
 
 <section id="about-section" class="about-container" aria-label="About adopt a run">
-  <div class="about-content">
+  <div class="about-content page-frame">
     <h2 class="about-sentence">
       <span class="about-lead">Your next run<br class="br-split"> collective<span class="lead-dash"> —</span></span><br>
       <span class="pillar">merging <span class="about-pic pic-community" aria-hidden="true"><img
@@ -52,14 +52,14 @@ const {
             alt=""
             loading="lazy"
             decoding="async"
-          /></span><b class="seg seg-after-1 accent-community">Community</b></span>
+          /></span><b class="seg seg-after-1 accent-community">Community&nbsp;</b></span>
       <span class="pillar"><span class="seg seg-after-1">with</span><br class="br-wide">
         <span class="about-pic pic-exercise" aria-hidden="true"><img
             src="/images/about/exercise-runners.jpg"
             alt=""
             loading="lazy"
             decoding="async"
-          /></span><b class="seg seg-after-2 accent-exercise">Exercise</b></span>
+          /></span><b class="seg seg-after-2 accent-exercise">Exercise&nbsp;</b></span>
       <span class="pillar"><span class="seg seg-after-2">and</span> <span class="about-pic pic-art seg-after-2" aria-hidden="true"><img
             src="/images/about/art-artlane.jpg"
             alt=""
@@ -94,11 +94,7 @@ const {
 
   .about-content {
     container: about / inline-size;
-    max-width: 1512px;
-    margin: 0 auto;
     padding-block: var(--space-fluid-3xl);
-    padding-inline: max(var(--space-fluid-xl), var(--safe-inset-left)) max(var(--space-fluid-xl), var(--safe-inset-right));
-    box-sizing: border-box;
     color: var(--color-canvas-white);
   }
 
@@ -115,8 +111,6 @@ const {
     --closed-3: 0em;
     margin: var(--space-00);
     font-family: var(--font-display);
-    font-optical-sizing: none;
-    font-variation-settings: 'opsz' 72;
     /* The script replaces the cqi approximation with a measured --about-fit */
     font-size: min(var(--font-fluid-headline), var(--about-fit, 6.8cqi));
     font-weight: 400;
@@ -269,8 +263,6 @@ const {
     margin: var(--space-00);
     max-width: 40ch;
     font-family: var(--font-display);
-    font-optical-sizing: none;
-    font-variation-settings: 'opsz' 72;
     font-size: var(--font-fluid-title);
     font-weight: 400;
     line-height: var(--leading-body);
@@ -399,43 +391,6 @@ const {
     }
   }
 
-  /* Paragraph, tally and underscores: the Journey section's scroll-driven motion, verbatim
-     (journey-rise / journey-trace / journey-fade), on earlier ranges. CSS only; unsupported
-     browsers keep the settled layout. */
-  @keyframes about-rise {
-    from {
-      opacity: 0;
-      transform: translateY(var(--space-06));
-      filter: blur(var(--space-01));
-    }
-
-    to {
-      opacity: 1;
-      transform: none;
-      filter: blur(0);
-    }
-  }
-
-  @keyframes about-trace {
-    from {
-      transform: scaleX(0);
-    }
-
-    to {
-      transform: scaleX(1);
-    }
-  }
-
-  @keyframes about-fade {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
   @supports (animation-timeline: view()) {
     .about-description,
     .about-tally,
@@ -466,17 +421,17 @@ const {
        and settles near 65%. */
     @media (prefers-reduced-motion: no-preference) {
       .about-description {
-        animation-name: about-rise;
+        animation-name: scroll-rise;
         animation-range: cover 18% cover 32%;
       }
 
       .about-tally {
-        animation-name: about-rise;
+        animation-name: scroll-rise;
         animation-range: cover 19% cover 32%;
       }
 
       .tally-mark::after {
-        animation-name: about-trace;
+        animation-name: scroll-trace;
       }
 
       /* Each underscore lands before the next begins, with a short pause between them */
@@ -500,7 +455,7 @@ const {
     @media (prefers-reduced-motion: reduce) {
       .about-description,
       .about-tally {
-        animation-name: about-fade;
+        animation-name: scroll-fade;
         animation-range: cover 18% cover 32%;
       }
     }

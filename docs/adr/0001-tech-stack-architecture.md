@@ -13,7 +13,7 @@
 | **Web Framework** | Astro (Hybrid SSR) + React Islands | Cloudflare Pages | $0.00 / mo | Ultra-fast static rendering for public pages with serverless edge SSR for dynamic run logs & preview mode |
 | **Styling & Design System** | Lumos Framework for Astro + Stacki | Cloudflare Pages | $0.00 / mo | Fluid clamp design tokens, CSS `@layer` hierarchy, container query utilities, and direct AST editing via Stacki |
 | **Motion & Micro-Interactions** | Framer Motion / GSAP | Client (React Islands) | $0.00 / mo | Dynamic telemetry animations, interactive map tracers, and smooth stepper transitions |
-| **CMS & Visual Editing** | Sanity.io (Embedded Studio at `/studio`) | Cloudflare Pages & Sanity Cloud | $0.00 / mo | Embedded Studio via `@sanity/astro` with live click-to-edit visual editing via `@sanity/visual-editing` (Stega) |
+| **CMS & Visual Editing** | Sanity.io (Hosted Studio at `adoptarun.sanity.studio`) | Sanity Cloud & Cloudflare Pages | $0.00 / mo | Hosted Studio with live click-to-edit visual editing via `@sanity/visual-editing` (Stega) on `/preview` |
 | **Cross-Island State** | Nano Stores (`nanostores`) | Client Runtime | $0.00 / mo | Zero-bundle atomic reactive state shared between decoupled React islands and Astro components |
 | **Database** | Cloudflare D1 (SQLite) | Cloudflare Pages | $0.00 / mo | Native serverless edge DB for adoptions, adopter IDs (`NNNN-CC`), and verified GPS polylines |
 | **Auth & Verification** | Zero-Password Ephemeral + Edge Verification | Serverless Edge Functions | $0.00 / mo | Ephemeral Strava OAuth + 3-layer spatial verification executed securely at the edge (`/api/verify-run`) |
@@ -37,10 +37,10 @@
   * **Stacki AST Compatibility**: Astro components follow a strict "clean-prop" pattern (forwarding `class:list`, `{...props}`, and standard `<slot />` targets), allowing the local Stacki visual editor to cleanly read and write Lumos classes directly to `.astro` source files.
   * **Developer & Content Separation**: Stacki is used exclusively by developers/designers for local layout, styling, and template engineering; Sanity CMS manages dynamic content and live production data.
 
-### 2.3 Headless CMS & Visual Live Editing: Sanity.io at `/studio`
-* **Choice**: Sanity.io embedded inside the Astro project at `/studio` via `@sanity/astro`, with `@sanity/visual-editing` and Stega content source maps enabled.
+### 2.3 Headless CMS & Visual Live Editing: Sanity.io (Hosted at `adoptarun.sanity.studio`)
+* **Choice**: Sanity.io hosted on Sanity Cloud infrastructure (`adoptarun.sanity.studio`), with Presentation Tool visual editing pointing to the Astro site's on-demand `/preview` route and Stega content source maps enabled.
 * **Why**:
-  * **Single Codebase Deployment**: The Sanity Studio dashboard is embedded directly at `adoptarun.hk/studio` (and `localhost:4321/studio`), sharing the same Git repository, TypeScript types, and deployment lifecycle with zero CORS configuration.
+  * **Decoupled Deployment & Zero-Bundle Overhead**: Moving the Studio from embedded `/studio` to Sanity's hosting keeps the site/worker bundle clean, eliminates Vite alias workarounds, and allows the CMS Studio to build and deploy independently.
   * **Live Click-to-Edit Overlays**: When content managers preview pages in the Sanity Presentation Tool, Stega encoding allows clicking any heading or text block to immediately open that field in Sanity Studio.
   * **Stega-Safe Sanitization**: A dedicated sanitization helper strips invisible Stega Unicode characters from numerical data (e.g. GPS distances, elevation gain) and coordinates before they are processed by math utilities or Leaflet maps.
 

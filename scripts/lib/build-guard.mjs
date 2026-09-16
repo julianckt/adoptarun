@@ -23,13 +23,12 @@ const FORBIDDEN_PATTERNS = [
 ];
 
 /**
- * Paths that are valid without a static file: the embedded Studio (served via _redirects)
- * and on-demand Worker routes.
+ * Paths that are valid without a static file: on-demand Worker routes.
  */
-const DYNAMIC_PREFIXES = ['/studio', '/api/', '/preview'];
+const DYNAMIC_PREFIXES = ['/api/', '/preview'];
 
 /** Build output that is allowed to contain editing tooling. */
-const EXEMPT_FILE_PREFIXES = ['studio/'];
+const EXEMPT_FILE_PREFIXES = [];
 
 /**
  * @typedef {{ file: string, rule: string, message: string }} Violation
