@@ -736,7 +736,8 @@
     width: 100%;
   }
 
-  .announcement-link {
+  .announcement-link,
+  .announcement-text {
     color: var(--color-canvas-white);
     font-family: var(--font-body);
     font-size: var(--font-size-micro);

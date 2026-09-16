@@ -2,6 +2,8 @@
 import '@/styles/global.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import type { SanitySiteCopy } from '@/sanity/types';
+import { getSiteCopy } from '@/sanity/queries';
 
 const DEFAULT_OG_IMAGE = '/images/og-default.jpg';
 
@@ -16,6 +18,7 @@ export interface Props {
   hideHeader?: boolean;
   hideFooter?: boolean;
   footerVariant?: 'full' | 'minimal';
+  siteCopy?: SanitySiteCopy | null;
   [key: string]: any;
 }
 
@@ -29,8 +32,13 @@ const {
   hideHeader = false,
   hideFooter = false,
   footerVariant = Astro.url.pathname === '/' || Astro.url.pathname === '' ? 'full' : 'minimal',
+  siteCopy: propSiteCopy,
   ...restProps
 } = Astro.props;
+
+// Use Sanity as default, falling back to siteCopy prop if Sanity fetch fails
+const sanitySiteCopy = await getSiteCopy().catch(() => null);
+const resolvedSiteCopy = sanitySiteCopy ?? propSiteCopy ?? null;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://adoptarun.org');
 const ogImageURL = new URL(ogImage, canonicalURL);
@@ -97,7 +105,7 @@ const isDefaultOgImage = ogImage === DEFAULT_OG_IMAGE;
     <meta name="twitter:image:alt" content={ogImageAlt} />
   </head>
   <body class:list={['adoptarun-shell', className]} {...restProps}>
-    {!hideHeader && <Header />}
+    {!hideHeader && <Header siteCopy={resolvedSiteCopy} />}
     <slot />
     {!hideFooter && <Footer variant={footerVariant} />}
     <!-- Preview-only extras (the Visual Editing island on /preview); public pages leave this empty. -->

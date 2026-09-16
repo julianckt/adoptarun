@@ -1,14 +1,10 @@
 import { atom, map } from 'nanostores';
 
 export interface AnnouncementState {
-  text: string;
-  link: string;
+  text?: string;
+  link?: string;
   isVisible: boolean;
 }
-
-export const DEFAULT_ANNOUNCEMENT_TEXT = 'Looking for Community Run Route Suggestions';
-export const DEFAULT_ANNOUNCEMENT_LINK = '/signup';
-export const FALLBACK_SLOGAN_TEXT = 'by bringing people together through long-distance running and community art';
 
 export const ANNOUNCEMENT_STORAGE_KEY = 'adoptarun_announcement_dismissed';
 
@@ -25,16 +21,16 @@ export function isAnnouncementDismissed(): boolean {
 
 // 1. $announcementTicker: manages reactive banner text, link, and visibility
 export const $announcementTicker = map<AnnouncementState>({
-  text: DEFAULT_ANNOUNCEMENT_TEXT,
-  link: DEFAULT_ANNOUNCEMENT_LINK,
+  text: '',
+  link: undefined,
   isVisible: true,
 });
 
-export function setAnnouncement(text: string, link: string = DEFAULT_ANNOUNCEMENT_LINK) {
-  const truncatedText = text.slice(0, 120);
+export function setAnnouncement(text: string = '', link?: string) {
+  const truncatedText = text.slice(0, 120).trim();
   $announcementTicker.set({
-    text: truncatedText.trim() ? truncatedText : FALLBACK_SLOGAN_TEXT,
-    link,
+    text: truncatedText,
+    link: link?.trim() ? link.trim() : undefined,
     isVisible: true,
   });
 }
@@ -53,7 +49,7 @@ export function dismissAnnouncement() {
   }
 }
 
-export function resetAnnouncement() {
+export function resetAnnouncement(text: string = '', link?: string) {
   if (typeof window !== 'undefined') {
     if (window.sessionStorage) {
       try {
@@ -63,8 +59,8 @@ export function resetAnnouncement() {
     document.documentElement.classList.remove('announcement-dismissed');
   }
   $announcementTicker.set({
-    text: DEFAULT_ANNOUNCEMENT_TEXT,
-    link: DEFAULT_ANNOUNCEMENT_LINK,
+    text: text.trim(),
+    link: link?.trim() ? link.trim() : undefined,
     isVisible: true,
   });
 }

@@ -37,8 +37,8 @@ export interface SanityRoute {
   district: string;
   region: 'Hong Kong Island' | 'Kowloon' | 'New Territories' | 'Outlying Islands';
   city: string;
-  difficulty: 'beginner' | 'easy' | 'intermediate' | 'advanced' | 'endurance';
-  colorTheme: 'route-orange' | 'route-coral' | 'route-blush';
+  difficulty: 'beginner' | 'easy' | 'intermediate' | 'advanced';
+  colorTheme?: 'route-orange' | 'route-coral' | 'route-blush';
   featured: boolean;
   distanceKm: number;
   elevationGain: number;
@@ -95,9 +95,8 @@ export interface SanitySiteCopy {
   _id: string;
   _type: 'siteCopy';
   announcementEnabled: boolean;
-  announcementTickerText: string;
-  announcementTickerLink: string;
-  announcementDefaultSlogan: string;
+  announcementTickerText?: string;
+  announcementTickerLink?: string;
   heroTitle: string;
   heroSubtitle: string;
   heroCtaText: string;

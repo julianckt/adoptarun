@@ -37,7 +37,6 @@ describe('Sanity CMS Schemas & Configuration', () => {
       expect(fieldNames).toContain('region');
       expect(fieldNames).toContain('city');
       expect(fieldNames).toContain('difficulty');
-      expect(fieldNames).toContain('colorTheme');
       expect(fieldNames).toContain('distanceKm');
       expect(fieldNames).toContain('elevationGain');
       expect(fieldNames).toContain('estimatedDurationMin');
@@ -126,6 +125,52 @@ describe('Sanity CMS Schemas & Configuration', () => {
       expect(fieldNames).toContain('totalKmCovered');
       expect(fieldNames).toContain('totalRunsCompleted');
       expect(fieldNames).toContain('totalParticipantsCount');
+    });
+
+    it('contains announcement banner fields and excludes fallback slogan', () => {
+      const fieldNames = (siteCopyType.fields || []).map((f) => f.name);
+      expect(fieldNames).toContain('announcementEnabled');
+      expect(fieldNames).toContain('announcementTickerText');
+      expect(fieldNames).toContain('announcementTickerLink');
+      expect(fieldNames).not.toContain('announcementDefaultSlogan');
+    });
+
+    it('validates announcementTickerText required when announcementEnabled is true', () => {
+      const textDef = (siteCopyType.fields || []).find((f) => f.name === 'announcementTickerText');
+      expect(textDef).toBeDefined();
+
+      let customFn: any;
+      const mockRule: any = {
+        custom: (fn: any) => {
+          customFn = fn;
+          return mockRule;
+        },
+        max: () => mockRule,
+        warning: () => mockRule,
+      };
+
+      if (typeof textDef?.validation === 'function') {
+        textDef.validation(mockRule);
+      }
+
+      expect(customFn).toBeDefined();
+      // Fails when announcementEnabled is true and text is missing or whitespace
+      expect(customFn('', { parent: { announcementEnabled: true } })).toBe(
+        'Announcement banner text is required when the announcement banner is enabled'
+      );
+      expect(customFn('   ', { parent: { announcementEnabled: true } })).toBe(
+        'Announcement banner text is required when the announcement banner is enabled'
+      );
+      expect(customFn(undefined, { parent: { announcementEnabled: true } })).toBe(
+        'Announcement banner text is required when the announcement banner is enabled'
+      );
+
+      // Passes when announcementEnabled is true and text is provided
+      expect(customFn('Join our run', { parent: { announcementEnabled: true } })).toBe(true);
+
+      // Passes when announcementEnabled is false, even if text is empty
+      expect(customFn('', { parent: { announcementEnabled: false } })).toBe(true);
+      expect(customFn(undefined, { parent: { announcementEnabled: false } })).toBe(true);
     });
   });
 

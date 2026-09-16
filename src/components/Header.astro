@@ -1,18 +1,34 @@
 ---
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
+import type { SanitySiteCopy } from '@/sanity/types';
 
 export interface Props {
   class?: string;
+  siteCopy?: SanitySiteCopy | null;
+  announcementText?: string;
+  announcementLink?: string;
   showAnnouncement?: boolean;
   [key: string]: any;
 }
 
 const {
   class: className,
-  showAnnouncement = Astro.url.pathname === '/' || Astro.url.pathname === '',
+  siteCopy,
+  announcementText: propText,
+  announcementLink: propLink,
+  showAnnouncement,
   ...restProps
 } = Astro.props;
+
+const bannerText = (propText ?? siteCopy?.announcementTickerText ?? '').trim();
+const bannerLink = (propLink ?? siteCopy?.announcementTickerLink ?? '').trim() || undefined;
+
+const isBannerActive = siteCopy
+  ? Boolean(siteCopy.announcementEnabled && bannerText)
+  : Boolean(bannerText);
+
+const isVisible = showAnnouncement !== undefined ? showAnnouncement : isBannerActive;
 ---
 
 <div class="site-header-sentinel" aria-hidden="true"></div>
@@ -30,7 +46,13 @@ const {
 
     <!-- Columns 2 & 3: Announcement Banner Slot -->
     <div class="nav-announcement-slot">
-      {showAnnouncement && <AnnouncementBanner client:load />}
+      {isVisible && bannerText && (
+        <AnnouncementBanner
+          text={bannerText}
+          link={bannerLink}
+          client:load
+        />
+      )}
     </div>
 
     <!-- Column 4: Stacked links (routes, charities) -->

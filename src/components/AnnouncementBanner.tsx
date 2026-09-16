@@ -2,7 +2,15 @@ import React, { useEffect } from 'react';
 import { useStore } from '@nanostores/react';
 import { $announcementTicker, dismissAnnouncement, isAnnouncementDismissed } from '@/stores/shell';
 
-export const AnnouncementBanner: React.FC = () => {
+export interface AnnouncementBannerProps {
+  text?: string;
+  link?: string;
+}
+
+export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({
+  text: propText,
+  link: propLink,
+}) => {
   const ticker = useStore($announcementTicker);
 
   useEffect(() => {
@@ -15,6 +23,14 @@ export const AnnouncementBanner: React.FC = () => {
     return null;
   }
 
+  const text = (ticker.text || propText || '').trim();
+  const link = ticker.link !== undefined ? ticker.link : propLink;
+  const trimmedLink = link?.trim();
+
+  if (!text) {
+    return null;
+  }
+
   const handleDismiss = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -23,9 +39,13 @@ export const AnnouncementBanner: React.FC = () => {
 
   return (
     <div className="announcement-bar-container">
-      <a href={ticker.link} className="announcement-link">
-        {ticker.text}
-      </a>
+      {trimmedLink ? (
+        <a href={trimmedLink} className="announcement-link">
+          {text}
+        </a>
+      ) : (
+        <span className="announcement-text">{text}</span>
+      )}
       <button
         type="button"
         className="announcement-dismiss"

@@ -18,35 +18,35 @@ export const siteCopyType = defineType({
     // --- Group: Announcement Ticker ---
     defineField({
       name: 'announcementEnabled',
-      title: 'Announcement Ticker Enabled',
+      title: 'Announcement Banner Enabled',
       type: 'boolean',
       group: 'announcement',
+      description: 'Toggle the announcement banner on or off in the site header.',
       initialValue: true,
     }),
     defineField({
       name: 'announcementTickerText',
-      title: 'Announcement Ticker Text',
+      title: 'Announcement Banner Text',
       type: 'string',
       group: 'announcement',
-      description: 'Dynamic announcement string (max 120 characters).',
-      validation: (rule) => rule.max(120).warning('Keep ticker text concise for mobile screens'),
-      initialValue: 'NEXT RUN: SAT AUG 8 @ 07:30 HKT | 12 RUNNERS JOINED',
+      description: 'Text displayed in the announcement banner (max 120 characters). Required when banner is enabled.',
+      validation: (rule) => [
+        rule.custom((value, context) => {
+          const parent = (context.parent ?? context.document) as { announcementEnabled?: boolean } | undefined;
+          if (parent?.announcementEnabled && (!value || !value.trim())) {
+            return 'Announcement banner text is required when the announcement banner is enabled';
+          }
+          return true;
+        }),
+        rule.max(120).warning('Keep ticker text concise for mobile screens'),
+      ],
     }),
     defineField({
       name: 'announcementTickerLink',
-      title: 'Announcement Ticker Link',
+      title: 'Announcement Banner Link (Optional)',
       type: 'string',
       group: 'announcement',
-      description: 'Internal route or URL (e.g., /signup).',
-      initialValue: '/signup',
-    }),
-    defineField({
-      name: 'announcementDefaultSlogan',
-      title: 'Default Movement Slogan (Fallback)',
-      type: 'string',
-      group: 'announcement',
-      description: 'Fallback text displayed when no upcoming group run is active.',
-      initialValue: 'Your next run collective - Merging Community with Exercise and Art',
+      description: 'Optional internal route or URL (e.g. /signup). Leave empty to display banner text without linking anywhere.',
     }),
 
     // --- Group: Hero ---

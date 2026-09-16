@@ -23,15 +23,29 @@ describe('Header Interactive Components', () => {
   });
 
   describe('AnnouncementBanner Island', () => {
-    it('renders default announcement text and link', () => {
-      render(<AnnouncementBanner />);
+    it('does not render when no text is provided in props or store', () => {
+      const { container } = render(<AnnouncementBanner />);
+      expect(container.firstChild).toBeNull();
+    });
+
+    it('renders announcement text and link when passed as props', () => {
+      render(<AnnouncementBanner text="Next Run: Sat 8am" link="/signup" />);
       const link = screen.getByRole('link');
       expect(link.getAttribute('href')).toBe('/signup');
-      expect(link.textContent).toBe('Looking for Community Run Route Suggestions');
+      expect(link.textContent).toBe('Next Run: Sat 8am');
+    });
+
+    it('renders announcement as plain text without link when link is omitted', () => {
+      render(<AnnouncementBanner text="Notice: Event Postponed" />);
+      expect(screen.queryByRole('link')).toBeNull();
+      const textEl = screen.getByText('Notice: Event Postponed');
+      expect(textEl).toBeDefined();
+      expect(textEl.tagName.toLowerCase()).toBe('span');
+      expect(textEl.className).toContain('announcement-text');
     });
 
     it('updates text and link dynamically from store', () => {
-      render(<AnnouncementBanner />);
+      render(<AnnouncementBanner text="Initial Text" link="/initial" />);
       act(() => {
         setAnnouncement('Next Group Run: Saturday 7am', '/routes');
       });
@@ -40,8 +54,17 @@ describe('Header Interactive Components', () => {
       expect(link.textContent).toBe('Next Group Run: Saturday 7am');
     });
 
-    it('dismisses banner on dismiss button click and adds announcement-dismissed class', () => {
+    it('renders text only from store when setAnnouncement has no link', () => {
       render(<AnnouncementBanner />);
+      act(() => {
+        setAnnouncement('Next Group Run: Saturday 7am');
+      });
+      expect(screen.queryByRole('link')).toBeNull();
+      expect(screen.getByText('Next Group Run: Saturday 7am')).toBeDefined();
+    });
+
+    it('dismisses banner on dismiss button click and adds announcement-dismissed class', () => {
+      render(<AnnouncementBanner text="Dismissible banner" link="/test" />);
       const dismissBtn = screen.getByRole('button', { name: /dismiss announcement/i });
       fireEvent.click(dismissBtn);
       expect($announcementTicker.get().isVisible).toBe(false);
@@ -51,13 +74,13 @@ describe('Header Interactive Components', () => {
 
     it('does not render when isVisible is false', () => {
       $announcementTicker.setKey('isVisible', false);
-      const { container } = render(<AnnouncementBanner />);
+      const { container } = render(<AnnouncementBanner text="Some text" />);
       expect(container.firstChild).toBeNull();
     });
 
     it('dismisses banner on mount if already dismissed in sessionStorage', () => {
       sessionStorage.setItem('adoptarun_announcement_dismissed', 'true');
-      const { container } = render(<AnnouncementBanner />);
+      const { container } = render(<AnnouncementBanner text="Some text" />);
       expect(container.firstChild).toBeNull();
       expect($announcementTicker.get().isVisible).toBe(false);
       expect(document.documentElement.classList.contains('announcement-dismissed')).toBe(true);

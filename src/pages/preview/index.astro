@@ -32,7 +32,7 @@ const [routes, charities, siteCopy] = await Promise.all([
 ]);
 ---
 
-<BaseLayout title="preview — adopt a run" class="has-shader-bg" noindex>
+<BaseLayout title="preview — adopt a run" class="has-shader-bg" noindex siteCopy={siteCopy}>
   <HomePage routes={routes} charities={charities} siteCopy={siteCopy} />
   <VisualEditing slot="body-end" enabled zIndex={1000} />
 </BaseLayout>

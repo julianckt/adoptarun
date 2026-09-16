@@ -107,7 +107,6 @@ export const SITE_COPY_QUERY = defineQuery(
     announcementEnabled,
     announcementTickerText,
     announcementTickerLink,
-    announcementDefaultSlogan,
     heroTitle,
     heroSubtitle,
     heroCtaText,
