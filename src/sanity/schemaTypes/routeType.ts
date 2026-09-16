@@ -108,6 +108,20 @@ export const routeType = defineType({
       description: 'Display this route in the homepage featured grid.',
       initialValue: false,
     }),
+    defineField({
+      name: 'gpxFile',
+      title: 'GPX Track File Asset',
+      type: 'file',
+      fieldset: 'geo',
+      options: {
+        accept: '.gpx,application/gpx+xml,application/xml',
+      },
+      components: {
+        input: GpxUploadInput,
+      },
+      description: 'Official master GPX track file for this artwork.',
+      validation: (rule) => rule.required(),
+    }),
 
     // --- Fieldset: Metrics ---
     defineField({
@@ -133,20 +147,6 @@ export const routeType = defineType({
     }),
 
     // --- Fieldset: Geo & Mapping ---
-    defineField({
-      name: 'gpxFile',
-      title: 'GPX Track File Asset',
-      type: 'file',
-      fieldset: 'geo',
-      options: {
-        accept: '.gpx,application/gpx+xml,application/xml',
-      },
-      components: {
-        input: GpxUploadInput,
-      },
-      description: 'Official master GPX track file for this artwork.',
-      validation: (rule) => rule.required(),
-    }),
     defineField({
       name: 'routePolyline',
       title: 'Google Encoded Polyline String',

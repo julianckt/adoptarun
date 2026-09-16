@@ -15,6 +15,8 @@ import ShaderBackgroundWrapper from '@/components/ShaderBackground/ShaderBackgro
 import type { SanityRoute, SanityCharity, SanitySiteCopy } from '@/sanity/types';
 import { findSpotlightCharity, resolveTallyValues } from '@/utils/homepage-content';
 
+import { selectFeaturedRoutes } from '@/utils/featured-routes';
+
 export interface Props {
   routes: SanityRoute[] | null;
   charities: SanityCharity[] | null;
@@ -23,33 +25,11 @@ export interface Props {
 
 const { routes, charities, siteCopy } = Astro.props;
 
-const fallbackRoute: SanityRoute = {
-  _id: 'sample-wan-chai',
-  _type: 'route',
-  title: 'Wan Chai Promenade',
-  slug: { _type: 'slug', current: 'wan-chai-promenade' },
-  animalType: 'dog',
-  district: 'Wan Chai',
-  region: 'Hong Kong Island',
-  city: 'Hong Kong',
-  distanceKm: 14,
-  estimatedDurationMin: 10,
-  elevationGain: 4,
-  difficulty: 'beginner',
-  featured: true,
-  routePolyline: '',
-  description: 'Scenic flat route along Wan Chai Promenade',
-  isGroupRun: false,
-  tags: ['Near MTR', 'Traffic-Free Promenade Run'],
-};
-
-const activeRoute = routes?.[0] || fallbackRoute;
+const heroRoutes = selectFeaturedRoutes(routes, 2);
 const spcaCharity = findSpotlightCharity(charities);
 const tally = resolveTallyValues(siteCopy);
-const heroSubtitle = siteCopy?.heroSubtitle?.trim() || 'the new way to push yourself in training and in giving back';
-const heroDescription =
-  siteCopy?.heroDescription?.trim() ||
-  'by bringing people together through long-distance running and community art, our project aims to help champion a kinder city — a city where our shared compassion moves us forward.';
+const heroSubtitle = siteCopy?.heroSubtitle?.trim();
+const heroDescription = siteCopy?.heroDescription?.trim();
 ---
 
 <main>
@@ -66,21 +46,20 @@ const heroDescription =
             <span class="c-wordmark-line"><span class="c-wordmark-adopt">adopt</span></span>
             <span class="c-wordmark-line"><span class="c-wordmark-a">a</span><span class="c-wordmark-space">&nbsp;</span><span class="c-wordmark-run">run</span></span>
           </h1>
-          <p class="hero-tagline">{heroSubtitle}</p>
+          {heroSubtitle && <p class="hero-tagline">{heroSubtitle}</p>}
         </div>
 
-        <!-- Right Column: Route Cards (repeated twice) -->
+        <!-- Right Column: Route Cards -->
         <div class="hero-cards">
-          <RouteCard route={activeRoute} />
-          <RouteCard route={activeRoute} />
+          {heroRoutes.map((route) => (
+            <RouteCard route={route} />
+          ))}
         </div>
       </div>
 
       <!-- Hero Bottom Bar -->
       <div class="hero-bottom">
-        <p class="hero-mission">
-          {heroDescription}
-        </p>
+        {heroDescription && <p class="hero-mission">{heroDescription}</p>}
         <a href="#about-section" class="hero-learn-more" aria-label="Learn more about adopt a run">
           learn more &darr;
         </a>

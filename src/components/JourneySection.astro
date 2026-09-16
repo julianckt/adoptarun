@@ -23,33 +23,8 @@ export interface Props {
   steps?: JourneyStep[];
 }
 
-const DEFAULT_STEPS: JourneyStep[] = [
-  {
-    _key: 'step1',
-    stepNumber: 'one.',
-    title: 'match+\ncommit',
-    description: 'match with an animal route, and choose a charity cause to pair with and commit to',
-  },
-  {
-    _key: 'step2',
-    stepNumber: 'two.',
-    title: 'grow+\nnurture',
-    description: 'bring your animal to life with your running steps and fundraise to nurture your cause',
-  },
-  {
-    _key: 'step3',
-    stepNumber: 'three.',
-    title: 'forever\nguardian',
-    description: 'own your success in running and in impact! Hand off your run to its next caretaker',
-  },
-];
-
-const {
-  subtitle = 'make commitments to yourself and to your community – run the route and own the impact',
-  steps = DEFAULT_STEPS,
-} = Astro.props;
-
-const resolvedSteps = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
+const { subtitle, steps = [] } = Astro.props;
+const resolvedSteps = Array.isArray(steps) ? steps : [];
 ---
 
 <section id="journey-section" class="journey-section" aria-labelledby="journey-heading">
@@ -67,7 +42,7 @@ const resolvedSteps = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
           </span>
         </span>
       </h2>
-      <p class="journey-mission-text">{subtitle}</p>
+      {subtitle && <p class="journey-mission-text">{subtitle}</p>}
     </header>
 
     <ol class="journey-list">

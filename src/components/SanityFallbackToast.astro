@@ -1,0 +1,177 @@
+---
+/**
+ * src/components/SanityFallbackToast.astro
+ *
+ * Developer & Debug indicator for Sanity cache fallback status.
+ * Automatically shown when running locally in DEV mode if live fetches failed,
+ * or in production if ?debug=sanity is added to the URL.
+ *
+ * Fully adheres to DESIGN.md zero-radius rule and Lumos tokens.
+ */
+import { getFallbackStatus } from '@/sanity/fallbackState';
+import { getCacheTimestamp } from '@/sanity/queries';
+
+const fallbackStatus = getFallbackStatus();
+const snapshotTimestamp = getCacheTimestamp();
+const hasFallback = fallbackStatus.hasFallback;
+const formattedDate = snapshotTimestamp ? new Date(snapshotTimestamp).toLocaleString() : 'bundled';
+---
+
+<aside
+  id="sanity-fallback-toast"
+  class="sanity-fallback-toast is-hidden"
+  role="status"
+  aria-live="polite"
+  data-has-fallback={hasFallback ? 'true' : 'false'}
+  data-snapshot={formattedDate}
+  data-failed-queries={JSON.stringify(fallbackStatus.events)}
+>
+  <div class="toast-inner">
+    <div class="toast-indicator" aria-hidden="true"></div>
+    <div class="toast-body">
+      <p class="toast-title">Sanity Live Fetch Notice</p>
+      <p class="toast-message">
+        Serving cached snapshot from <span class="toast-timestamp">{formattedDate}</span>
+      </p>
+    </div>
+    <button
+      id="sanity-fallback-dismiss"
+      type="button"
+      class="toast-dismiss"
+      aria-label="Dismiss fallback notification"
+    >
+      &times;
+    </button>
+  </div>
+</aside>
+
+<style>
+  .sanity-fallback-toast {
+    position: fixed;
+    bottom: var(--space-06);
+    right: var(--space-06);
+    z-index: 9999;
+    max-width: 380px;
+    background-color: var(--color-canvas-black);
+    color: var(--color-canvas-white);
+    border: 1px solid var(--color-route-orange);
+    box-shadow: 0 var(--space-04) var(--space-08) rgba(0, 0, 0, 0.6);
+    box-sizing: border-box;
+    font-family: var(--font-body);
+    transition: opacity var(--duration-moderate) var(--ease-out-expo),
+                transform var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  .sanity-fallback-toast.is-hidden {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .toast-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-04);
+    padding: var(--space-04) var(--space-05);
+  }
+
+  .toast-indicator {
+    width: var(--space-02);
+    height: var(--space-02);
+    margin-top: var(--space-02);
+    background-color: var(--color-route-orange);
+    flex-shrink: 0;
+  }
+
+  .toast-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-01);
+    flex-grow: 1;
+  }
+
+  .toast-title {
+    font-size: var(--font-size-label);
+    font-weight: 600;
+    margin: var(--space-00);
+    color: var(--color-route-orange);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .toast-message {
+    font-size: var(--font-size-caption);
+    line-height: var(--leading-default);
+    margin: var(--space-00);
+    color: var(--color-text-secondary);
+  }
+
+  .toast-timestamp {
+    color: var(--color-canvas-white);
+    font-weight: 500;
+  }
+
+  .toast-dismiss {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-body);
+    line-height: 1;
+    cursor: pointer;
+    padding: var(--space-00);
+    margin-left: var(--space-02);
+  }
+
+  .toast-dismiss:hover,
+  .toast-dismiss:focus-visible {
+    color: var(--color-canvas-white);
+  }
+
+  @media (max-width: 480px) {
+    .sanity-fallback-toast {
+      bottom: var(--space-04);
+      right: var(--space-04);
+      left: var(--space-04);
+      max-width: none;
+    }
+  }
+</style>
+
+<script>
+  function initSanityFallbackToast() {
+    const toast = document.getElementById('sanity-fallback-toast');
+    if (!toast) return;
+
+    const isDev = import.meta.env.DEV;
+    const isDebug = new URLSearchParams(window.location.search).get('debug') === 'sanity';
+    const hasFallback = toast.dataset.hasFallback === 'true';
+
+    if ((isDev && hasFallback) || isDebug) {
+      toast.classList.remove('is-hidden');
+
+      const failedQueries = toast.dataset.failedQueries;
+      if (failedQueries) {
+        try {
+          const events = JSON.parse(failedQueries);
+          if (events.length > 0) {
+            console.warn('[Sanity Fallback Active]', {
+              snapshot: toast.dataset.snapshot,
+              failedQueries: events,
+            });
+          }
+        } catch {}
+      }
+    }
+
+    const dismissBtn = document.getElementById('sanity-fallback-dismiss');
+    dismissBtn?.addEventListener('click', () => {
+      toast.classList.add('is-hidden');
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSanityFallbackToast);
+  } else {
+    initSanityFallbackToast();
+  }
+</script>

@@ -73,6 +73,22 @@ describe('enableDraftMode', () => {
     );
   });
 
+  it('normalizes root path "/" to "/preview" where visual editing lives', async () => {
+    const { jar } = cookieJar();
+    const response = await enableDraftMode(enableRequest(VALID_SECRET, '/'), jar, fakeClient());
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('Location')).toBe('/preview');
+  });
+
+  it('whitelists sanity.io and sanity.studio domains in CSP frame-ancestors', () => {
+    expect(PREVIEW_FRAME_ANCESTORS_CSP).toContain('https://adoptarun.sanity.studio');
+    expect(PREVIEW_FRAME_ANCESTORS_CSP).toContain('https://www.sanity.io');
+    expect(PREVIEW_FRAME_ANCESTORS_CSP).toContain('https://sanity.io');
+    expect(PREVIEW_FRAME_ANCESTORS_CSP).toContain('https://*.sanity.io');
+    expect(PREVIEW_FRAME_ANCESTORS_CSP).toContain('https://*.sanity.studio');
+  });
+
   it('only redirects to a same-origin path, even if Studio passes an absolute URL', async () => {
     const { jar } = cookieJar();
     const response = await enableDraftMode(

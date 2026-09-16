@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "start": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
-    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build && node scripts/check-build.mjs",
+    "cache:sanity": "node scripts/cache-sanity.mjs",
+    "build": "node scripts/cache-sanity.mjs && ASTRO_TELEMETRY_DISABLED=1 astro build && node scripts/check-build.mjs",
     "check:build": "node scripts/check-build.mjs",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "astro": "ASTRO_TELEMETRY_DISABLED=1 astro",

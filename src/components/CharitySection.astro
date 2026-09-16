@@ -25,9 +25,7 @@ export interface Props {
 const { charity, class: className, ...restProps } = Astro.props;
 
 const charityTitle = 'Proudly Supporting';
-const charityDescription =
-  charity?.charityDescription ||
-  'The Society for the Prevention of Cruelty to Animals (SPCA) champions the welfare of all animals in Hong Kong. By adopting our animal-shaped GPS art routes, every kilometer you run raises awareness, rescue funds, and compassionate community support for shelter animals in need.';
+const charityDescription = charity?.charityDescription;
 const photo = resolveCharityPhoto(charity);
 ---
 

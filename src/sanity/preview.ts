@@ -35,7 +35,7 @@ export interface CookieJar {
 }
 
 export const PREVIEW_FRAME_ANCESTORS_CSP =
-  "frame-ancestors 'self' https://adoptarun.sanity.studio https://*.sanity.studio https://*.sanity.work http://localhost:*";
+  "frame-ancestors 'self' https://adoptarun.sanity.studio https://*.sanity.studio https://sanity.studio https://www.sanity.io https://sanity.io https://*.sanity.io https://*.sanity.work http://localhost:*";
 
 /**
  * Handles Presentation's "enable preview mode" request: validates the secret in the URL,
@@ -57,11 +57,13 @@ export async function enableDraftMode(
   }
 
   cookies.set(DRAFT_MODE_COOKIE, secret, COOKIE_OPTIONS);
+  // Studio passes '/' for the root, but visual editing only lives on /preview.
+  const targetLocation = !redirectTo || redirectTo === '/' ? PREVIEW_PATH : redirectTo;
   // validatePreviewUrl only ever returns a same-origin path, so this cannot be an open redirect.
   return new Response(null, {
     status: 307,
     headers: {
-      Location: redirectTo || PREVIEW_PATH,
+      Location: targetLocation,
       'Content-Security-Policy': PREVIEW_FRAME_ANCESTORS_CSP,
     },
   });

@@ -8,12 +8,12 @@ import {
 describe('Route Auto-Naming & Slug Utilities', () => {
   describe('formatBaseTitle', () => {
     it('combines district and animal type cleanly', () => {
-      expect(formatBaseTitle('Wan Chai', 'Dog')).toBe('Wan Chai Dog');
-      expect(formatBaseTitle('The Peak', 'Cat')).toBe('The Peak Cat');
+      expect(formatBaseTitle('Wan Chai', 'Dog')).toBe('Wan Chai Dog Run');
+      expect(formatBaseTitle('The Peak', 'Cat')).toBe('The Peak Cat Run');
     });
 
     it('trims whitespace from inputs', () => {
-      expect(formatBaseTitle('  Wan Chai  ', '  Dog  ')).toBe('Wan Chai Dog');
+      expect(formatBaseTitle('  Wan Chai  ', '  Dog  ')).toBe('Wan Chai Dog Run');
     });
 
     it('returns empty string if either district or animal type is missing or whitespace', () => {

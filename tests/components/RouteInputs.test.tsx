@@ -61,7 +61,7 @@ describe('Sanity Studio Route Custom Inputs', () => {
       const patchEvent = mockOnChange.mock.calls[0][0];
       const patches = patchEvent.patches || [patchEvent];
       const setValue = patches[0]?.value;
-      expect(setValue).toBe('Wan Chai Dog');
+      expect(setValue).toBe('Wan Chai Dog Run');
     });
 
     it('increments duplicate title to "Base 2" if original unnumbered title exists', async () => {
@@ -72,7 +72,7 @@ describe('Sanity Studio Route Custom Inputs', () => {
         return undefined;
       });
 
-      mockClientFetch.mockResolvedValue([{ title: 'Wan Chai Dog' }]);
+      mockClientFetch.mockResolvedValue([{ title: 'Wan Chai Dog Run' }]);
 
       const mockOnChange = vi.fn();
       const mockRenderDefault = vi.fn((props) => (
@@ -94,7 +94,7 @@ describe('Sanity Studio Route Custom Inputs', () => {
       const patchEvent = mockOnChange.mock.calls[0][0];
       const patches = patchEvent.patches || [patchEvent];
       const setValue = patches[0]?.value;
-      expect(setValue).toBe('Wan Chai Dog 2');
+      expect(setValue).toBe('Wan Chai Dog Run 2');
     });
 
     it('does not overwrite existing title on initial mount of existing document', async () => {

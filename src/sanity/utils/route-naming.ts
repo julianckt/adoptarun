@@ -21,7 +21,7 @@ export function formatBaseTitle(district?: string, animalType?: string): string 
     return '';
   }
 
-  return `${cleanDistrict} ${cleanAnimalType}`;
+  return `${cleanDistrict} ${cleanAnimalType} Run`;
 }
 
 /**
