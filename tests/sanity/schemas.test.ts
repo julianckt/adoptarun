@@ -73,6 +73,18 @@ describe('Sanity CMS Schemas & Configuration', () => {
       expect(slugField?.components?.input).toBeDefined();
     });
 
+    it('configures isUnique check on slug options', async () => {
+      const slugField = (routeType.fields || []).find((f) => f.name === 'slug') as any;
+      expect(slugField?.options?.isUnique).toBeDefined();
+      expect(typeof slugField?.options?.isUnique).toBe('function');
+
+      const mockDefaultIsUnique = vi.fn().mockResolvedValue(true);
+      const mockContext = { defaultIsUnique: mockDefaultIsUnique };
+      const result = await slugField.options.isUnique('test-slug', mockContext);
+      expect(mockDefaultIsUnique).toHaveBeenCalledWith('test-slug', mockContext);
+      expect(result).toBe(true);
+    });
+
     it('configures custom GpxUploadInput component on gpxFile field', () => {
       const gpxField = (routeType.fields || []).find((f) => f.name === 'gpxFile');
       expect(gpxField).toBeDefined();

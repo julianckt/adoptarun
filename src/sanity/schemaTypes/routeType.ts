@@ -52,6 +52,7 @@ export const routeType = defineType({
         source: 'title',
         maxLength: 96,
         slugify: (input) => generateSlug(input),
+        isUnique: (slug, context) => context.defaultIsUnique(slug, context),
       },
       validation: (rule) =>
         rule.required().custom((slug) => {
