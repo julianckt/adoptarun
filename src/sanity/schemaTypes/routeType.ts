@@ -1,6 +1,9 @@
 import { defineType, defineField } from 'sanity';
 import { PinIcon } from '@sanity/icons/Pin';
 import { GpxUploadInput } from '../../components/sanity/GpxUploadInput';
+import { RouteTitleInput } from '../../components/sanity/RouteTitleInput';
+import { RouteSlugInput } from '../../components/sanity/RouteSlugInput';
+import { generateSlug } from '../utils/route-naming';
 
 export const routeType = defineType({
   name: 'route',
@@ -14,17 +17,42 @@ export const routeType = defineType({
   ],
   fields: [
     defineField({
+      name: 'district',
+      title: 'District / Neighbourhood',
+      type: 'string',
+      description: 'Hong Kong district (e.g., Central & Western, Wan Chai, Sha Tin).',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'animalType',
+      title: 'Animal / Guardian Type',
+      type: 'string',
+      description: 'The animal or guardian species (e.g., Dog, Cat, Boar, Falcon).',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'title',
       title: 'Artwork / Companion Name',
       type: 'string',
-      description: 'The creative companion artwork name (e.g., The Running Dog, Wild Boar).',
+      components: {
+        input: RouteTitleInput,
+      },
+      description:
+        'The creative companion artwork name (e.g., Wan Chai Dog, The Peak Cat). Auto-generates from District & Animal Type with duplicate numbering.',
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: { source: 'title', maxLength: 96 },
+      components: {
+        input: RouteSlugInput,
+      },
+      options: {
+        source: 'title',
+        maxLength: 96,
+        slugify: (input) => generateSlug(input),
+      },
       validation: (rule) =>
         rule.required().custom((slug) => {
           if (!slug?.current) return 'Slug is required';
@@ -33,20 +61,6 @@ export const routeType = defineType({
           }
           return true;
         }),
-    }),
-    defineField({
-      name: 'animalType',
-      title: 'Animal / Guardian Type',
-      type: 'string',
-      description: 'The animal or guardian species (e.g., Golden Retriever, Boar, Falcon).',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'district',
-      title: 'District / Neighbourhood',
-      type: 'string',
-      description: 'Hong Kong district (e.g., Central & Western, Wan Chai, Sha Tin).',
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'region',

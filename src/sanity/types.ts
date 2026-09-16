@@ -31,10 +31,14 @@ export interface SanityRoute {
   _type: 'route';
   _createdAt?: string;
   _updatedAt?: string;
-  title: string;
-  slug: SanitySlug;
-  animalType: string;
+  /** District / Neighbourhood (e.g., Wan Chai, Central & Western, Sha Tin) */
   district: string;
+  /** Animal or guardian species (e.g., Dog, Cat, Boar) */
+  animalType: string;
+  /** Companion artwork name (auto-generated from district + animalType, e.g., Wan Chai Dog 2) */
+  title: string;
+  /** URL slug (auto-generated from title, e.g., wan-chai-dog-2) */
+  slug: SanitySlug;
   region: 'Hong Kong Island' | 'Kowloon' | 'New Territories' | 'Outlying Islands';
   city: string;
   difficulty: 'beginner' | 'easy' | 'intermediate' | 'advanced';

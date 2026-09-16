@@ -58,6 +58,21 @@ describe('Sanity CMS Schemas & Configuration', () => {
       expect(groupRunField?.fieldset).toBe('groupRun');
     });
 
+    it('orders identity fields: district first, animalType second, title third, and slug fourth', () => {
+      const fieldNames = (routeType.fields || []).map((f) => f.name);
+      expect(fieldNames[0]).toBe('district');
+      expect(fieldNames[1]).toBe('animalType');
+      expect(fieldNames[2]).toBe('title');
+      expect(fieldNames[3]).toBe('slug');
+    });
+
+    it('attaches custom auto-generation components to title and slug', () => {
+      const titleField = (routeType.fields || []).find((f) => f.name === 'title');
+      const slugField = (routeType.fields || []).find((f) => f.name === 'slug');
+      expect(titleField?.components?.input).toBeDefined();
+      expect(slugField?.components?.input).toBeDefined();
+    });
+
     it('configures custom GpxUploadInput component on gpxFile field', () => {
       const gpxField = (routeType.fields || []).find((f) => f.name === 'gpxFile');
       expect(gpxField).toBeDefined();
