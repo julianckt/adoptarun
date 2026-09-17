@@ -1,26 +1,31 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { IslandVerification } from '@/components/IslandVerification';
+import { AnnouncementBanner } from '@/components/AnnouncementBanner';
+import { resetAnnouncement } from '@/stores/shell';
 
 describe('Astro Core & React Island Smoke Tests', () => {
+  beforeEach(() => {
+    resetAnnouncement();
+  });
+
   it('should run tests in a jsdom environment', () => {
     expect(typeof window).toBe('object');
     expect(typeof document).toBe('object');
   });
 
   it('should resolve path aliases from @/*', () => {
-    expect(IslandVerification).toBeDefined();
+    expect(AnnouncementBanner).toBeDefined();
   });
 
   it('should successfully mount and render interactive React islands', () => {
-    render(<IslandVerification title="Adopt A Run Island" initialCount={1200} />);
-    
-    expect(screen.getByText('Adopt A Run Island')).not.toBeNull();
-    const container = screen.getByTestId('island-verification');
-    expect(container.textContent).toMatch(/Current Count:\s*1200/i);
+    render(<AnnouncementBanner text="Adopt A Run Island" />);
 
-    const button = screen.getByRole('button', { name: /Increment Counter/i });
-    fireEvent.click(button);
-    expect(container.textContent).toMatch(/Current Count:\s*1201/i);
+    expect(screen.getByText('Adopt A Run Island')).not.toBeNull();
+
+    const dismissBtn = screen.getByRole('button', { name: /Dismiss announcement/i });
+    expect(dismissBtn).not.toBeNull();
+
+    fireEvent.click(dismissBtn);
+    expect(screen.queryByText('Adopt A Run Island')).toBeNull();
   });
 });

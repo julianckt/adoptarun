@@ -28,6 +28,11 @@
  *
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
+import { Image } from 'astro:assets';
+import imgCommunity from '@/assets/images/about/community-puppy.jpg';
+import imgExercise from '@/assets/images/about/exercise-runners.jpg';
+import imgArt from '@/assets/images/about/art-artlane.jpg';
+
 interface Props {
   totalKmCovered?: number | string;
   totalRunsCompleted?: number | string;
@@ -53,22 +58,28 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
   <div class="about-content page-frame">
     <h2 class="about-sentence">
       <span class="about-lead">Your next run<br class="br-split"> collective<span class="lead-dash"> —</span></span><br>
-      <span class="pillar">merging <span class="about-pic pic-community" aria-hidden="true"><img
-            src="/images/about/community-puppy.jpg"
+      <span class="pillar">merging <span class="about-pic pic-community" aria-hidden="true"><Image
+            src={imgCommunity}
             alt=""
+            widths={[240, 480, 720]}
+            format="webp"
             loading="lazy"
             decoding="async"
           /></span><b class="seg seg-after-1 accent-community">Community&nbsp;</b></span>
       <span class="pillar"><span class="seg seg-after-1">with</span><br class="br-wide">
-        <span class="about-pic pic-exercise" aria-hidden="true"><img
-            src="/images/about/exercise-runners.jpg"
+        <span class="about-pic pic-exercise" aria-hidden="true"><Image
+            src={imgExercise}
             alt=""
+            widths={[240, 480, 720]}
+            format="webp"
             loading="lazy"
             decoding="async"
           /></span><b class="seg seg-after-2 accent-exercise">Exercise&nbsp;</b></span>
-      <span class="pillar"><span class="seg seg-after-2">and</span> <span class="about-pic pic-art seg-after-2" aria-hidden="true"><img
-            src="/images/about/art-artlane.jpg"
+      <span class="pillar"><span class="seg seg-after-2">and</span> <span class="about-pic pic-art seg-after-2" aria-hidden="true"><Image
+            src={imgArt}
             alt=""
+            widths={[240, 480, 720]}
+            format="webp"
             loading="lazy"
             decoding="async"
           /></span><b class="seg seg-after-3 accent-art">Art.</b></span>
@@ -251,7 +262,7 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
     align-items: start;
     margin-top: var(--space-fluid-2xl);
     padding-top: var(--space-fluid-lg);
-    border-top: 1px solid var(--color-border-hairline);
+    border-top: var(--border-hairline);
   }
 
   .about-description {
@@ -350,7 +361,7 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
   }
 
   /* Tablet: paragraph above tally, both on the left edge */
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     .about-row {
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-fluid-xl);
@@ -368,10 +379,9 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
 
   /* Phone: DESIGN.md gutters step down; the tally keeps its desktop token (fluid title, 32px here),
      sitting level with the fitted headline so the two read as a pair */
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .about-content {
       padding-block: var(--space-10);
-      padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
     }
 
     .about-row {
@@ -584,9 +594,5 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
     window.addEventListener('resize', queueUpdate, { passive: true });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAboutSection);
-  } else {
-    initAboutSection();
-  }
+  initAboutSection();
 </script>

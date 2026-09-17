@@ -9,7 +9,7 @@ export const NAV_EXIT_MS = 400;
 export const SCROLL_DISMISS_PX = 32;
 
 /** Viewports where CSS hides the drawer and shows the desktop header links. */
-export const DESKTOP_NAV_QUERY = '(min-width: 769px)';
+export const DESKTOP_NAV_QUERY = '(width > 768px)';
 
 /** The menu toggle only shows below the desktop breakpoint; without matchMedia (jsdom) assume mobile. */
 const isDesktopLayout = () =>

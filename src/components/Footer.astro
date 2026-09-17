@@ -29,37 +29,39 @@ const socialLinks =
 ---
 
 <footer class:list={['site-footer', { 'site-footer--minimal': isMinimal }, className]} {...restProps}>
-  {!isMinimal && (<>
-  <p class="site-footer-contact">
-    <span>Contact us at</span>
-    <a class="site-footer-email" href={`mailto:${contactEmail}`}>{contactEmail}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a>
-  </p>
-  <div class="site-footer-body">
-    <nav aria-label="Footer">
-      <ul class="site-footer-list site-footer-list--site">
-        <li><a href="/routes">routes<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-        <li><a href="/charities">charities<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-        <li><a href="/signup">adopt a route<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-        <li><a href="/donate">donate<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-        <li><a href="/log">log a run<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-        <li><a href="#">back to top<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4" /></svg></a></li>
-      </ul>
-    </nav>
-    <nav aria-label="Community">
-      <ul class="site-footer-list">
-        {socialLinks.map((link) => (
-          <li><a href={link.url} target="_blank" rel="noopener noreferrer">{link.text}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-        ))}
-      </ul>
-    </nav>
-  </div>
-  </>)}
-  <div class="site-footer-base">
-    <p>© {new Date().getFullYear()} adopt a run. all rights reserved.</p>
-    <nav aria-label="Legal">
-      <a href="/privacy">privacy policy</a>
-      <a href="/terms">terms &amp; conditions</a>
-    </nav>
-    <p>designed by jckt</p>
+  <div class="site-footer-inner page-frame">
+    {!isMinimal && (<>
+    <p class="site-footer-contact">
+      <span>Contact us at</span>
+      <a class="site-footer-email" href={`mailto:${contactEmail}`}>{contactEmail}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a>
+    </p>
+    <div class="site-footer-body">
+      <nav aria-label="Footer">
+        <ul class="site-footer-list site-footer-list--site">
+          <li><a href="/routes">routes<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+          <li><a href="/charities">charities<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+          <li><a href="/signup">adopt a route<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+          <li><a href="/donate">donate<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+          <li><a href="/log">log a run<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+          <li><a href="#">back to top<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4" /></svg></a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Community">
+        <ul class="site-footer-list">
+          {socialLinks.map((link) => (
+            <li><a href={link.url} target="_blank" rel="noopener noreferrer">{link.text}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+    </>)}
+    <div class="site-footer-base">
+      <p>© {new Date().getFullYear()} adopt a run. all rights reserved.</p>
+      <nav aria-label="Legal">
+        <a href="/privacy">privacy policy</a>
+        <a href="/terms">terms &amp; conditions</a>
+      </nav>
+      <p>designed by jckt</p>
+    </div>
   </div>
 </footer>

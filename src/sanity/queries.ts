@@ -162,13 +162,13 @@ export async function getRoutes(client: SanityClient = sanityClient): Promise<Sa
       return result;
     }
     if (client === sanityClient && Array.isArray(sanityCache?.data?.routes) && sanityCache.data.routes.length > 0) {
-      return sanityCache.data.routes as SanityRoute[];
+      return sanityCache.data.routes as unknown as SanityRoute[];
     }
     return result || [];
   } catch (err) {
     recordFallback('getRoutes', err);
     console.warn('[sanity] getRoutes failed, using cached fallback snapshot:', err instanceof Error ? err.message : err);
-    return (sanityCache?.data?.routes as SanityRoute[]) || [];
+    return (sanityCache?.data?.routes as unknown as SanityRoute[]) || [];
   }
 }
 
@@ -180,13 +180,13 @@ export async function getRouteBySlug(
     const result = await client.fetch(ROUTE_BY_SLUG_QUERY, { slug });
     if (result) return result;
     if (client === sanityClient && Array.isArray(sanityCache?.data?.routes)) {
-      return ((sanityCache.data.routes as SanityRoute[]).find((r) => r.slug?.current === slug) || null);
+      return ((sanityCache.data.routes as unknown as SanityRoute[]).find((r) => r.slug?.current === slug) || null);
     }
     return null;
   } catch (err) {
     recordFallback(`getRouteBySlug(${slug})`, err);
     console.warn(`[sanity] getRouteBySlug(${slug}) failed, using cached fallback:`, err instanceof Error ? err.message : err);
-    return ((sanityCache?.data?.routes as SanityRoute[])?.find((r) => r.slug?.current === slug) || null);
+    return ((sanityCache?.data?.routes as unknown as SanityRoute[])?.find((r) => r.slug?.current === slug) || null);
   }
 }
 

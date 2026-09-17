@@ -9,19 +9,13 @@ const { class: className } = Astro.props;
 ---
 
 <div class:list={['shader-background-viewport', className]} aria-hidden="true">
-  <ShaderBackground client:only="react" />
+  <ShaderBackground client:idle={{ timeout: 800 }} />
 </div>
 
 <style>
   .shader-background-viewport {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: calc(-1 * var(--safe-inset-bottom));
-    width: 100vw;
-    height: 100vh;
-    height: 100lvh;
+    inset: 0 0 calc(-1 * var(--safe-inset-bottom)) 0;
     z-index: -1;
     pointer-events: none;
     background-color: transparent;

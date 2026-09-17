@@ -68,29 +68,10 @@ export function resetAnnouncement(text: string = '', link?: string) {
 // 2. $isNavOpen: manages mobile drawer open/close state
 export const $isNavOpen = atom<boolean>(false);
 
-export function toggleNav() {
-  $isNavOpen.set(!$isNavOpen.get());
-}
-
 export function openNav() {
   $isNavOpen.set(true);
 }
 
 export function closeNav() {
   $isNavOpen.set(false);
-}
-
-// 3. $isLogModalOpen: manages quick run log dialog state
-export const $isLogModalOpen = atom<boolean>(false);
-
-export function toggleLogModal() {
-  $isLogModalOpen.set(!$isLogModalOpen.get());
-}
-
-export function openLogModal() {
-  $isLogModalOpen.set(true);
-}
-
-export function closeLogModal() {
-  $isLogModalOpen.set(false);
 }

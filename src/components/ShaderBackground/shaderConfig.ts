@@ -460,5 +460,5 @@ export const DEFAULT_CANVAS_OPTIONS: ShaderCanvasOptions = {
   fov: 45,
   pointerEvents: 'none',      // Never intercept user clicks or gestures
   lazyLoad: false,
-  powerPreference: 'high-performance',
+  powerPreference: 'low-power',
 };

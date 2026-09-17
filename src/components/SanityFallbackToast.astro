@@ -51,11 +51,11 @@ const formattedDate = snapshotTimestamp ? new Date(snapshotTimestamp).toLocaleSt
     bottom: var(--space-06);
     right: var(--space-06);
     z-index: 9999;
-    max-width: 380px;
+    max-width: var(--toast-max-width);
     background-color: var(--color-canvas-black);
     color: var(--color-canvas-white);
-    border: 1px solid var(--color-route-orange);
-    box-shadow: 0 var(--space-04) var(--space-08) rgba(0, 0, 0, 0.6);
+    border: var(--border-width-hairline) solid var(--color-route-orange);
+    box-shadow: var(--shadow-toast);
     box-sizing: border-box;
     font-family: var(--font-body);
     transition: opacity var(--duration-moderate) var(--ease-out-expo),
@@ -127,7 +127,7 @@ const formattedDate = snapshotTimestamp ? new Date(snapshotTimestamp).toLocaleSt
     color: var(--color-canvas-white);
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 640px) {
     .sanity-fallback-toast {
       bottom: var(--space-04);
       right: var(--space-04);

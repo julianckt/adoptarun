@@ -14,7 +14,9 @@
  * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
  */
 import type { SanityCharity } from '@/sanity/types';
-import { resolveCharityPhoto } from '@/utils/homepage-content';
+import { resolveCharityPhoto, DEFAULT_CHARITY_PHOTO } from '@/utils/homepage-content';
+import { getImage } from 'astro:assets';
+import fallbackPuppy from '@/assets/images/charity/spca-puppy.jpg';
 
 export interface Props {
   charity?: SanityCharity | null;
@@ -27,6 +29,12 @@ const { charity, class: className, ...restProps } = Astro.props;
 const charityTitle = 'Proudly Supporting';
 const charityDescription = charity?.charityDescription;
 const photo = resolveCharityPhoto(charity);
+
+let photoSrc = photo.src;
+if (photo.src === DEFAULT_CHARITY_PHOTO.src) {
+  const optimized = await getImage({ src: fallbackPuppy, format: 'webp', width: 568, height: 379 });
+  photoSrc = optimized.src;
+}
 ---
 
 <section id="charity-spotlight" class:list={['charity-section', className]} aria-labelledby="charity-heading" {...restProps}>
@@ -45,7 +53,7 @@ const photo = resolveCharityPhoto(charity);
       <!-- Expanding central photo frame overlapping SP and CA -->
       <div class="charity-photo-frame">
         <img
-          src={photo.src}
+          src={photoSrc}
           alt={photo.alt}
           class="charity-photo-img"
           width="568"
@@ -218,7 +226,7 @@ const photo = resolveCharityPhoto(charity);
 
   /* Small screens: the split turns vertical. SP sits above the photo and CA below, and the
      growing photo pushes them up and down instead of sideways (the script measures height here). */
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .charity-section {
       padding-top: var(--space-10);
       padding-bottom: var(--space-10);
@@ -277,7 +285,7 @@ const photo = resolveCharityPhoto(charity);
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     // Text reveals fire on entry from either direction and reset on exit, so they replay every pass.
-    // The trigger line sits 15% above the viewport bottom.
+    // The trigger line sits 5% above the viewport bottom.
     const revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => entry.target.classList.toggle('is-revealed', entry.isIntersecting));
@@ -300,7 +308,7 @@ const photo = resolveCharityPhoto(charity);
       current + (target - current) * (1 - Math.pow(1 - rate, dt / (1000 / 60)));
 
     // Below 640px the split is vertical, so the photo pushes along its height instead of its width
-    const verticalQuery = window.matchMedia('(max-width: 640px)');
+    const verticalQuery = window.matchMedia('(width <= 640px)');
     const measureFrame = () => (verticalQuery.matches ? frame.offsetHeight : frame.offsetWidth);
     let frameSize = measureFrame();
 
@@ -374,9 +382,5 @@ const photo = resolveCharityPhoto(charity);
     );
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCharityComponent);
-  } else {
-    initCharityComponent();
-  }
+  initCharityComponent();
 </script>

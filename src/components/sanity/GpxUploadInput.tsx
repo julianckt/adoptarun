@@ -423,7 +423,6 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
                         width: '237px',
                         height: '144px',
                         backgroundColor: 'rgb(24, 19, 17)',
-                        borderRadius: '0px',
                         overflow: 'hidden',
                         display: 'flex',
                         alignItems: 'center',

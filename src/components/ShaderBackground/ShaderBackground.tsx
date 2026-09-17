@@ -1,11 +1,30 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { ShaderGradientCanvas, ShaderGradient } from '@shadergradient/react';
+import { useFrame } from '@react-three/fiber';
 import {
   SHADER_PRESET_A,
   SHADER_PRESET_B,
   DEFAULT_CANVAS_OPTIONS,
   type ShaderGradientConfig,
 } from './shaderConfig';
+
+interface ParallaxRigProps {
+  mouseRef: React.RefObject<{ x: number; y: number }>;
+  scrollRef: React.RefObject<number>;
+  isSuspended: boolean;
+  prefersReducedMotion: boolean;
+}
+
+function WebGLParallaxRig({ mouseRef, scrollRef, isSuspended, prefersReducedMotion }: ParallaxRigProps) {
+  useFrame(({ scene }) => {
+    if (isSuspended || prefersReducedMotion) return;
+    const targetRotY = (mouseRef.current?.x ?? 0) * 0.12 + (scrollRef.current ?? 0) * 0.04;
+    const targetRotX = (mouseRef.current?.y ?? 0) * 0.06;
+    scene.rotation.y += (targetRotY - scene.rotation.y) * 0.05;
+    scene.rotation.x += (targetRotX - scene.rotation.x) * 0.05;
+  });
+  return null;
+}
 
 export interface ShaderBackgroundProps {
   /**
@@ -23,6 +42,7 @@ export default function ShaderBackground({
   forcedPreset,
   className,
 }: ShaderBackgroundProps) {
+  const [isIdle, setIsIdle] = useState<boolean>(false);
   const [activePresetKey, setActivePresetKey] = useState<'presetA' | 'presetB'>(
     forcedPreset ?? 'presetA'
   );
@@ -32,18 +52,26 @@ export default function ShaderBackground({
   const [isPresetSwapping, setIsPresetSwapping] = useState<boolean>(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
 
-  // Target tilt offsets driven by cursor & scroll momentum
-  const [cameraTilt, setCameraTilt] = useState<{ azimuth: number; polar: number }>({
-    azimuth: 0,
-    polar: 0,
-  });
-
   const mouseTargetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const scrollTargetRef = useRef<number>(0);
-  const scrollVelocityRef = useRef<number>(0);
-  const lastScrollYRef = useRef<number>(0);
-  const lastScrollTimeRef = useRef<number>(0);
   const prevPresetRef = useRef<'presetA' | 'presetB'>(activePresetKey);
+
+  // ---------------------------------------------------------------------------
+  // 0. Idle mount deferral (timeout: 800ms)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if ('requestIdleCallback' in window) {
+      const handle = (window as Window & { requestIdleCallback: any; cancelIdleCallback: any }).requestIdleCallback(
+        () => setIsIdle(true),
+        { timeout: 800 }
+      );
+      return () => (window as Window & { cancelIdleCallback: any }).cancelIdleCallback(handle);
+    } else {
+      const timer = setTimeout(() => setIsIdle(true), 200);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // ---------------------------------------------------------------------------
   // 1. First-paint fade-in trigger & initial coordinate snap
@@ -141,72 +169,20 @@ export default function ShaderBackground({
       });
     };
 
-    // 1. Initial scan on React mount
+    // Initial scan on React mount
     attachAvailableElements();
 
-    // 2. If any element hasn't streamed or loaded into the DOM yet, observe mutations
-    let mutationObserver: MutationObserver | null = null;
-    if (observedElements.length < sectionSelectors.length) {
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', attachAvailableElements, { once: true });
-      }
-
-      if (typeof MutationObserver !== 'undefined') {
-        mutationObserver = new MutationObserver(() => {
-          attachAvailableElements();
-          if (observedElements.length >= sectionSelectors.length) {
-            mutationObserver?.disconnect();
-            mutationObserver = null;
-          }
-        });
-
-        const rootTarget = document.body || document.documentElement;
-        if (rootTarget) {
-          mutationObserver.observe(rootTarget, {
-            childList: true,
-            subtree: true,
-          });
-        }
-      }
-    }
-
     return () => {
-      document.removeEventListener('DOMContentLoaded', attachAvailableElements);
-      mutationObserver?.disconnect();
       observer.disconnect();
     };
   }, [forcedPreset]);
 
   // ---------------------------------------------------------------------------
-  // 4. Subtle Cursor & Scroll Momentum Parallax (Native Damping, 0 Idle Renders)
+  // 4. Subtle Cursor & Scroll Momentum Parallax (Pure WebGL useFrame, 0 React Rerenders)
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (prefersReducedMotion) return;
-
-    let updateScheduled = false;
-    let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const scheduleUpdate = () => {
-      if (updateScheduled) return;
-      updateScheduled = true;
-      requestAnimationFrame(() => {
-        updateScheduled = false;
-        if (isSuspended || prefersReducedMotion) return;
-
-        // Max tilt range: +/- 8 deg azimuth, +/- 4 deg polar + scroll momentum
-        const targetAzimuth =
-          mouseTargetRef.current.x * 8 +
-          scrollTargetRef.current * 3 +
-          scrollVelocityRef.current;
-        const targetPolar = mouseTargetRef.current.y * 4;
-
-        setCameraTilt({
-          azimuth: targetAzimuth,
-          polar: targetPolar,
-        });
-      });
-    };
 
     const handlePointerMove = (e: PointerEvent) => {
       // Ignore touch events to preserve native touch scrolling
@@ -216,41 +192,22 @@ export default function ShaderBackground({
       const normY = (e.clientY / window.innerHeight) * 2 - 1; // -1 to 1
 
       mouseTargetRef.current = { x: normX, y: normY };
-      scheduleUpdate();
     };
 
     const handleScroll = () => {
-      const now = performance.now();
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       const scrollY = window.scrollY || window.pageYOffset;
-      const deltaY = scrollY - lastScrollYRef.current;
-      const deltaTime = Math.max(1, now - lastScrollTimeRef.current);
-
-      // Instantaneous scroll momentum (clamped to +/- 6 degrees)
-      scrollVelocityRef.current = Math.min(Math.max((deltaY / deltaTime) * 5, -6), 6);
-      lastScrollYRef.current = scrollY;
-      lastScrollTimeRef.current = now;
       scrollTargetRef.current = maxScroll > 0 ? (scrollY / maxScroll) * 2 - 1 : 0;
-
-      scheduleUpdate();
-
-      // Coast momentum to rest shortly after scrolling stops
-      if (scrollEndTimer) clearTimeout(scrollEndTimer);
-      scrollEndTimer = setTimeout(() => {
-        scrollVelocityRef.current = 0;
-        scheduleUpdate();
-      }, 120);
     };
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      if (scrollEndTimer) clearTimeout(scrollEndTimer);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [isSuspended, prefersReducedMotion]);
+  }, [prefersReducedMotion]);
 
   // ---------------------------------------------------------------------------
   // 5. Active Configuration Computation
@@ -270,15 +227,13 @@ export default function ShaderBackground({
       ...base,
       animate: effectiveAnimate,
       enableTransition: effectiveEnableTransition,
-      // Apply subtle tilt shifts to camera angles
-      cAzimuthAngle: base.cAzimuthAngle + cameraTilt.azimuth,
-      cPolarAngle: base.cPolarAngle + cameraTilt.polar,
+      cAzimuthAngle: base.cAzimuthAngle,
+      cPolarAngle: base.cPolarAngle,
     };
   }, [
     activePresetKey,
     isSuspended,
     prefersReducedMotion,
-    cameraTilt,
     isReadyForTransitions,
     isPresetSwapping,
   ]);
@@ -288,13 +243,7 @@ export default function ShaderBackground({
       className={className}
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 'calc(-1 * var(--safe-inset-bottom))',
-        width: '100vw',
-        height: '100lvh',
-        minHeight: '100vh',
+        inset: '0 0 calc(-1 * var(--safe-inset-bottom)) 0',
         pointerEvents: 'none',
         zIndex: -1,
         opacity: isLoaded ? 1 : 0,
@@ -303,65 +252,73 @@ export default function ShaderBackground({
       }}
       aria-hidden="true"
     >
-      <ShaderGradientCanvas
-        style={{
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-        }}
-        pixelDensity={DEFAULT_CANVAS_OPTIONS.pixelDensity}
-        fov={DEFAULT_CANVAS_OPTIONS.fov}
-        pointerEvents="none"
-        lazyLoad={DEFAULT_CANVAS_OPTIONS.lazyLoad}
-        powerPreference={DEFAULT_CANVAS_OPTIONS.powerPreference}
-      >
-        <ShaderGradient
-          type={activeConfig.type}
-          animate={activeConfig.animate}
-          uTime={activeConfig.uTime}
-          uSpeed={activeConfig.uSpeed}
-          uStrength={activeConfig.uStrength}
-          uDensity={activeConfig.uDensity}
-          uFrequency={activeConfig.uFrequency}
-          uAmplitude={activeConfig.uAmplitude}
-          color1={activeConfig.color1}
-          color2={activeConfig.color2}
-          color3={activeConfig.color3}
-          reflection={activeConfig.reflection}
-          wireframe={activeConfig.wireframe}
-          shader={activeConfig.shader}
-          positionX={activeConfig.positionX}
-          positionY={activeConfig.positionY}
-          positionZ={activeConfig.positionZ}
-          rotationX={activeConfig.rotationX}
-          rotationY={activeConfig.rotationY}
-          rotationZ={activeConfig.rotationZ}
-          cAzimuthAngle={activeConfig.cAzimuthAngle}
-          cPolarAngle={activeConfig.cPolarAngle}
-          cDistance={activeConfig.cDistance}
-          cameraZoom={activeConfig.cameraZoom}
-          lightType={activeConfig.lightType}
-          brightness={activeConfig.brightness}
-          envPreset={activeConfig.envPreset}
-          grain={activeConfig.grain}
-          grainBlending={activeConfig.grainBlending}
-          range={activeConfig.range}
-          rangeStart={activeConfig.rangeStart}
-          rangeEnd={activeConfig.rangeEnd}
-          loop={activeConfig.loop}
-          loopDuration={activeConfig.loopDuration}
-          control={activeConfig.control}
-          urlString={activeConfig.urlString}
-          enableTransition={activeConfig.enableTransition}
-          smoothTime={activeConfig.smoothTime}
-          enableCameraUpdate={activeConfig.enableCameraUpdate}
-          toggleAxis={activeConfig.toggleAxis}
-          zoomOut={activeConfig.zoomOut}
-          hoverState={activeConfig.hoverState}
-          rotSpringOption={activeConfig.rotSpringOption}
-          posSpringOption={activeConfig.posSpringOption}
-        />
-      </ShaderGradientCanvas>
+      {isIdle && (
+        <ShaderGradientCanvas
+          style={{
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+          }}
+          pixelDensity={DEFAULT_CANVAS_OPTIONS.pixelDensity}
+          fov={DEFAULT_CANVAS_OPTIONS.fov}
+          pointerEvents="none"
+          lazyLoad={DEFAULT_CANVAS_OPTIONS.lazyLoad}
+          powerPreference={DEFAULT_CANVAS_OPTIONS.powerPreference}
+        >
+          <WebGLParallaxRig
+            mouseRef={mouseTargetRef}
+            scrollRef={scrollTargetRef}
+            isSuspended={isSuspended}
+            prefersReducedMotion={prefersReducedMotion}
+          />
+          <ShaderGradient
+            type={activeConfig.type}
+            animate={activeConfig.animate}
+            uTime={activeConfig.uTime}
+            uSpeed={activeConfig.uSpeed}
+            uStrength={activeConfig.uStrength}
+            uDensity={activeConfig.uDensity}
+            uFrequency={activeConfig.uFrequency}
+            uAmplitude={activeConfig.uAmplitude}
+            color1={activeConfig.color1}
+            color2={activeConfig.color2}
+            color3={activeConfig.color3}
+            reflection={activeConfig.reflection}
+            wireframe={activeConfig.wireframe}
+            shader={activeConfig.shader}
+            positionX={activeConfig.positionX}
+            positionY={activeConfig.positionY}
+            positionZ={activeConfig.positionZ}
+            rotationX={activeConfig.rotationX}
+            rotationY={activeConfig.rotationY}
+            rotationZ={activeConfig.rotationZ}
+            cAzimuthAngle={activeConfig.cAzimuthAngle}
+            cPolarAngle={activeConfig.cPolarAngle}
+            cDistance={activeConfig.cDistance}
+            cameraZoom={activeConfig.cameraZoom}
+            lightType={activeConfig.lightType}
+            brightness={activeConfig.brightness}
+            envPreset={activeConfig.envPreset}
+            grain={activeConfig.grain}
+            grainBlending={activeConfig.grainBlending}
+            range={activeConfig.range}
+            rangeStart={activeConfig.rangeStart}
+            rangeEnd={activeConfig.rangeEnd}
+            loop={activeConfig.loop}
+            loopDuration={activeConfig.loopDuration}
+            control={activeConfig.control}
+            urlString={activeConfig.urlString}
+            enableTransition={activeConfig.enableTransition}
+            smoothTime={activeConfig.smoothTime}
+            enableCameraUpdate={activeConfig.enableCameraUpdate}
+            toggleAxis={activeConfig.toggleAxis}
+            zoomOut={activeConfig.zoomOut}
+            hoverState={activeConfig.hoverState}
+            rotSpringOption={activeConfig.rotSpringOption}
+            posSpringOption={activeConfig.posSpringOption}
+          />
+        </ShaderGradientCanvas>
+      )}
     </div>
   );
 }

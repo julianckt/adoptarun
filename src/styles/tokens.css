@@ -12,6 +12,8 @@
     --color-art-cyan: rgb(66, 190, 224);
     --color-placeholder-grey: rgb(217, 217, 217);
     --color-border-hairline: rgba(255, 251, 249, 0.16);
+    --border-width-hairline: 1px;
+    --border-hairline: var(--border-width-hairline) solid var(--color-border-hairline);
 
     /* Semantic Color Tokens (Master Spec §2 & Ticket #14) */
     --color-action-primary: var(--color-canvas-white);
@@ -25,6 +27,8 @@
     --color-header-veil-top: rgba(24, 19, 17, 0.74);
     --color-header-veil-bottom: rgba(24, 19, 17, 0.28);
     --color-header-shadow: rgba(0, 0, 0, 0.45);
+    --color-overlay-dark: rgba(0, 0, 0, 0.7);
+    --shadow-toast: 0 var(--space-04) var(--space-08) rgba(0, 0, 0, 0.6);
     --color-border-subtle: var(--color-border-hairline);
     --color-border-strong: rgba(255, 251, 249, 0.40);
     --color-accent: var(--color-route-orange);
@@ -86,10 +90,16 @@
 
     /* Layout Seam & Header Tokens */
     --container-max-width: 1512px;
+    --page-gutter: var(--space-09);
     --header-height: var(--space-10);
     --burger-stroke: 1.5px;
     --header-blur: 28px;
     --header-saturate: 170%;
+    --hero-header-max-width: 550px;
+    --hero-main-min-height: 520px;
+    --hero-mission-max-width: 830px;
+    --toast-max-width: 380px;
+    --min-tap-target: 44px;
 
     /* Semantic Font Families & Fluid Clamp Typography */
     --font-display: 'degular-variable', 'Degular Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -142,5 +152,23 @@
     /* Architectural Constraints */
     --radius-none: 0px;
     /* Zero Radius Rule */
+  }
+
+  @media (width <= 1024px) {
+    :root {
+      --page-gutter: var(--space-06);
+    }
+  }
+
+  @media (width <= 768px) {
+    :root {
+      --header-height: calc(var(--space-09) + var(--space-06));
+    }
+  }
+
+  @media (width <= 640px) {
+    :root {
+      --page-gutter: var(--space-05);
+    }
   }
 }

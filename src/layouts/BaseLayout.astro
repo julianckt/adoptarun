@@ -6,6 +6,7 @@ import SanityFallbackToast from '@/components/SanityFallbackToast.astro';
 import type { SanitySettings, SanitySiteCopy } from '@/sanity/types';
 import { getSettings } from '@/sanity/queries';
 import { hasImageAsset, urlForImage } from '@/sanity/image';
+import { isHomePage } from '@/utils/homepage-content';
 
 const DEFAULT_OG_IMAGE = '/images/og-default.jpg';
 
@@ -35,7 +36,7 @@ const {
   class: className,
   hideHeader = false,
   hideFooter = false,
-  footerVariant = Astro.url.pathname === '/' || Astro.url.pathname === '' ? 'full' : 'minimal',
+  footerVariant = isHomePage(Astro.url.pathname) ? 'full' : 'minimal',
   settings: propSettings,
   siteCopy: propSiteCopy,
   ...restProps
@@ -89,20 +90,10 @@ const isDefaultOgImage = resolvedOgImage === DEFAULT_OG_IMAGE;
     <!-- Adobe Fonts (Typekit kit pyi8tbr: degular-variable, runda, scale-variable) -->
     <link rel="preconnect" href="https://use.typekit.net" crossorigin />
     <link rel="preconnect" href="https://p.typekit.net" crossorigin />
-    <script is:inline>
-      (function(d) {
-        var config = {
-          kitId: 'pyi8tbr',
-          scriptTimeout: 3000,
-          async: true
-        },
-        h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
-      })(document);
-    </script>
+    <link rel="stylesheet" href="https://use.typekit.net/pyi8tbr.css" />
 
     <!-- Primary Meta Tags -->
     <title>{title}</title>
-    <meta name="title" content={title} />
     <meta name="description" content={description} />
 
     <!-- Open Graph / Facebook -->

@@ -17,6 +17,8 @@
  * All styles strictly comply with DESIGN.md and Lumos tokens.
  */
 import type { JourneyStep } from '@/sanity/types';
+import { getImage } from 'astro:assets';
+import meshBackdrop from '@/assets/images/journey/mesh-backdrop.jpg';
 
 export interface Props {
   subtitle?: string;
@@ -25,13 +27,14 @@ export interface Props {
 
 const { subtitle, steps = [] } = Astro.props;
 const resolvedSteps = Array.isArray(steps) ? steps : [];
+const optimizedMesh = await getImage({ src: meshBackdrop, format: 'webp', width: 320 });
 ---
 
 <section id="journey-section" class="journey-section" aria-labelledby="journey-heading">
   <div class="journey-container page-frame">
     <header class="journey-masthead">
       <h2 id="journey-heading" class="journey-lockup" aria-label="3 steps to adopt a run">
-        <span class="journey-badge-square" aria-hidden="true">
+        <span class="journey-badge-square" aria-hidden="true" style={`--mesh-bg: url(${optimizedMesh.src})`}>
           <span class="journey-badge-number">3</span>
         </span>
         <span class="journey-heading-lockup" aria-hidden="true">
@@ -65,7 +68,7 @@ const resolvedSteps = Array.isArray(steps) ? steps : [];
     z-index: 10;
   }
 
-  /* Shares About's frame and gutters so the two sections read as one run of content */
+  /* Shares About's frame on desktop, but gutters diverge on phones (var(--space-05) vs About's var(--space-06)) */
   .journey-container {
     padding-block: var(--space-fluid-xl) var(--space-fluid-3xl);
     display: grid;
@@ -99,7 +102,7 @@ const resolvedSteps = Array.isArray(steps) ? steps : [];
   .journey-badge-square {
     width: calc(var(--wm-size) * 2);
     height: calc(var(--wm-size) * 2);
-    background-image: url('/images/journey/mesh-backdrop.jpg');
+    background-image: var(--mesh-bg);
     background-size: cover;
     background-position: center;
     display: flex;
@@ -172,7 +175,7 @@ const resolvedSteps = Array.isArray(steps) ? steps : [];
   }
 
   .journey-step:last-child {
-    border-bottom: 1px solid var(--color-border-hairline);
+    border-bottom: var(--border-hairline);
   }
 
   /* Top rule: a hairline drawn left to right as the step arrives */
@@ -181,7 +184,7 @@ const resolvedSteps = Array.isArray(steps) ? steps : [];
     position: absolute;
     inset-inline: 0;
     top: 0;
-    height: 1px;
+    height: var(--border-width-hairline);
     background-color: var(--color-border-hairline);
     transform-origin: left center;
   }
@@ -218,14 +221,14 @@ const resolvedSteps = Array.isArray(steps) ? steps : [];
     text-wrap: pretty;
   }
 
-  @media (max-width: 1100px) {
+  @media (width <= 1024px) {
     .journey-container {
       grid-template-columns: minmax(0, 1fr);
     }
   }
 
   /* Numeral keeps its own column; title and description stack beside it */
-  @media (max-width: 860px) {
+  @media (width <= 768px) {
     .journey-step {
       grid-template-columns: var(--space-10) minmax(0, 1fr);
       row-gap: var(--space-05);
@@ -241,11 +244,7 @@ const resolvedSteps = Array.isArray(steps) ? steps : [];
 
   /* Phones: the lockup spans margin to margin. Its width is badge (2em) + gap + "a run"
      (~4.88em), so the wordmark size is the remaining width over 6.9 (a hair of slack). */
-  @media (max-width: 640px) {
-    .journey-container {
-      padding-inline: max(var(--space-05), var(--safe-inset-left)) max(var(--space-05), var(--safe-inset-right));
-    }
-
+  @media (width <= 640px) {
     .journey-masthead {
       gap: var(--space-06);
     }

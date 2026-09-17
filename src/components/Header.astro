@@ -87,7 +87,7 @@ const isVisible = showAnnouncement !== undefined ? showAnnouncement : isBannerAc
     </button>
   </nav>
 
-  <MobileNavDrawer client:load />
+  <MobileNavDrawer client:media="(max-width: 768px)" />
 </header>
 
 <script>

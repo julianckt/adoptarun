@@ -4,6 +4,7 @@ import {
   findSpotlightCharity,
   resolveCharityPhoto,
   DEFAULT_CHARITY_PHOTO,
+  isHomePage,
 } from '@/utils/homepage-content';
 import type { SanityCharity, SanitySiteCopy } from '@/sanity/types';
 
@@ -115,5 +116,25 @@ describe('resolveCharityPhoto', () => {
     expect(resolveCharityPhoto(charity({ coverPhoto: { _type: 'image' } } as Partial<SanityCharity>))).toEqual(
       DEFAULT_CHARITY_PHOTO
     );
+  });
+});
+
+describe('isHomePage', () => {
+  it('returns true for root path /', () => {
+    expect(isHomePage('/')).toBe(true);
+  });
+
+  it('returns true for empty path', () => {
+    expect(isHomePage('')).toBe(true);
+  });
+
+  it('returns true for root path with trailing slashes', () => {
+    expect(isHomePage('///')).toBe(true);
+  });
+
+  it('returns false for other routes', () => {
+    expect(isHomePage('/routes')).toBe(false);
+    expect(isHomePage('/charities/')).toBe(false);
+    expect(isHomePage('/signup')).toBe(false);
   });
 });

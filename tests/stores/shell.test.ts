@@ -2,25 +2,19 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   $announcementTicker,
   $isNavOpen,
-  $isLogModalOpen,
   ANNOUNCEMENT_STORAGE_KEY,
   isAnnouncementDismissed,
   setAnnouncement,
   dismissAnnouncement,
   resetAnnouncement,
-  toggleNav,
   openNav,
   closeNav,
-  toggleLogModal,
-  openLogModal,
-  closeLogModal,
 } from '@/stores/shell';
 
 describe('Shell Nano Stores', () => {
   beforeEach(() => {
     resetAnnouncement();
     closeNav();
-    closeLogModal();
   });
 
   describe('$announcementTicker', () => {
@@ -104,40 +98,6 @@ describe('Shell Nano Stores', () => {
       expect($isNavOpen.get()).toBe(true);
       closeNav();
       expect($isNavOpen.get()).toBe(false);
-    });
-
-    it('should toggle nav state via toggleNav', () => {
-      expect($isNavOpen.get()).toBe(false);
-      toggleNav();
-      expect($isNavOpen.get()).toBe(true);
-      toggleNav();
-      expect($isNavOpen.get()).toBe(false);
-    });
-  });
-
-  describe('$isLogModalOpen', () => {
-    it('should default to false', () => {
-      expect($isLogModalOpen.get()).toBe(false);
-    });
-
-    it('should open log modal via openLogModal', () => {
-      openLogModal();
-      expect($isLogModalOpen.get()).toBe(true);
-    });
-
-    it('should close log modal via closeLogModal', () => {
-      openLogModal();
-      expect($isLogModalOpen.get()).toBe(true);
-      closeLogModal();
-      expect($isLogModalOpen.get()).toBe(false);
-    });
-
-    it('should toggle log modal state via toggleLogModal', () => {
-      expect($isLogModalOpen.get()).toBe(false);
-      toggleLogModal();
-      expect($isLogModalOpen.get()).toBe(true);
-      toggleLogModal();
-      expect($isLogModalOpen.get()).toBe(false);
     });
   });
 });

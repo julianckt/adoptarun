@@ -33,7 +33,7 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
   aria-labelledby="featured-routes-heading"
   {...restProps}
 >
-  <div class="featured-routes-container">
+  <div class="featured-routes-container page-frame">
     <!-- Section Header (Top-Left) -->
     <header class="featured-routes-header">
       <h2 id="featured-routes-heading" class="featured-routes-title">featured routes</h2>
@@ -44,6 +44,7 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
       class="featured-routes-grid"
       role="region"
       aria-label="Featured routes preview"
+      tabindex="0"
     >
       {
         displayRoutes.map((route) => (
@@ -70,13 +71,11 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
     background-color: transparent;
     color: var(--color-canvas-white);
     padding-block: var(--space-12) var(--space-10);
-    padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
+    padding-inline: 0;
     box-sizing: border-box;
   }
 
   .featured-routes-container {
-    max-width: 1240px;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -120,7 +119,7 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
   }
 
   /* Responsive Adaptation: Horizontal swipe carousel on tablet & mobile */
-  @media (max-width: 1199px) {
+  @media (width <= 1024px) {
     .featured-routes-grid {
       display: flex;
       flex-wrap: nowrap;
@@ -133,8 +132,8 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
       scrollbar-width: none;
       -ms-overflow-style: none;
       /* Bleeds to the screen edge by exactly the section gutter */
-      margin-inline: calc(-1 * max(var(--space-06), var(--safe-inset-left))) calc(-1 * max(var(--space-06), var(--safe-inset-right)));
-      padding-inline: max(var(--space-06), var(--safe-inset-left)) max(var(--space-06), var(--safe-inset-right));
+      margin-inline: calc(-1 * max(var(--page-gutter), var(--safe-inset-left))) calc(-1 * max(var(--page-gutter), var(--safe-inset-right)));
+      padding-inline: max(var(--page-gutter), var(--safe-inset-left)) max(var(--page-gutter), var(--safe-inset-right));
     }
 
     .featured-routes-grid::-webkit-scrollbar {
@@ -146,11 +145,9 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
       scroll-snap-align: start;
       width: auto;
     }
-  }
 
-  @media (max-width: 440px) {
     .featured-routes-grid :global(.route-card) {
-      width: 82vw;
+      width: min(82vw, 380px);
     }
   }
 </style>

@@ -78,3 +78,8 @@ export function resolveCharityPhoto(charity: SanityCharity | null | undefined): 
 
   return { src, alt };
 }
+
+export function isHomePage(pathname: string): boolean {
+  const normalized = pathname.replace(/\/+$/, '') || '/';
+  return normalized === '/';
+}
