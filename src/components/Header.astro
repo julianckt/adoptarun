@@ -37,6 +37,44 @@ const isVisible = showAnnouncement !== undefined ? showAnnouncement : isBannerAc
 
 <div class="site-header-sentinel" aria-hidden="true"></div>
 <header class:list={['site-header', className]} {...restProps}>
+  <!--
+    CHROMIUM BLINK BACKDROP-FILTER COMPOSITOR BUG & REAL DOM VEIL FIX:
+    ===================================================================
+    1. The Issue:
+       In Chromium-based browsers (Google Chrome, Microsoft Edge, Arc, Brave),
+       the sticky header veil previously failed to render its translucent
+       frosted-glass backdrop blur on scroll, displaying only an opaque darkening
+       gradient scrim. This was caused by a known Blink rendering engine bug
+       (Chromium Bugs 1152778 & 1205161) involving CSS pseudo-elements (::before / ::after).
+       When a pseudo-element combines `position: absolute`, `backdrop-filter`, and an
+       `opacity` transition (0 -> 1 on scroll), Blink's PaintLayer fails to attach
+       properly to the root compositor backdrop pass (or treats it as a detached/isolated
+       backdrop root under CSS Filter Effects Module Level 2), causing it to sample an
+       unpopulated black/clear framebuffer rather than the underlying document pixels.
+
+    2. Why this decision was made:
+       - Direct blur animation on `.site-header[data-stuck]` (e.g. blur(0px) -> blur(28px))
+         was rejected because it directly violates DESIGN.md:L249 (Static Blur Rule),
+         forcing expensive per-frame GPU Gaussian shader passes and causing frame drops.
+       - Hardware raster hints on pseudo-elements (will-change / translateZ) were rejected
+         as brittle workarounds inconsistent across Blink patch releases.
+       - The Real DOM Veil architecture (`.site-header-veil`) provides Blink with an explicit
+         DOM LayoutObject having a direct parent-child stacking relationship. With
+         `transform: translateZ(0)` and `will-change: opacity`, it promotes cleanly to a
+         compositor layer while keeping the blur static (28px blur, 170% saturate) and
+         animating only opacity. Assistive tech ignores it via `aria-hidden="true"`.
+
+    3. How to avoid this issue in the future:
+       - Never rely on CSS pseudo-elements (`::before` / `::after`) for elements combining
+         `backdrop-filter` and dynamic `opacity` / visibility transitions in Chromium.
+       - Always instantiate an explicit, dedicated DOM element with `aria-hidden="true"`.
+       - Do NOT apply `isolation: isolate` to the header or parent containers, as that defines
+         a local backdrop root preventing pixels behind the header from being sampled.
+       - Ensure sibling containers (like `<main>`) do not introduce conflicting clipping or
+         stacking contexts that isolate their textures from the root compositor backdrop pass.
+       - Strictly respect DESIGN.md: keep `backdrop-filter` radii static and animate opacity only.
+  -->
+  <div class="site-header-veil" aria-hidden="true"></div>
   <!-- One landmark for the whole row: the CTA, links and menu toggle are all navigation -->
   <nav class="site-header-grid" aria-label="Primary">
     <!-- Column 1: Primary brand CTA -->

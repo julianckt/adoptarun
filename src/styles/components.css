@@ -565,10 +565,39 @@
     visibility: hidden;
   }
 
-  /* Veil: a tinted, saturated blur closed off by a hairline.
-     Only opacity animates; the blur itself stays static. */
-  .site-header::before {
-    content: '';
+  /* ---------------------------------------------------------------------------
+     VEIL: Tinted Saturated Backdrop Blur & Depth Scrim (.site-header-veil)
+     ---------------------------------------------------------------------------
+     1. The Issue:
+        Chromium's Blink compositor detaches pseudo-elements (::before / ::after)
+        that combine `position: absolute`, `backdrop-filter`, and `opacity` transitions
+        from the root compositor backdrop pass (Chromium Bugs 1152778 & 1205161).
+        When the header became stuck ([data-stuck]), Chrome sampled an empty framebuffer,
+        rendering 0 blur and leaving only an opaque dark linear-gradient scrim.
+        Additionally, any `isolation: isolate` on ancestor elements creates an isolated
+        backdrop root (CSS Filter Effects Module Level 2) preventing sampling of pixels
+        underneath the header.
+
+     2. Why this decision was made:
+        - Replaced pseudo-elements (.site-header::before and .site-header::after) with an
+          explicit DOM element: `.site-header-veil`.
+        - A real DOM node gives Blink a concrete LayoutObject with a clean stacking
+          hierarchy, promoting stably to a GPU compositor layer via `transform: translateZ(0)`
+          and `will-change: opacity`.
+        - Combines the tinted gradient, static backdrop blur (28px) + saturation (170%),
+          hairline border, and ambient downward box-shadow into a single performant layer.
+        - Strictly maintains DESIGN.md:L249 (Static Blur Rule): the blur and saturation
+          remain completely static; only `opacity` animates between 0 and 1, preventing
+          expensive per-frame Gaussian shader recalculations.
+
+     3. How to avoid this issue in the future:
+        - Do not revert `.site-header-veil` back to CSS pseudo-elements (`::before` / `::after`).
+        - Do not animate `backdrop-filter: blur(...)` dynamically; always transition `opacity`.
+        - Do not add `isolation: isolate` to `.site-header` or its ancestors unless isolating
+          backdrop sampling is explicitly desired.
+        - Maintain `prefers-reduced-motion: reduce` overrides targeting `.site-header-veil`.
+     --------------------------------------------------------------------------- */
+  .site-header-veil {
     position: absolute;
     inset: 0;
     pointer-events: none;
@@ -578,23 +607,14 @@
     backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     border-bottom: var(--border-hairline);
-    opacity: 0;
-    transition: opacity var(--duration-moderate) var(--ease-out-expo);
-  }
-
-  /* Soft ambient depth under the veil, offset downward */
-  .site-header::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
     box-shadow: 0 var(--space-03) var(--space-06) calc(-1 * var(--space-04)) var(--color-header-shadow);
     opacity: 0;
+    transform: translateZ(0);
+    will-change: opacity;
     transition: opacity var(--duration-moderate) var(--ease-out-expo);
   }
 
-  .site-header[data-stuck]::before,
-  .site-header[data-stuck]::after {
+  .site-header[data-stuck] .site-header-veil {
     opacity: 1;
   }
 
@@ -709,8 +729,8 @@
     .nav-brand-cta .brand-run,
     .nav-brand-cta .brand-with,
     .nav-brand-cta .cta-route path,
-    .site-header::before,
-    .site-header::after {
+    /* Reduced motion override for the real DOM header veil */
+    .site-header-veil {
       transition-duration: 0.01ms;
       transition-delay: 0s;
     }
