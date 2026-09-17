@@ -36,6 +36,11 @@ export const STUB_PAGES: readonly StubPage[] = [
     description: 'run logging opens alongside route adoption.',
   },
   {
+    slug: 'faqs',
+    title: 'frequently asked questions',
+    description: 'answers to common questions about route adoption, gps art, and fundraising are on their way.',
+  },
+  {
     slug: 'privacy',
     title: 'privacy policy',
     description: 'our privacy policy is being finalised and will be published here.',

@@ -12,9 +12,7 @@ export interface Props {
 }
 
 const DEFAULT_SOCIAL_LINKS: FooterSocialLink[] = [
-  { _key: 'strava', text: 'strava club', url: 'https://strava.com/clubs/adoptarun' },
   { _key: 'instagram', text: 'instagram', url: 'https://instagram.com/adoptarun' },
-  { _key: 'github', text: 'github', url: 'https://github.com/julianckt/adoptarun' },
 ];
 
 const { class: className, variant = 'full', settings, siteCopy, ...restProps } = Astro.props;
@@ -36,21 +34,28 @@ const socialLinks =
       <a class="site-footer-email" href={`mailto:${contactEmail}`}>{contactEmail}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a>
     </p>
     <div class="site-footer-body">
-      <nav aria-label="Footer">
-        <ul class="site-footer-list site-footer-list--site">
+      <nav aria-label="Explore">
+        <ul class="site-footer-list">
           <li><a href="/routes">routes<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
           <li><a href="/charities">charities<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-          <li><a href="/signup">adopt a route<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+          <li><a href="/faqs">faqs<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Participate">
+        <ul class="site-footer-list">
+          <li><a href="/signup">sign up<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
           <li><a href="/donate">donate<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
           <li><a href="/log">log a run<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
-          <li><a href="#">back to top<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4" /></svg></a></li>
         </ul>
       </nav>
       <nav aria-label="Community">
-        <ul class="site-footer-list">
+        <ul class="site-footer-list site-footer-list--community">
           {socialLinks.map((link) => (
             <li><a href={link.url} target="_blank" rel="noopener noreferrer">{link.text}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a></li>
           ))}
+          <li class="site-footer-item--back-to-top">
+            <a href="#">back to top<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4" /></svg></a>
+          </li>
         </ul>
       </nav>
     </div>
@@ -65,3 +70,4 @@ const socialLinks =
     </div>
   </div>
 </footer>
+

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-17T06:01:42.364Z",
+  "timestamp": "2026-09-17T14:20:56.576Z",
   "data": {
     "routes": [
       {
@@ -160,19 +160,9 @@
       "footerContactEmail": "adoptarunhk@gmail.com",
       "footerSocialLinks": [
         {
-          "_key": "strava",
-          "text": "strava club",
-          "url": "https://strava.com/clubs/adoptarun"
-        },
-        {
           "_key": "instagram",
           "text": "instagram",
           "url": "https://instagram.com/adoptarun"
-        },
-        {
-          "_key": "github",
-          "text": "github",
-          "url": "https://github.com/julianckt/adoptarun"
         }
       ],
       "ogImage": null,

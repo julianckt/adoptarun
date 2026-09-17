@@ -102,6 +102,9 @@ describe('Header Interactive Components', () => {
       const dialog = screen.getByRole('dialog');
       expect(dialog).not.toBeNull();
 
+      const homeLink = screen.getByRole('link', { name: /^home$/i });
+      expect(homeLink.getAttribute('href')).toBe('/');
+
       const routesLink = screen.getByRole('link', { name: /routes/i });
       expect(routesLink.getAttribute('href')).toBe('/routes');
 
@@ -110,6 +113,9 @@ describe('Header Interactive Components', () => {
 
       const donateLink = screen.getByRole('link', { name: /donate/i });
       expect(donateLink.getAttribute('href')).toBe('/donate');
+
+      const faqsLink = screen.getByRole('link', { name: /faqs/i });
+      expect(faqsLink.getAttribute('href')).toBe('/faqs');
 
       const logLink = screen.getByRole('link', { name: /log a run/i });
       expect(logLink.getAttribute('href')).toBe('/log');

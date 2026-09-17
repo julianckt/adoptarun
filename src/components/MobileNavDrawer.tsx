@@ -16,9 +16,11 @@ const isDesktopLayout = () =>
   typeof window.matchMedia === 'function' && window.matchMedia(DESKTOP_NAV_QUERY).matches;
 
 const NAV_LINKS = [
+  { href: '/', label: 'home' },
   { href: '/routes', label: 'routes' },
   { href: '/charities', label: 'charities' },
   { href: '/donate', label: 'donate' },
+  { href: '/faqs', label: 'faqs' },
   { href: '/log', label: 'log a run' },
   { href: '/signup', label: 'sign up' },
 ];
