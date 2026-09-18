@@ -284,89 +284,152 @@ const optimizedMesh = await getImage({ src: meshBackdrop, format: 'webp', width:
   }
 
   @supports (animation-timeline: view()) {
-    .journey-badge-square,
-    .journey-badge-number,
-    .journey-lead-text,
-    .journey-wordmark,
-    .journey-mission-text,
-    .journey-step::before,
-    .journey-step-numeral,
-    .journey-step-title,
-    .journey-step-desc {
+    :global(html.has-scroll-timeline) .journey-badge-square,
+    :global(html.has-scroll-timeline) .journey-badge-number,
+    :global(html.has-scroll-timeline) .journey-lead-text,
+    :global(html.has-scroll-timeline) .journey-wordmark,
+    :global(html.has-scroll-timeline) .journey-mission-text,
+    :global(html.has-scroll-timeline) .journey-step::before,
+    :global(html.has-scroll-timeline) .journey-step-numeral,
+    :global(html.has-scroll-timeline) .journey-step-title,
+    :global(html.has-scroll-timeline) .journey-step-desc {
       animation-fill-mode: both;
       animation-duration: auto;
       animation-timing-function: var(--ease-out-expo);
     }
 
-    .journey-badge-square,
-    .journey-badge-number,
-    .journey-lead-text,
-    .journey-wordmark,
-    .journey-mission-text {
+    :global(html.has-scroll-timeline) .journey-badge-square,
+    :global(html.has-scroll-timeline) .journey-badge-number,
+    :global(html.has-scroll-timeline) .journey-lead-text,
+    :global(html.has-scroll-timeline) .journey-wordmark,
+    :global(html.has-scroll-timeline) .journey-mission-text {
       animation-timeline: --journey-masthead;
     }
 
-    .journey-step::before,
-    .journey-step-numeral,
-    .journey-step-title,
-    .journey-step-desc {
+    :global(html.has-scroll-timeline) .journey-step::before,
+    :global(html.has-scroll-timeline) .journey-step-numeral,
+    :global(html.has-scroll-timeline) .journey-step-title,
+    :global(html.has-scroll-timeline) .journey-step-desc {
       animation-timeline: --journey-step;
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      .journey-badge-square {
+      :global(html.has-scroll-timeline) .journey-badge-square {
         animation-name: journey-wipe;
         animation-range: entry 20% cover 40%;
       }
 
-      .journey-badge-number {
+      :global(html.has-scroll-timeline) .journey-badge-number {
         animation-name: scroll-rise;
         animation-range: entry 40% cover 45%;
       }
 
-      .journey-lead-text,
-      .journey-wordmark {
+      :global(html.has-scroll-timeline) .journey-lead-text,
+      :global(html.has-scroll-timeline) .journey-wordmark {
         animation-name: scroll-rise;
         animation-range: entry 30% cover 42%;
       }
 
-      .journey-mission-text {
+      :global(html.has-scroll-timeline) .journey-mission-text {
         animation-name: scroll-rise;
         animation-range: cover 20% cover 50%;
       }
 
       /* The rule draws in first; the text follows it */
-      .journey-step::before {
+      :global(html.has-scroll-timeline) .journey-step::before {
         animation-name: scroll-trace;
         animation-range: entry 20% cover 40%;
       }
 
-      .journey-step-numeral {
+      :global(html.has-scroll-timeline) .journey-step-numeral {
         animation-name: scroll-rise;
         animation-range: entry 60% cover 35%;
       }
 
-      .journey-step-title {
+      :global(html.has-scroll-timeline) .journey-step-title {
         animation-name: scroll-rise;
         animation-range: entry 70% cover 42%;
       }
 
-      .journey-step-desc {
+      :global(html.has-scroll-timeline) .journey-step-desc {
         animation-name: scroll-rise;
         animation-range: entry 90% cover 48%;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .journey-lead-text,
-      .journey-wordmark,
-      .journey-mission-text,
-      .journey-step-numeral,
-      .journey-step-title,
-      .journey-step-desc {
+      :global(html.has-scroll-timeline) .journey-lead-text,
+      :global(html.has-scroll-timeline) .journey-wordmark,
+      :global(html.has-scroll-timeline) .journey-mission-text,
+      :global(html.has-scroll-timeline) .journey-step-numeral,
+      :global(html.has-scroll-timeline) .journey-step-title,
+      :global(html.has-scroll-timeline) .journey-step-desc {
         animation-name: scroll-fade;
         animation-range: entry 20% cover 40%;
       }
     }
   }
+
+  /* Fallback scroll reveals for non-Chromium browsers (Safari / Firefox) */
+  :global(html.no-scroll-timeline) .journey-masthead,
+  :global(html.no-scroll-timeline) .journey-step {
+    opacity: 0;
+    transform: translateY(var(--space-06));
+    transition: opacity var(--duration-moderate) var(--ease-out-expo),
+                transform var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  :global(html.no-scroll-timeline) .journey-step::before {
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  :global(html.no-scroll-timeline) .journey-masthead.is-visible,
+  :global(html.no-scroll-timeline) .journey-step.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.no-scroll-timeline) .journey-step.is-visible::before {
+    transform: scaleX(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.no-scroll-timeline) .journey-masthead,
+    :global(html.no-scroll-timeline) .journey-step,
+    :global(html.no-scroll-timeline) .journey-step::before {
+      transition-duration: 0.01ms;
+    }
+  }
 </style>
+
+<script>
+  function initJourneyFallback() {
+    if (!document.documentElement.classList.contains('no-scroll-timeline')) return;
+
+    const elements = document.querySelectorAll<HTMLElement>('.journey-masthead, .journey-step');
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    elements.forEach((el) => {
+      observer.observe(el);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initJourneyFallback, { once: true });
+  } else {
+    initJourneyFallback();
+  }
+</script>

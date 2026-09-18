@@ -52,23 +52,19 @@ export interface CharityPhoto {
   alt: string;
 }
 
-export const DEFAULT_CHARITY_PHOTO: CharityPhoto = {
-  src: '/images/charity/spca-puppy.jpg',
-  alt: 'rescue puppy resting its head in a human hand',
-};
-
 /** The photo frame's largest rendered size (568×379) at 2x, cropped around the editor's hotspot. */
 const PHOTO_WIDTH = 1136;
 const PHOTO_HEIGHT = 758;
 
-export function resolveCharityPhoto(charity: SanityCharity | null | undefined): CharityPhoto {
+export function resolveCharityPhoto(charity: SanityCharity | null | undefined): CharityPhoto | null {
   const photo = cleanStega(charity?.coverPhoto);
   if (!photo || !hasImageAsset(photo)) {
-    return DEFAULT_CHARITY_PHOTO;
+    return null;
   }
 
   const rawAlt = (photo as { alt?: unknown }).alt;
-  const alt = typeof rawAlt === 'string' && rawAlt.trim() ? rawAlt.trim() : DEFAULT_CHARITY_PHOTO.alt;
+  const cleanedAlt = typeof rawAlt === 'string' ? cleanStegaString(rawAlt).trim() : '';
+  const alt = cleanedAlt || 'Charity cover photo';
   const src = urlForImage(photo)
     .width(PHOTO_WIDTH)
     .height(PHOTO_HEIGHT)

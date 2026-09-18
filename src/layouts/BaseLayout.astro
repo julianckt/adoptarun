@@ -3,7 +3,7 @@ import '@/styles/global.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import SanityFallbackToast from '@/components/SanityFallbackToast.astro';
-import type { SanitySettings, SanitySiteCopy } from '@/sanity/types';
+import type { SanitySettings } from '@/sanity/types';
 import { getSettings } from '@/sanity/queries';
 import { hasImageAsset, urlForImage } from '@/sanity/image';
 import { isHomePage } from '@/utils/homepage-content';
@@ -22,8 +22,6 @@ export interface Props {
   hideFooter?: boolean;
   footerVariant?: 'full' | 'minimal';
   settings?: SanitySettings | null;
-  /** @deprecated Use `settings` prop instead */
-  siteCopy?: SanitySiteCopy | null;
   [key: string]: any;
 }
 
@@ -38,19 +36,15 @@ const {
   hideFooter = false,
   footerVariant = isHomePage(Astro.url.pathname) ? 'full' : 'minimal',
   settings: propSettings,
-  siteCopy: propSiteCopy,
   ...restProps
 } = Astro.props;
 
-// Use Sanity as default, falling back to settings or legacy siteCopy prop if Sanity fetch fails
+// Use Sanity as default, with cached snapshot fallback
 const sanitySettings = await getSettings().catch(() => null);
-const resolvedSettings = propSettings ?? sanitySettings ?? (propSiteCopy as unknown as SanitySettings) ?? null;
+const resolvedSettings = propSettings ?? sanitySettings ?? null;
 
-const title = propTitle ?? resolvedSettings?.seoTitle ?? 'adopt a run — gps art community movement';
-const description =
-  propDescription ??
-  resolvedSettings?.seoDescription ??
-  'an international gps-art community movement debuting in hong kong. bringing people together through long-distance running, jogging, or walking and community art to champion a kinder city.';
+const title = propTitle ?? resolvedSettings?.seoTitle ?? 'adopt a run';
+const description = propDescription ?? resolvedSettings?.seoDescription ?? '';
 
 let resolvedOgImage = ogImage;
 if (ogImage === DEFAULT_OG_IMAGE && resolvedSettings?.ogImage && hasImageAsset(resolvedSettings.ogImage)) {
@@ -78,13 +72,20 @@ const isDefaultOgImage = resolvedOgImage === DEFAULT_OG_IMAGE;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href={canonicalURL} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
-    <!-- Pre-paint check to prevent announcement banner FOUC -->
+    <!-- Pre-paint check to prevent announcement banner FOUC & scroll capability tag -->
     <script is:inline>
       try {
         if (sessionStorage.getItem('adoptarun_announcement_dismissed') === 'true') {
           document.documentElement.classList.add('announcement-dismissed');
         }
       } catch (e) {}
+      if (typeof window !== 'undefined') {
+        if (typeof window.ViewTimeline !== 'undefined') {
+          document.documentElement.classList.add('has-scroll-timeline');
+        } else {
+          document.documentElement.classList.add('no-scroll-timeline');
+        }
+      }
     </script>
 
     <!-- Adobe Fonts (Typekit kit pyi8tbr: degular-variable, runda, scale-variable) -->

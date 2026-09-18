@@ -1,0 +1,422 @@
+---
+/**
+ * RouteCarousel.astro
+ *
+ * Reusable auto-advancing card carousel with an architectural hairline progress track.
+ * - Shows 1 card at a time.
+ * - 5-second auto-play timer with animated hairline track fill.
+ * - Pauses on hover, focus, or touch interaction.
+ * - Full ARIA carousel accessibility and keyboard navigation.
+ * - Supports responsive conditional carousel mode via `onlyMobile` prop.
+ */
+export interface Props {
+  ariaLabel?: string;
+  autoPlayIntervalMs?: number;
+  onlyMobile?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  ariaLabel = 'Route selection carousel',
+  autoPlayIntervalMs = 5000,
+  onlyMobile = false,
+  class: className,
+  ...restProps
+} = Astro.props;
+---
+
+<route-carousel
+  class:list={['route-carousel', { 'route-carousel--only-mobile': onlyMobile }, className]}
+  data-interval={autoPlayIntervalMs}
+  aria-roledescription="carousel"
+  aria-label={ariaLabel}
+  {...restProps}
+>
+  <div class="route-carousel-viewport">
+    <div class="route-carousel-slides" role="group">
+      <slot />
+    </div>
+  </div>
+
+  <div class="route-carousel-nav" aria-label="Carousel pagination">
+    <div class="route-carousel-track" role="tablist" aria-label="Select slide">
+      <!-- Generated client-side dynamically based on slot children count -->
+    </div>
+  </div>
+</route-carousel>
+
+<script>
+  class RouteCarousel extends HTMLElement {
+    private slidesContainer: HTMLElement | null = null;
+    private trackContainer: HTMLElement | null = null;
+    private slides: HTMLElement[] = [];
+    private trackSegments: HTMLElement[] = [];
+    private currentIndex = 0;
+    private intervalMs = 5000;
+    private timerId: number | null = null;
+    private isPaused = false;
+    private touchStartX = 0;
+    private touchEndX = 0;
+
+    connectedCallback() {
+      this.intervalMs = parseInt(this.getAttribute('data-interval') || '5000', 10);
+      this.slidesContainer = this.querySelector('.route-carousel-slides');
+      this.trackContainer = this.querySelector('.route-carousel-track');
+
+      if (!this.slidesContainer || !this.trackContainer) return;
+
+      // Extract slide elements (direct children of slides container)
+      const rawChildren = Array.from(this.slidesContainer.children) as HTMLElement[];
+      this.slides = rawChildren.filter((child) => child.nodeType === Node.ELEMENT_NODE);
+
+      if (this.slides.length === 0) return;
+
+      this.setupSlides();
+      this.setupTrack();
+      this.bindEvents();
+      this.goToSlide(0);
+
+      // Check reduced motion preference
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReducedMotion) {
+        this.startTimer();
+      }
+    }
+
+    disconnectedCallback() {
+      this.stopTimer();
+    }
+
+    private setupSlides() {
+      this.slides.forEach((slide, index) => {
+        slide.classList.add('route-carousel-slide');
+        slide.setAttribute('role', 'group');
+        slide.setAttribute('aria-roledescription', 'slide');
+        slide.setAttribute('aria-label', `${index + 1} of ${this.slides.length}`);
+      });
+    }
+
+    private setupTrack() {
+      if (!this.trackContainer) return;
+      this.trackContainer.innerHTML = '';
+      this.trackSegments = [];
+
+      this.slides.forEach((_, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'route-carousel-segment';
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-label', `Go to slide ${index + 1} of ${this.slides.length}`);
+        btn.setAttribute('aria-selected', 'false');
+
+        const fill = document.createElement('span');
+        fill.className = 'route-carousel-segment-fill';
+        btn.appendChild(fill);
+
+        btn.addEventListener('click', () => {
+          this.goToSlide(index);
+          this.resetTimer();
+        });
+
+        this.trackContainer?.appendChild(btn);
+        this.trackSegments.push(btn);
+      });
+    }
+
+    private bindEvents() {
+      // Pause on hover / focus
+      this.addEventListener('mouseenter', () => this.pauseTimer());
+      this.addEventListener('mouseleave', () => this.resumeTimer());
+      this.addEventListener('focusin', () => this.pauseTimer());
+      this.addEventListener('focusout', () => this.resumeTimer());
+
+      // Touch swipe
+      this.addEventListener(
+        'touchstart',
+        (e) => {
+          this.touchStartX = e.changedTouches[0].screenX;
+          this.pauseTimer();
+        },
+        { passive: true }
+      );
+
+      this.addEventListener(
+        'touchend',
+        (e) => {
+          this.touchEndX = e.changedTouches[0].screenX;
+          this.handleSwipe();
+          this.resumeTimer();
+        },
+        { passive: true }
+      );
+
+      // Keyboard navigation
+      this.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          this.prevSlide();
+          this.resetTimer();
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          this.nextSlide();
+          this.resetTimer();
+        }
+      });
+    }
+
+    private handleSwipe() {
+      const diffX = this.touchStartX - this.touchEndX;
+      const threshold = 40;
+      if (Math.abs(diffX) > threshold) {
+        if (diffX > 0) {
+          this.nextSlide();
+        } else {
+          this.prevSlide();
+        }
+        this.resetTimer();
+      }
+    }
+
+    private goToSlide(index: number) {
+      if (this.slides.length === 0) return;
+      this.currentIndex = (index + this.slides.length) % this.slides.length;
+
+      this.slides.forEach((slide, i) => {
+        const isActive = i === this.currentIndex;
+        slide.classList.toggle('is-active', isActive);
+        slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      });
+
+      this.trackSegments.forEach((segment, i) => {
+        const isActive = i === this.currentIndex;
+        const fill = segment.querySelector('.route-carousel-segment-fill') as HTMLElement | null;
+
+        if (fill) {
+          fill.style.animation = 'none';
+          void fill.offsetWidth; // Force reflow to restart animation cleanly
+          fill.style.animation = '';
+        }
+
+        segment.classList.toggle('is-active', isActive);
+        segment.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        segment.style.setProperty('--carousel-duration', `${this.intervalMs}ms`);
+      });
+
+      if (this.slidesContainer) {
+        this.slidesContainer.style.transform = `translateX(-${this.currentIndex * 100}%)`;
+      }
+    }
+
+    private nextSlide() {
+      this.goToSlide(this.currentIndex + 1);
+    }
+
+    private prevSlide() {
+      this.goToSlide(this.currentIndex - 1);
+    }
+
+    private startTimer() {
+      this.stopTimer();
+      this.isPaused = false;
+      this.timerId = window.setInterval(() => {
+        if (!this.isPaused) {
+          this.nextSlide();
+        }
+      }, this.intervalMs);
+    }
+
+    private stopTimer() {
+      if (this.timerId !== null) {
+        clearInterval(this.timerId);
+        this.timerId = null;
+      }
+    }
+
+    private pauseTimer() {
+      this.isPaused = true;
+      const activeSegment = this.trackSegments[this.currentIndex];
+      if (activeSegment) {
+        activeSegment.classList.add('is-paused');
+      }
+    }
+
+    private resumeTimer() {
+      this.isPaused = false;
+      const activeSegment = this.trackSegments[this.currentIndex];
+      if (activeSegment) {
+        activeSegment.classList.remove('is-paused');
+      }
+    }
+
+    private resetTimer() {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReducedMotion) {
+        this.startTimer();
+      }
+    }
+  }
+
+  if (!customElements.get('route-carousel')) {
+    customElements.define('route-carousel', RouteCarousel);
+  }
+</script>
+
+<style>
+  .route-carousel {
+    display: block;
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    box-sizing: border-box;
+  }
+
+  .route-carousel-viewport {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .route-carousel-slides {
+    display: flex;
+    width: 100%;
+    transition: transform var(--duration-moderate, 0.35s) var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+    will-change: transform;
+  }
+
+  .route-carousel-slides > :global(*) {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Hairline Progress Track Navigation */
+  .route-carousel-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: var(--space-05);
+    width: 100%;
+  }
+
+  .route-carousel-track {
+    display: flex;
+    align-items: center;
+    gap: var(--space-03);
+    width: 100%;
+    max-width: 380px;
+    height: var(--space-05);
+  }
+
+  .route-carousel-track :global(.route-carousel-segment) {
+    appearance: none;
+    -webkit-appearance: none;
+    display: block;
+    position: relative;
+    flex: 1 1 0px;
+    height: var(--space-01);
+    min-height: var(--space-01);
+    max-height: var(--space-01);
+    padding: 0;
+    margin: 0;
+    background-color: var(--color-border-hairline);
+    border: none;
+    border-radius: var(--radius-none) !important;
+    cursor: pointer;
+    overflow: hidden;
+    outline: none;
+    font-size: 0;
+    line-height: 0;
+    box-shadow: none;
+    transition: background-color var(--duration-fast) ease;
+  }
+
+  .route-carousel-track :global(.route-carousel-segment:hover),
+  .route-carousel-track :global(.route-carousel-segment:focus-visible) {
+    background-color: var(--color-border-strong);
+  }
+
+  .route-carousel-track :global(.route-carousel-segment:focus-visible) {
+    outline: var(--border-width-hairline) solid var(--color-canvas-white);
+    outline-offset: var(--space-01);
+  }
+
+  .route-carousel-track :global(.route-carousel-segment-fill) {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    width: 0%;
+    background-color: var(--color-canvas-white);
+    pointer-events: none;
+  }
+
+  .route-carousel-track :global(.route-carousel-segment.is-active .route-carousel-segment-fill) {
+    animation: carousel-progress var(--carousel-duration, 5000ms) linear forwards;
+  }
+
+  .route-carousel-track :global(.route-carousel-segment.is-active.is-paused .route-carousel-segment-fill) {
+    animation-play-state: paused;
+  }
+
+  @keyframes carousel-progress {
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  /* Responsive ONLY-MOBILE Mode for Featured Routes */
+  @media (width > 1024px) {
+    .route-carousel--only-mobile {
+      max-width: 100%;
+    }
+
+    .route-carousel--only-mobile .route-carousel-viewport {
+      overflow: visible;
+    }
+
+    .route-carousel--only-mobile .route-carousel-slides {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 380px));
+      gap: var(--space-06);
+      justify-content: space-between;
+      transform: none !important;
+    }
+
+    .route-carousel--only-mobile .route-carousel-slides > :global(*) {
+      flex: none;
+      width: 100%;
+    }
+
+    .route-carousel--only-mobile .route-carousel-nav {
+      display: none;
+    }
+  }
+
+    .route-carousel--only-mobile .route-carousel-slides > :global(*) {
+      flex: none;
+      width: 100%;
+    }
+
+    .route-carousel--only-mobile .route-carousel-nav {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .route-carousel-slides {
+      transition: none;
+    }
+
+    .route-carousel-segment.is-active .route-carousel-segment-fill {
+      animation: none;
+      width: 100%;
+    }
+  }
+</style>

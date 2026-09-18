@@ -38,20 +38,16 @@ interface Props {
   totalRunsCompleted?: number | string;
   totalParticipantsCount?: number | string;
   totalHKDRaised?: number | string;
-  totalAmountRaised?: number | string;
   missionStatement?: string;
 }
 
 const {
-  totalKmCovered = '00',
-  totalRunsCompleted = '00',
-  totalParticipantsCount = '00',
+  totalKmCovered,
+  totalRunsCompleted,
+  totalParticipantsCount,
   totalHKDRaised,
-  totalAmountRaised = '00',
   missionStatement,
 } = Astro.props;
-
-const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmountRaised;
 ---
 
 <section id="about-section" class="about-container" aria-label="About adopt a run">
@@ -90,7 +86,7 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
         {missionStatement}
       </p>
 
-      <p class="about-tally">together we’ve run <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised">HK$<span class="tally-value">{displayRaised}</span></span> <span class="tally-end">and counting.</span></p>
+      <p class="about-tally">together we’ve run <span class="tally-mark mark-distance"><span class="tally-value">{totalKmCovered}</span>&#160;km</span> across <span class="tally-mark mark-runs"><span class="tally-value">{totalRunsCompleted}</span>&#160;runs</span> — <span class="tally-mark mark-runners"><span class="tally-value">{totalParticipantsCount}</span>&#160;runners</span> raising <span class="tally-mark mark-raised">HK$<span class="tally-value">{totalHKDRaised}</span></span> <span class="tally-end">and counting.</span></p>
     </div>
   </div>
 </section>
@@ -148,6 +144,7 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
   .about-lead,
   .about-sentence b {
     font-weight: 600;
+    font-variation-settings: 'opsz' 72, 'wght' 600;
   }
 
   .accent-community {
@@ -283,6 +280,7 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
     font-size: var(--font-fluid-title);
     font-weight: 400;
     line-height: var(--leading-body);
+    letter-spacing: normal;
     text-align: right;
     color: var(--color-text-secondary);
     text-wrap: balance;
@@ -293,6 +291,8 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
     position: relative;
     padding-inline: 0.04em;
     font-weight: 600;
+    font-variation-settings: 'opsz' 72, 'wght' 600;
+    letter-spacing: normal;
     color: var(--color-canvas-white);
     white-space: nowrap;
   }
@@ -321,6 +321,7 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
   }
 
   .tally-value {
+    letter-spacing: normal;
     font-variant-numeric: tabular-nums lining-nums;
   }
 
@@ -408,25 +409,25 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
   }
 
   @supports (animation-timeline: view()) {
-    .about-description,
-    .about-tally,
-    .tally-mark::after {
+    :global(html.has-scroll-timeline) .about-description,
+    :global(html.has-scroll-timeline) .about-tally,
+    :global(html.has-scroll-timeline) .tally-mark::after {
       animation-fill-mode: both;
       animation-duration: auto;
       animation-timing-function: var(--ease-out-expo);
     }
 
-    .about-description,
-    .about-tally {
+    :global(html.has-scroll-timeline) .about-description,
+    :global(html.has-scroll-timeline) .about-tally {
       animation-timeline: view();
     }
 
     /* The underscores run on the tally's own view timeline, so they follow its text */
-    .about-tally {
+    :global(html.has-scroll-timeline) .about-tally {
       view-timeline-name: --about-tally;
     }
 
-    .tally-mark::after {
+    :global(html.has-scroll-timeline) .tally-mark::after {
       animation-timeline: --about-tally;
     }
 
@@ -436,44 +437,85 @@ const displayRaised = totalHKDRaised !== undefined ? totalHKDRaised : totalAmoun
        still settling. Each text element starts rising with its top around 80% of the viewport
        and settles near 65%. */
     @media (prefers-reduced-motion: no-preference) {
-      .about-description {
+      :global(html.has-scroll-timeline) .about-description {
         animation-name: scroll-rise;
         animation-range: cover 18% cover 32%;
       }
 
-      .about-tally {
+      :global(html.has-scroll-timeline) .about-tally {
         animation-name: scroll-rise;
         animation-range: cover 19% cover 32%;
       }
 
-      .tally-mark::after {
+      :global(html.has-scroll-timeline) .tally-mark::after {
         animation-name: scroll-trace;
       }
 
       /* Each underscore lands before the next begins, with a short pause between them */
-      .mark-distance::after {
+      :global(html.has-scroll-timeline) .mark-distance::after {
         animation-range: cover 26% cover 30%;
       }
 
-      .mark-runs::after {
+      :global(html.has-scroll-timeline) .mark-runs::after {
         animation-range: cover 32% cover 36%;
       }
 
-      .mark-runners::after {
+      :global(html.has-scroll-timeline) .mark-runners::after {
         animation-range: cover 38% cover 42%;
       }
 
-      .mark-raised::after {
+      :global(html.has-scroll-timeline) .mark-raised::after {
         animation-range: cover 44% cover 48%;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .about-description,
-      .about-tally {
+      :global(html.has-scroll-timeline) .about-description,
+      :global(html.has-scroll-timeline) .about-tally {
         animation-name: scroll-fade;
         animation-range: cover 18% cover 32%;
       }
+    }
+  }
+
+  /* Fallback scroll reveals for non-Chromium browsers (Safari / Firefox) */
+  :global(html.no-scroll-timeline) .about-description,
+  :global(html.no-scroll-timeline) .about-tally {
+    opacity: 0;
+    transform: translateY(var(--space-06));
+    transition: opacity var(--duration-moderate) var(--ease-out-expo),
+                transform var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  :global(html.no-scroll-timeline) .tally-mark::after {
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  :global(html.no-scroll-timeline) #about-section.is-triggered-3 .about-description {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0ms;
+  }
+
+  :global(html.no-scroll-timeline) #about-section.is-triggered-3 .about-tally {
+    opacity: 1;
+    transform: none;
+    transition-delay: 80ms;
+  }
+
+  :global(html.no-scroll-timeline) #about-section.is-triggered-3 .tally-mark::after {
+    transform: scaleX(1);
+    transition-delay: 160ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.no-scroll-timeline) .about-description,
+    :global(html.no-scroll-timeline) .about-tally,
+    :global(html.no-scroll-timeline) .tally-mark::after {
+      transition-duration: 0.01ms;
+      transition-delay: 0ms;
     }
   }
 </style>

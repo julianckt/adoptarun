@@ -1,13 +1,11 @@
 ---
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
-import type { SanitySettings, SanitySiteCopy } from '@/sanity/types';
+import type { SanitySettings } from '@/sanity/types';
 
 export interface Props {
   class?: string;
   settings?: SanitySettings | null;
-  /** @deprecated Use `settings` prop instead */
-  siteCopy?: SanitySiteCopy | null;
   announcementText?: string;
   announcementLink?: string;
   showAnnouncement?: boolean;
@@ -17,14 +15,13 @@ export interface Props {
 const {
   class: className,
   settings,
-  siteCopy,
   announcementText: propText,
   announcementLink: propLink,
   showAnnouncement,
   ...restProps
 } = Astro.props;
 
-const source = settings ?? (siteCopy as unknown as SanitySettings);
+const source = settings;
 const bannerText = (propText ?? source?.announcementTickerText ?? '').trim();
 const bannerLink = (propLink ?? source?.announcementTickerLink ?? '').trim() || undefined;
 
@@ -97,22 +94,22 @@ const isVisible = showAnnouncement !== undefined ? showAnnouncement : isBannerAc
       )}
     </div>
 
-    <!-- Column 3: Stacked links (routes, log a run) -->
+    <!-- Column 3: Stacked links (routes, charities) -->
     <ul class="nav-col-stack nav-col-1">
       <li><a href="/routes" class="nav-link">routes</a></li>
-      <li><a href="/log" class="nav-link">log a run</a></li>
-    </ul>
-
-    <!-- Column 4: Stacked links (donate, charities) -->
-    <ul class="nav-col-stack nav-col-2">
-      <li><a href="/donate" class="nav-link">donate</a></li>
       <li><a href="/charities" class="nav-link">charities</a></li>
     </ul>
 
-    <!-- Column 5: Stacked links (home, faqs) -->
+    <!-- Column 4: Stacked links (faqs, donate) -->
+    <ul class="nav-col-stack nav-col-2">
+      <li><a href="/faqs" class="nav-link">faqs</a></li>
+      <li><a href="/donate" class="nav-link">donate</a></li>
+    </ul>
+
+    <!-- Column 5: Stacked links (home, log a run) -->
     <ul class="nav-col-stack nav-col-3">
       <li><a href="/" class="nav-link nav-link--home">home</a></li>
-      <li><a href="/faqs" class="nav-link">faqs</a></li>
+      <li><a href="/log" class="nav-link">log a run</a></li>
     </ul>
 
     <!-- Mobile Hamburger Toggle -->

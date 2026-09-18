@@ -11,6 +11,7 @@ import FeaturedRoutesSection from '@/components/FeaturedRoutesSection.astro';
 import CharitySection from '@/components/CharitySection.astro';
 import BottomCtaSection from '@/components/BottomCtaSection.astro';
 import RouteCard from '@/components/RouteCard.astro';
+import RouteCarousel from '@/components/RouteCarousel.astro';
 import ShaderBackgroundWrapper from '@/components/ShaderBackground/ShaderBackgroundWrapper.astro';
 import type { SanityRoute, SanityCharity, SanitySiteCopy } from '@/sanity/types';
 import { findSpotlightCharity, resolveTallyValues } from '@/utils/homepage-content';
@@ -25,7 +26,7 @@ export interface Props {
 
 const { routes, charities, siteCopy } = Astro.props;
 
-const heroRoutes = selectFeaturedRoutes(routes, 2);
+const heroRoutes = selectFeaturedRoutes(routes, 3);
 const spcaCharity = findSpotlightCharity(charities);
 const tally = resolveTallyValues(siteCopy);
 const heroSubtitle = siteCopy?.heroSubtitle?.trim();
@@ -49,11 +50,13 @@ const heroDescription = siteCopy?.heroDescription?.trim();
           {heroSubtitle && <p class="hero-tagline">{heroSubtitle}</p>}
         </div>
 
-        <!-- Right Column: Route Cards -->
+        <!-- Right Column: Route Cards Carousel -->
         <div class="hero-cards">
-          {heroRoutes.map((route) => (
-            <RouteCard route={route} />
-          ))}
+          <RouteCarousel ariaLabel="Featured hero routes carousel">
+            {heroRoutes.map((route) => (
+              <RouteCard route={route} />
+            ))}
+          </RouteCarousel>
         </div>
       </div>
 
@@ -90,13 +93,3 @@ const heroDescription = siteCopy?.heroDescription?.trim();
   <!-- Section 06: Action Banner CTA (Outside Curtain, Transparent over Shader Preset A) -->
   <BottomCtaSection ctaDescription={siteCopy?.ctaDescription} />
 </main>
-
-<script>
-  import { initScrollTimeline } from '@/utils/scroll-timeline-loader';
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initScrollTimeline(), { once: true });
-  } else {
-    initScrollTimeline();
-  }
-</script>

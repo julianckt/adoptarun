@@ -17,13 +17,16 @@ export default defineConfig({
   },
   adapter: isBuildOrPreview
     ? cloudflare({
-        imageService: 'passthrough',
+        imageService: 'compile',
       })
     : undefined,
   integrations: [
     react(),
   ],
   vite: {
+    optimizeDeps: {
+      include: ['react-dom/client', 'react-dom', 'react', '@shadergradient/react', '@react-three/fiber'],
+    },
     resolve: {
       dedupe: ['react', 'react-dom', 'styled-components'],
     },

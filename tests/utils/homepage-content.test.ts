@@ -3,7 +3,6 @@ import {
   resolveTallyValues,
   findSpotlightCharity,
   resolveCharityPhoto,
-  DEFAULT_CHARITY_PHOTO,
   isHomePage,
 } from '@/utils/homepage-content';
 import type { SanityCharity, SanitySiteCopy } from '@/sanity/types';
@@ -91,31 +90,29 @@ describe('resolveCharityPhoto', () => {
 
   it('uses the Sanity cover photo, cropped to the frame at 2x, with its alt text', () => {
     const photo = resolveCharityPhoto(charity({ coverPhoto: { ...coverPhoto, alt: 'Volunteer walking a dog' } } as Partial<SanityCharity>));
-    expect(photo.alt).toBe('Volunteer walking a dog');
-    expect(photo.src).toContain('cdn.sanity.io/images/');
-    expect(photo.src).toContain('abc123def456-1200x800.jpg');
-    expect(photo.src).toContain('w=1136');
-    expect(photo.src).toContain('h=758');
-    expect(photo.src).toContain('fit=crop');
+    expect(photo!.alt).toBe('Volunteer walking a dog');
+    expect(photo!.src).toContain('cdn.sanity.io/images/');
+    expect(photo!.src).toContain('abc123def456-1200x800.jpg');
+    expect(photo!.src).toContain('w=1136');
+    expect(photo!.src).toContain('h=758');
+    expect(photo!.src).toContain('fit=crop');
   });
 
   it('strips stega from the alt text', () => {
     const photo = resolveCharityPhoto(charity({ coverPhoto: { ...coverPhoto, alt: `Volunteer${stega}` } } as Partial<SanityCharity>));
-    expect(photo.alt).toBe('Volunteer');
+    expect(photo!.alt).toBe('Volunteer');
   });
 
-  it('falls back to the built-in alt when the photo has none', () => {
+  it('falls back to default alt when the photo has none', () => {
     const photo = resolveCharityPhoto(charity({ coverPhoto: { ...coverPhoto, alt: '  ' } } as Partial<SanityCharity>));
-    expect(photo.src).toContain('cdn.sanity.io');
-    expect(photo.alt).toBe(DEFAULT_CHARITY_PHOTO.alt);
+    expect(photo?.src).toContain('cdn.sanity.io');
+    expect(photo?.alt).toBe('Charity cover photo');
   });
 
-  it('keeps the built-in photo when no cover photo is uploaded', () => {
-    expect(resolveCharityPhoto(charity({}))).toEqual(DEFAULT_CHARITY_PHOTO);
-    expect(resolveCharityPhoto(null)).toEqual(DEFAULT_CHARITY_PHOTO);
-    expect(resolveCharityPhoto(charity({ coverPhoto: { _type: 'image' } } as Partial<SanityCharity>))).toEqual(
-      DEFAULT_CHARITY_PHOTO
-    );
+  it('returns null when no valid cover photo is uploaded', () => {
+    expect(resolveCharityPhoto(charity({}))).toBeNull();
+    expect(resolveCharityPhoto(null)).toBeNull();
+    expect(resolveCharityPhoto(charity({ coverPhoto: { _type: 'image' } } as Partial<SanityCharity>))).toBeNull();
   });
 });
 

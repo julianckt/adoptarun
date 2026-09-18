@@ -14,9 +14,7 @@
  * - Fully compliant with DESIGN.md zero-radius rule and Lumos tokens.
  */
 import type { SanityCharity } from '@/sanity/types';
-import { resolveCharityPhoto, DEFAULT_CHARITY_PHOTO } from '@/utils/homepage-content';
-import { getImage } from 'astro:assets';
-import fallbackPuppy from '@/assets/images/charity/spca-puppy.jpg';
+import { resolveCharityPhoto } from '@/utils/homepage-content';
 
 export interface Props {
   charity?: SanityCharity | null;
@@ -29,12 +27,6 @@ const { charity, class: className, ...restProps } = Astro.props;
 const charityTitle = 'Proudly Supporting';
 const charityDescription = charity?.charityDescription;
 const photo = resolveCharityPhoto(charity);
-
-let photoSrc = photo.src;
-if (photo.src === DEFAULT_CHARITY_PHOTO.src) {
-  const optimized = await getImage({ src: fallbackPuppy, format: 'webp', width: 568, height: 379 });
-  photoSrc = optimized.src;
-}
 ---
 
 <section id="charity-spotlight" class:list={['charity-section', className]} aria-labelledby="charity-heading" {...restProps}>
@@ -52,15 +44,17 @@ if (photo.src === DEFAULT_CHARITY_PHOTO.src) {
 
       <!-- Expanding central photo frame overlapping SP and CA -->
       <div class="charity-photo-frame">
-        <img
-          src={photoSrc}
-          alt={photo.alt}
-          class="charity-photo-img"
-          width="568"
-          height="379"
-          loading="lazy"
-          decoding="async"
-        />
+        {photo && (
+          <img
+            src={photo.src}
+            alt={photo.alt}
+            class="charity-photo-img"
+            width="568"
+            height="379"
+            loading="lazy"
+            decoding="async"
+          />
+        )}
       </div>
 
       <!-- Right letter block: CA -->
@@ -133,12 +127,13 @@ if (photo.src === DEFAULT_CHARITY_PHOTO.src) {
   .charity-subtitle {
     font-family: var(--font-display);
     font-weight: 600;
+    font-variation-settings: 'opsz' 72, 'wght' 600;
     font-size: var(--font-fluid-title);
     line-height: var(--leading-default);
     color: var(--color-text-secondary);
     margin: 0;
     padding: 0;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
   }
 
   /* Overlapping Split Centerpiece */
@@ -155,6 +150,7 @@ if (photo.src === DEFAULT_CHARITY_PHOTO.src) {
   .charity-letter {
     font-family: var(--font-display);
     font-weight: 600;
+    font-variation-settings: 'opsz' 72, 'wght' 600;
     font-size: calc(var(--font-fluid-colossal) * 0.77);
     line-height: var(--leading-default);
     color: var(--color-art-cyan);

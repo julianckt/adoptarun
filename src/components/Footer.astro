@@ -1,38 +1,31 @@
 ---
-import type { SanitySettings, SanitySiteCopy, FooterSocialLink } from '@/sanity/types';
+import type { SanitySettings, FooterSocialLink } from '@/sanity/types';
 
 export interface Props {
   class?: string;
   /** 'full' renders contact, nav and legal rows; 'minimal' renders only the legal row. */
   variant?: 'full' | 'minimal';
   settings?: SanitySettings | null;
-  /** @deprecated Use `settings` prop instead */
-  siteCopy?: SanitySiteCopy | null;
   [key: string]: any;
 }
 
-const DEFAULT_SOCIAL_LINKS: FooterSocialLink[] = [
-  { _key: 'instagram', text: 'instagram', url: 'https://instagram.com/adoptarun' },
-];
-
-const { class: className, variant = 'full', settings, siteCopy, ...restProps } = Astro.props;
+const { class: className, variant = 'full', settings, ...restProps } = Astro.props;
 const isMinimal = variant === 'minimal';
 
-const source = settings ?? (siteCopy as unknown as SanitySettings);
-const contactEmail = source?.footerContactEmail?.trim() || 'adoptarunhk@gmail.com';
-const socialLinks =
-  source?.footerSocialLinks && source.footerSocialLinks.length > 0
-    ? source.footerSocialLinks
-    : DEFAULT_SOCIAL_LINKS;
+const source = settings;
+const contactEmail = source?.footerContactEmail?.trim();
+const socialLinks: FooterSocialLink[] = source?.footerSocialLinks ?? [];
 ---
 
 <footer class:list={['site-footer', { 'site-footer--minimal': isMinimal }, className]} {...restProps}>
   <div class="site-footer-inner page-frame">
     {!isMinimal && (<>
-    <p class="site-footer-contact">
-      <span>Contact us at</span>
-      <a class="site-footer-email" href={`mailto:${contactEmail}`}>{contactEmail}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a>
-    </p>
+    {contactEmail && (
+      <p class="site-footer-contact">
+        <span>Contact us at</span>
+        <a class="site-footer-email" href={`mailto:${contactEmail}`}>{contactEmail}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#icon-arrow-up-right" /></svg></a>
+      </p>
+    )}
     <div class="site-footer-body">
       <nav aria-label="Explore">
         <ul class="site-footer-list">

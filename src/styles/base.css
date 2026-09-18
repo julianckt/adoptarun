@@ -18,6 +18,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-synthesis: none;
     min-height: 100%;
   }
 
@@ -45,20 +46,53 @@
     color: var(--color-canvas-black);
   }
 
-  /* Degular Display Optical Size Rule: Lock all Degular instances strictly to optical size 72 */
+  /* Degular Display Optical Size & Variable Weight Rule:
+     Lock all Degular instances strictly to optical size 72 while explicitly
+     passing the variable weight axis ('wght') to prevent WebKit/Blink from resetting
+     weights to Thin (200) or generating synthetic faux-bold. */
   .font-display,
   .featured-routes-title,
   .route-card-district,
+  .route-card-signups-count,
   .about-sentence,
+  .about-lead,
   .about-tally,
+  .tally-mark,
   .journey-badge-number,
   .journey-lead-text,
   .journey-step-title,
   .charity-letter,
   .charity-subtitle,
   .finale-headline,
-  .stub-title {
+  .stub-title,
+  .mobile-nav-link,
+  .site-footer-email,
+  .site-footer-list a {
     font-optical-sizing: none;
-    font-variation-settings: 'opsz' 72;
+    font-variation-settings: 'opsz' 72, 'wght' var(--wght, 400);
+  }
+
+  .featured-routes-title,
+  .mobile-nav-link,
+  .site-footer-email,
+  .site-footer-list a,
+  .stub-title,
+  .journey-step-title {
+    --wght: 500;
+  }
+
+  .about-lead,
+  .about-sentence b,
+  .tally-mark,
+  .charity-letter,
+  .charity-subtitle,
+  .finale-headline,
+  .journey-badge-number {
+    --wght: 600;
+  }
+
+  .route-card-district,
+  .route-card-signups-count {
+    --wght: 700;
   }
 }

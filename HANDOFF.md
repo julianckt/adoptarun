@@ -188,3 +188,31 @@ npm run build
    - `.site-header-veil` transitions opacity to `1`.
    - The background displays a distinct **28px frosted-glass translucent blur** over the passing text, cards, and images, rather than an opaque dark gradient scrim.
    - Navigation links, CTA, and menu controls remain fully clickable.
+
+---
+
+## 8. Chrome Scroll-Timeline Polyfill Findings & Safari Compatibility
+
+### Root Cause & Findings Breakdown
+
+1. **Feature Detection False-Positive in Safari 18+ ([`scroll-timeline-loader.ts:L226-L234`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L226-L234)):**
+   - **Issue:** `CSS.supports('animation-timeline', 'view()')` returns `true` in Safari 18+ (macOS Sequoia / iOS 18).
+   - **Impact:** `initScrollTimeline()` checks `isNativeSupported` and immediately exits with `return;` under the assumption that native compositor animations will run. However, WebKit's implementation for Web Animations API `element.animate(..., { timeline: viewTimeline })` and CSS `@supports (animation-timeline: view())` keyframe scroll bindings is incomplete or non-functional for complex multi-range timelines. Safari skips polyfill instantiation because `CSS.supports` passes, leaving scroll animations dormant.
+
+2. **Vite Dynamic Import & Polyfill Scope Isolation ([`scroll-timeline-loader.ts:L242`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L242)):**
+   - **Issue:** `await import('scroll-timeline-polyfill/dist/scroll-timeline.js')` relies on side-effect global assignment (`window.ViewTimeline`, `window.ScrollTimeline`).
+   - **Impact:** In Vite's client-side module bundling and code-splitting setup, dynamic script imports of non-ESM IIFE polyfills can fail to expose global constructor properties on `window` in non-Chromium browsers before DOM execution, resulting in `ViewTimeline` being `undefined`.
+
+3. **WAAPI `pseudoElement` Target Rejection in WebKit ([`scroll-timeline-loader.ts:L111-L119`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L111-L119), [`L209-L218`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L209-L218)):**
+   - **Issue:** The polyfill attempts `element.animate(traceKeyframes(), { pseudoElement: '::before' | '::after' })` for section hairline trace animations (`scroll-trace`).
+   - **Impact:** WebKit (Safari) throws `NotSupportedError` when WAAPI target options specify pseudo-elements. The `try { ... } catch` block in `setupJourneySection` and `setupAboutSection` correctly prevents runtime crashes, but causes pseudo-element hairline trace animations to freeze at settled states.
+
+### Recommended Remediation Steps
+
+1. **Refine Capability Detection in [`scroll-timeline-loader.ts`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L226):**
+   Replace generic `CSS.supports('animation-timeline', 'view()')` with explicit WebAnim/Chrome compositor checks (e.g., verifying `typeof window.ViewTimeline !== 'undefined'` or checking user-agent compositor support), ensuring Safari forces polyfill fallback execution.
+2. **Expose Polyfill in Vite `optimizeDeps` or Static Import:**
+   Ensure `scroll-timeline-polyfill` is bundled statically or added to `vite.optimizeDeps.include` in [`astro.config.mjs`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/astro.config.mjs) so `window.ViewTimeline` is guaranteed to be defined upon client hydration.
+3. **Animate Real DOM Hairlines for Cross-Browser Trace Parity:**
+   Refactor hairline trace elements from CSS pseudo-elements (`::before` / `::after`) to explicit inline DOM elements (`<div class="hairline-trace" />`) where Web Animations API pseudo-element targets fail in WebKit.
+

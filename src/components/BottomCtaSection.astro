@@ -21,7 +21,7 @@ export interface Props {
 
 const {
   class: className,
-  ctaDescription = "every kilometer drawn on the city's pavement raises rescue funds and champions a kinder city.",
+  ctaDescription,
   ...restProps
 } = Astro.props;
 ---
@@ -37,9 +37,11 @@ const {
       <span class="finale-line">own the impact.</span>
     </h2>
 
-    <p class="finale-subtext">
-      {ctaDescription}
-    </p>
+    {ctaDescription && (
+      <p class="finale-subtext">
+        {ctaDescription}
+      </p>
+    )}
 
     <div class="finale-actions">
       <a href="/signup" class="btn btn-primary finale-cta">
@@ -156,6 +158,7 @@ const {
     /* Fit the longest line ("complete the route.") to the container on narrow screens */
     font-size: min(var(--font-fluid-display), 12cqi);
     font-weight: 600;
+    font-variation-settings: 'opsz' 72, 'wght' 600;
     line-height: var(--leading-compressed);
     letter-spacing: normal;
     color: var(--color-canvas-white);
@@ -257,15 +260,15 @@ const {
   @supports (animation-timeline: view()) {
     /* clip (not hidden) so the section is not a scroll container and each
        element's view() timeline tracks the page scroll */
-    .finale {
+    :global(html.has-scroll-timeline) .finale {
       overflow: clip;
       --motion-rise-y: var(--space-09);
       --motion-rise-blur: var(--space-03);
     }
 
-    .finale-line,
-    .finale-subtext,
-    .finale-actions {
+    :global(html.has-scroll-timeline) .finale-line,
+    :global(html.has-scroll-timeline) .finale-subtext,
+    :global(html.has-scroll-timeline) .finale-actions {
       animation-timeline: view();
       animation-fill-mode: both;
       animation-duration: auto;
@@ -274,37 +277,97 @@ const {
 
     /* cover N% ≈ the element sitting N% up the viewport */
     @media (prefers-reduced-motion: no-preference) {
-      .finale-line,
-      .finale-subtext,
-      .finale-actions {
+      :global(html.has-scroll-timeline) .finale-line,
+      :global(html.has-scroll-timeline) .finale-subtext,
+      :global(html.has-scroll-timeline) .finale-actions {
         animation-name: scroll-rise;
       }
 
-      .finale-line:nth-child(1) {
+      :global(html.has-scroll-timeline) .finale-line:nth-child(1) {
         animation-range: cover 13% cover 43%;
       }
 
-      .finale-line:nth-child(2) {
+      :global(html.has-scroll-timeline) .finale-line:nth-child(2) {
         animation-range: cover 15% cover 45%;
       }
 
-      .finale-line:nth-child(3) {
+      :global(html.has-scroll-timeline) .finale-line:nth-child(3) {
         animation-range: cover 17% cover 47%;
       }
 
-      .finale-subtext,
-      .finale-actions {
+      :global(html.has-scroll-timeline) .finale-subtext,
+      :global(html.has-scroll-timeline) .finale-actions {
         animation-range: cover 15% cover 30%;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .finale-line,
-      .finale-subtext,
-      .finale-actions {
+      :global(html.has-scroll-timeline) .finale-line,
+      :global(html.has-scroll-timeline) .finale-subtext,
+      :global(html.has-scroll-timeline) .finale-actions {
         animation-name: scroll-fade;
         animation-range: cover 15% cover 45%;
       }
     }
   }
+
+  /* Fallback scroll reveals for non-Chromium browsers (Safari / Firefox) */
+  :global(html.no-scroll-timeline) .finale-line,
+  :global(html.no-scroll-timeline) .finale-subtext,
+  :global(html.no-scroll-timeline) .finale-actions {
+    opacity: 0;
+    transform: translateY(var(--space-06));
+    transition: opacity var(--duration-moderate) var(--ease-out-expo),
+                transform var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  :global(html.no-scroll-timeline) .finale.is-visible .finale-line,
+  :global(html.no-scroll-timeline) .finale.is-visible .finale-subtext,
+  :global(html.no-scroll-timeline) .finale.is-visible .finale-actions {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.no-scroll-timeline) .finale.is-visible .finale-line:nth-child(1) { transition-delay: 0ms; }
+  :global(html.no-scroll-timeline) .finale.is-visible .finale-line:nth-child(2) { transition-delay: 60ms; }
+  :global(html.no-scroll-timeline) .finale.is-visible .finale-line:nth-child(3) { transition-delay: 120ms; }
+  :global(html.no-scroll-timeline) .finale.is-visible .finale-subtext { transition-delay: 180ms; }
+  :global(html.no-scroll-timeline) .finale.is-visible .finale-actions { transition-delay: 240ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.no-scroll-timeline) .finale-line,
+    :global(html.no-scroll-timeline) .finale-subtext,
+    :global(html.no-scroll-timeline) .finale-actions {
+      transition-duration: 0.01ms;
+      transition-delay: 0ms;
+    }
+  }
 </style>
+
+<script>
+  function initBottomCtaFallback() {
+    if (!document.documentElement.classList.contains('no-scroll-timeline')) return;
+
+    const finale = document.querySelector<HTMLElement>('.finale');
+    if (!finale) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(finale);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBottomCtaFallback, { once: true });
+  } else {
+    initBottomCtaFallback();
+  }
+</script>
