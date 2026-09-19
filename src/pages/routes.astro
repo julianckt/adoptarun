@@ -22,7 +22,7 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
   hideFooter={true}
   settings={settings}
 >
-  <main class="routes-viewport">
+  <main class="routes-viewport" id="routes-viewport">
     <!-- Layer 0: Full-Bleed Hong Kong Vector Basemap Placeholder with Radar Sweep -->
     <HkBasemapSvg />
 
@@ -44,5 +44,11 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
     min-height: 540px;
     background-color: var(--color-canvas-black);
     overflow: hidden;
+  }
+
+  .routes-viewport.is-grid-active {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
   }
 </style>

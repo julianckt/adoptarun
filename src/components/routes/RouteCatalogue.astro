@@ -1,0 +1,800 @@
+---
+import type { SanityRoute } from '@/sanity/types';
+import RouteCard from '@/components/RouteCard.astro';
+import {
+  filterAndSortRoutes,
+  DEFAULT_FILTER_STATE,
+} from '@/utils/route-catalog-filter';
+
+export interface Props {
+  routes: SanityRoute[] | null;
+}
+
+const { routes = [] } = Astro.props;
+
+// Default server-rendered route list
+const initialRoutes = filterAndSortRoutes(routes, DEFAULT_FILTER_STATE);
+
+// Extract all unique feature tags from routes, supplemented with standard tags
+const standardFeatureTags = [
+  'traffic-free',
+  'kid-friendly',
+  'test run',
+  'trail-running',
+  'near MTR',
+];
+
+const dynamicTags = Array.from(
+  new Set(
+    (routes || [])
+      .flatMap((r) => r.tags || [])
+      .map((t) => t.trim())
+      .filter(Boolean)
+  )
+);
+
+// Combine and deduplicate tags while preserving user's priority order
+const allFeatureTags: string[] = Array.from(
+  new Set([...standardFeatureTags, ...dynamicTags])
+);
+
+// Color rotation for route cards (same as FeaturedRoutesSection)
+const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
+  'route-orange',
+  'route-coral',
+  'route-blush',
+];
+---
+
+<div class="route-catalogue" id="route-catalogue">
+  <div class="catalogue-main page-frame">
+    <!-- Left Filter Sidebar -->
+    <aside
+      class="catalogue-sidebar"
+      id="catalogue-filters-drawer"
+      aria-label="Route catalogue filters"
+    >
+      <div class="catalogue-sidebar-inner">
+        <!-- Difficulty Section -->
+        <section class="filter-group">
+          <h2 class="filter-heading">Difficulty</h2>
+          <ul class="filter-list" role="group" aria-label="Difficulty filter options">
+            <li>
+              <button
+                type="button"
+                class="filter-btn is-selected"
+                data-filter-type="difficulty"
+                data-filter-value="all"
+                aria-pressed="true"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">all runs</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="difficulty"
+                data-filter-value="beginner"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">beginner</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="difficulty"
+                data-filter-value="easy"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">easy</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="difficulty"
+                data-filter-value="intermediate"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">intermediate</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="difficulty"
+                data-filter-value="advanced"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">advanced</span>
+              </button>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Region Section -->
+        <section class="filter-group">
+          <h2 class="filter-heading">region</h2>
+          <ul class="filter-list" role="group" aria-label="Region filter options">
+            <li>
+              <button
+                type="button"
+                class="filter-btn is-selected"
+                data-filter-type="region"
+                data-filter-value="all"
+                aria-pressed="true"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">all</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="region"
+                data-filter-value="hk island"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">hk island</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="region"
+                data-filter-value="kowloon"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">kowloon</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="region"
+                data-filter-value="new territories"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">new territories</span>
+              </button>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Sort By Section -->
+        <section class="filter-group">
+          <h2 class="filter-heading">sort by</h2>
+          <div class="filter-sort-container">
+            <div class="filter-sort-row">
+              <button
+                type="button"
+                class="filter-btn is-selected"
+                data-filter-type="sort"
+                data-filter-value="latest"
+                aria-pressed="true"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">latest</span>
+              </button>
+            </div>
+            <div class="filter-sort-pair">
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="sort"
+                data-filter-value="shortest"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">shortest</span>
+              </button>
+              <span class="filter-separator" aria-hidden="true">|</span>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="sort"
+                data-filter-value="longest"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">longest</span>
+              </button>
+            </div>
+            <div class="filter-sort-pair">
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="sort"
+                data-filter-value="easiest"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">easiest</span>
+              </button>
+              <span class="filter-separator" aria-hidden="true">|</span>
+              <button
+                type="button"
+                class="filter-btn"
+                data-filter-type="sort"
+                data-filter-value="hardest"
+                aria-pressed="false"
+              >
+                <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                <span class="filter-text">hardest</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Features Section (Wrapping) -->
+        <section class="filter-group">
+          <h2 class="filter-heading">Features</h2>
+          <div class="filter-features-wrap" role="group" aria-label="Feature tags filter">
+            {
+              allFeatureTags.map((tag, idx) => (
+                <div class="filter-feature-item">
+                  <button
+                    type="button"
+                    class="filter-btn filter-btn--feature"
+                    data-filter-type="feature"
+                    data-filter-value={tag.toLowerCase()}
+                    aria-pressed="false"
+                  >
+                    <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                    <span class="filter-text">{tag.toLowerCase()}</span>
+                  </button>
+                  {idx < allFeatureTags.length - 1 && (
+                    <span class="filter-separator" aria-hidden="true">|</span>
+                  )}
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- Clear All Filters Action Button -->
+        <div class="catalogue-clear-wrapper">
+          <button
+            type="button"
+            class="catalogue-clear-btn"
+            id="catalogue-clear-all-btn"
+          >
+            clear all filters
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 3-Wide Route Card Grid Container -->
+    <main class="catalogue-content" id="catalogue-content">
+      <div class="catalogue-grid" id="catalogue-grid">
+        {
+          initialRoutes.map((route, idx) => {
+            const theme = themeCycles[idx % themeCycles.length];
+            return (
+              <div
+                class="catalogue-card-cell"
+                data-route-id={route._id}
+                data-difficulty={route.difficulty?.toLowerCase() || 'easy'}
+                data-region={route.region?.toLowerCase() || ''}
+                data-distance={route.distanceKm || 0}
+                data-is-group-run={route.isGroupRun ? 'true' : 'false'}
+                data-featured={route.featured ? 'true' : 'false'}
+                data-tags={JSON.stringify(route.tags || [])}
+              >
+                <RouteCard route={route} colorTheme={theme} />
+              </div>
+            );
+          })
+        }
+      </div>
+
+      <!-- Empty Results Feedback State -->
+      <div class="catalogue-empty" id="catalogue-empty" hidden>
+        <p class="catalogue-empty-text">no routes match your criteria</p>
+        <button
+          type="button"
+          class="cta-button catalogue-empty-clear-btn"
+          id="catalogue-empty-reset-btn"
+        >
+          clear all filters
+        </button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<style>
+  .route-catalogue {
+    width: 100%;
+    background-color: var(--color-canvas-black);
+    color: var(--color-canvas-white);
+    position: relative;
+    padding-bottom: var(--space-12);
+  }
+
+  /* Mobile Sticky Bar in line with map/grid toggle */
+  .catalogue-mobile-bar {
+    display: none;
+    position: sticky;
+    top: var(--header-height);
+    z-index: 25;
+    background-color: var(--color-canvas-black);
+    border-bottom: var(--border-hairline);
+    padding: var(--space-04) var(--space-05);
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .catalogue-mobile-drawer-toggle {
+    background: transparent;
+    border: var(--border-hairline);
+    color: var(--color-canvas-white);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    padding: var(--space-02) var(--space-04);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-02);
+    cursor: pointer;
+  }
+
+  .catalogue-active-badge {
+    background-color: var(--color-accent);
+    color: var(--color-canvas-black);
+    font-size: var(--font-size-micro);
+    font-weight: 700;
+    padding: var(--space-00) var(--space-02);
+    line-height: 1.2;
+  }
+
+  .catalogue-main {
+    display: grid;
+    grid-template-columns: minmax(calc(var(--space-13) + var(--space-05)), calc(var(--space-13) + var(--space-11))) 1fr;
+    gap: var(--space-09);
+    padding-top: var(--space-08);
+  }
+
+  /* Left Filter Sidebar */
+  .catalogue-sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-08));
+    align-self: flex-start;
+    max-height: calc(100vh - var(--header-height) - var(--space-10));
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .catalogue-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .catalogue-sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    gap: var(--space-08);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-03);
+    width: 100%;
+  }
+
+  .filter-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--font-size-body);
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    text-align: right;
+    text-transform: lowercase;
+  }
+
+  .filter-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-02);
+    width: 100%;
+  }
+
+  /* Button Items with Right Alignment & Dot indicator */
+  .filter-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 400;
+    line-height: var(--leading-default);
+    cursor: pointer;
+    padding: var(--space-01) 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-02);
+    text-align: right;
+    transition: color 150ms ease, font-weight 150ms ease;
+  }
+
+  .filter-btn:hover {
+    color: var(--color-canvas-white);
+  }
+
+  .filter-dot {
+    font-size: var(--font-size-micro);
+    color: var(--color-accent);
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+
+  .filter-btn.is-selected {
+    color: var(--color-canvas-white);
+    font-weight: 600;
+  }
+
+  .filter-btn.is-selected .filter-dot {
+    opacity: 1;
+  }
+
+  /* Sort Group Styling */
+  .filter-sort-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-02);
+    width: 100%;
+  }
+
+  .filter-sort-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .filter-sort-pair {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-02);
+  }
+
+  .filter-separator {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    user-select: none;
+  }
+
+  /* Features Group with wrapping */
+  .filter-features-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-02);
+    width: 100%;
+  }
+
+  .filter-feature-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-02);
+  }
+
+  .catalogue-clear-wrapper {
+    margin-top: var(--space-04);
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .catalogue-clear-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    color: var(--color-text-muted);
+    text-decoration: underline;
+    text-underline-offset: var(--space-01);
+    cursor: pointer;
+    transition: color 150ms ease;
+  }
+
+  .catalogue-clear-btn:hover {
+    color: var(--color-canvas-white);
+  }
+
+  /* 3-Wide Route Card Grid */
+  .catalogue-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .catalogue-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-06);
+    width: 100%;
+  }
+
+  .catalogue-card-cell {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Empty State */
+  .catalogue-empty {
+    width: 100%;
+    min-height: calc(var(--space-13) * 2 + var(--space-08));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-06);
+    padding: var(--space-10) var(--space-06);
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .catalogue-empty[hidden] {
+    display: none !important;
+  }
+
+  .catalogue-empty-text {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--font-size-metric);
+    color: var(--color-text-secondary);
+  }
+
+  .catalogue-empty-clear-btn {
+    background-color: var(--color-canvas-white);
+    color: var(--color-canvas-black);
+    border: none;
+    padding: var(--space-04) var(--space-08);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Responsive Rules */
+  @media (max-width: 1024px) {
+    .catalogue-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .catalogue-mobile-bar {
+      display: flex;
+    }
+
+    .catalogue-main {
+      grid-template-columns: 1fr;
+      padding-top: var(--space-05);
+    }
+
+    .catalogue-sidebar {
+      display: none;
+      position: static;
+      max-height: none;
+      width: 100%;
+      border-bottom: var(--border-hairline);
+      padding-bottom: var(--space-06);
+      margin-bottom: var(--space-06);
+    }
+
+    .catalogue-sidebar.is-open {
+      display: block;
+    }
+
+    .catalogue-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  import {
+    filterAndSortRoutes,
+    parseFilterParams,
+    toFilterParams,
+    DEFAULT_FILTER_STATE,
+    type RouteCatalogFilterState,
+    type RouteDifficultyFilter,
+    type RouteRegionFilter,
+    type RouteSortOption,
+  } from '@/utils/route-catalog-filter';
+
+  function initRouteCatalogue() {
+    const root = document.getElementById('route-catalogue');
+    if (!root) return;
+
+    const grid = document.getElementById('catalogue-grid');
+    const emptyState = document.getElementById('catalogue-empty');
+    const clearSidebarBtn = document.getElementById('catalogue-clear-all-btn');
+    const clearEmptyBtn = document.getElementById('catalogue-empty-reset-btn');
+    const mobileDrawerBtn = document.getElementById('hud-mobile-filter-trigger') || document.getElementById('catalogue-mobile-drawer-toggle');
+    const mobileDrawer = document.getElementById('catalogue-filters-drawer');
+    const activeBadge = document.getElementById('hud-filter-badge') || document.getElementById('catalogue-active-badge');
+
+    // Collect all card elements and deserialize route metrics
+    const cardElements = Array.from(root.querySelectorAll<HTMLElement>('.catalogue-card-cell'));
+    const allRoutesData = cardElements.map((el) => {
+      let tags: string[] = [];
+      try {
+        tags = JSON.parse(el.getAttribute('data-tags') || '[]');
+      } catch {
+        tags = [];
+      }
+      return {
+        _id: el.getAttribute('data-route-id') || '',
+        _type: 'route' as const,
+        difficulty: el.getAttribute('data-difficulty') || 'easy',
+        region: el.getAttribute('data-region') || '',
+        distanceKm: parseFloat(el.getAttribute('data-distance') || '0'),
+        isGroupRun: el.getAttribute('data-is-group-run') === 'true',
+        featured: el.getAttribute('data-featured') === 'true',
+        tags,
+      };
+    });
+
+    // Parse initial state from current URL
+    let currentState: RouteCatalogFilterState = parseFilterParams(window.location.search);
+
+    function updateUiState() {
+      // 1. Sync button active states in DOM
+      const filterButtons = root?.querySelectorAll<HTMLButtonElement>('.filter-btn');
+      filterButtons?.forEach((btn) => {
+        const type = btn.getAttribute('data-filter-type');
+        const val = btn.getAttribute('data-filter-value') || '';
+
+        let isSelected = false;
+        if (type === 'difficulty') {
+          isSelected = currentState.difficulty === val;
+        } else if (type === 'region') {
+          isSelected = currentState.region === val;
+        } else if (type === 'sort') {
+          isSelected = currentState.sort === val;
+        } else if (type === 'feature') {
+          isSelected = currentState.features.includes(val);
+        }
+
+        if (isSelected) {
+          btn.classList.add('is-selected');
+          btn.setAttribute('aria-pressed', 'true');
+        } else {
+          btn.classList.remove('is-selected');
+          btn.setAttribute('aria-pressed', 'false');
+        }
+      });
+
+      // 2. Compute active filter count for mobile badge
+      let activeCount = 0;
+      if (currentState.difficulty !== 'all') activeCount++;
+      if (currentState.region !== 'all') activeCount++;
+      if (currentState.sort !== 'latest') activeCount++;
+      activeCount += currentState.features.length;
+
+      if (activeBadge) {
+        if (activeCount > 0) {
+          activeBadge.textContent = String(activeCount);
+          activeBadge.hidden = false;
+        } else {
+          activeBadge.hidden = true;
+        }
+      }
+
+      // 3. Run filter and sort
+      const filtered = filterAndSortRoutes(allRoutesData as any, currentState);
+
+      // 4. Update grid order & visibility
+      if (filtered.length === 0) {
+        if (grid) grid.style.display = 'none';
+        if (emptyState) emptyState.hidden = false;
+      } else {
+        if (grid) grid.style.display = 'grid';
+        if (emptyState) emptyState.hidden = true;
+
+        const idToElement = new Map<string, HTMLElement>();
+        cardElements.forEach((el) => {
+          const id = el.getAttribute('data-route-id');
+          if (id) idToElement.set(id, el);
+          el.style.display = 'none';
+        });
+
+        // Re-append in sorted order and make visible
+        filtered.forEach((r) => {
+          const el = idToElement.get(r._id);
+          if (el && grid) {
+            el.style.display = '';
+            grid.appendChild(el);
+          }
+        });
+      }
+
+      // 5. Update URL query params without reloading
+      const url = new URL(window.location.href);
+      const params = toFilterParams(currentState);
+      // Preserve current view param if present
+      const currentView = url.searchParams.get('view') || 'grid';
+      params.set('view', currentView);
+
+      const newRelativePathQuery = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState(null, '', newRelativePathQuery);
+    }
+
+    // Attach click listeners to filter buttons
+    const filterButtons = root.querySelectorAll<HTMLButtonElement>('.filter-btn');
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const type = btn.getAttribute('data-filter-type');
+        const val = btn.getAttribute('data-filter-value') || '';
+
+        if (type === 'difficulty') {
+          currentState.difficulty = val as RouteDifficultyFilter;
+        } else if (type === 'region') {
+          currentState.region = val as RouteRegionFilter;
+        } else if (type === 'sort') {
+          currentState.sort = val as RouteSortOption;
+        } else if (type === 'feature') {
+          if (currentState.features.includes(val)) {
+            currentState.features = currentState.features.filter((f) => f !== val);
+          } else {
+            currentState.features = [...currentState.features, val];
+          }
+        }
+        updateUiState();
+      });
+    });
+
+    // Reset filters action
+    function resetAllFilters() {
+      currentState = { ...DEFAULT_FILTER_STATE };
+      updateUiState();
+    }
+
+    clearSidebarBtn?.addEventListener('click', resetAllFilters);
+    clearEmptyBtn?.addEventListener('click', resetAllFilters);
+
+    // Mobile drawer toggle
+    mobileDrawerBtn?.addEventListener('click', () => {
+      const isExpanded = mobileDrawerBtn.getAttribute('aria-expanded') === 'true';
+      mobileDrawerBtn.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+      mobileDrawer?.classList.toggle('is-open', !isExpanded);
+    });
+
+    // Initialize UI on mount
+    updateUiState();
+  }
+
+  // Set up listeners for initial load and Astro View Transitions
+  initRouteCatalogue();
+  document.addEventListener('astro:page-load', initRouteCatalogue);
+</script>

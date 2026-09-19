@@ -1,5 +1,6 @@
 ---
 import type { SanityRoute } from '@/sanity/types';
+import RouteCatalogue from '@/components/routes/RouteCatalogue.astro';
 
 export interface Props {
   routes: SanityRoute[] | null;
@@ -119,8 +120,20 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
     </div>
   </header>
 
-  <!-- Top-Right View Switcher -->
+  <!-- Top-Right View Switcher & Mobile Drawer Trigger -->
   <aside class="hud-top-right">
+    <button
+      type="button"
+      class="hud-mobile-filter-trigger"
+      id="hud-mobile-filter-trigger"
+      aria-expanded="false"
+      aria-controls="catalogue-filters-drawer"
+      aria-label="Filter routes"
+    >
+      <span>filters</span>
+      <span class="hud-filter-badge" id="hud-filter-badge" hidden>0</span>
+      <span class="hud-filter-caret" aria-hidden="true">&#9662;</span>
+    </button>
     <div class="hud-view-toggle" role="group" aria-label="Route view switcher">
       <button
         type="button"
@@ -220,18 +233,9 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
   </section>
 </div>
 
-<!-- Fallback Grid Placeholder (Displayed when switching to Grid view) -->
-<div class="routes-grid-fallback" id="routes-grid-view" hidden>
-  <div class="routes-grid-placeholder">
-    <p class="grid-placeholder-eyebrow">catalogue view</p>
-    <h2 class="grid-placeholder-title">route collection</h2>
-    <p class="grid-placeholder-desc">
-      full catalogue filter & card matrix loading (issue #7 integration).
-    </p>
-    <button type="button" class="cta-button grid-return-map" id="return-to-map-btn">
-      &larr; return to map view
-    </button>
-  </div>
+<!-- Route Catalogue View (Displayed when switching to Grid view) -->
+<div class="routes-catalogue-view" id="routes-grid-view" hidden>
+  <RouteCatalogue routes={routes} />
 </div>
 
 <style>
@@ -641,66 +645,67 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
     color: var(--color-text-secondary);
   }
 
-  /* Grid Fallback View Container */
-  .routes-grid-fallback {
-    position: absolute;
-    inset: 0;
+  /* Routes Catalogue Container */
+  .routes-catalogue-view {
     width: 100%;
-    height: 100%;
     background-color: var(--color-canvas-black);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 20;
-    padding: var(--space-06);
-    box-sizing: border-box;
+    position: relative;
+    z-index: 10;
   }
 
-  .routes-grid-fallback[hidden] {
+  .routes-catalogue-view[hidden] {
     display: none !important;
   }
 
-  .routes-grid-placeholder {
-    max-width: 500px;
-    text-align: center;
+  /* Grid View Mode Active State on HUD */
+  .routes-hud.is-grid-active {
+    position: sticky;
+    top: var(--header-height);
+    z-index: 25;
+    height: auto;
+    min-height: 0;
     display: flex;
-    flex-direction: column;
+    justify-content: flex-end;
+    padding-block: var(--space-04);
+    background-color: var(--color-canvas-black);
+    border-bottom: var(--border-hairline);
+    pointer-events: auto;
+  }
+
+  .routes-hud.is-grid-active .hud-top-left,
+  .routes-hud.is-grid-active .hud-bottom-left,
+  .routes-hud.is-grid-active .hud-bottom-right {
+    display: none !important;
+  }
+
+  .routes-hud.is-grid-active .hud-top-right {
+    position: static;
+    display: flex;
     align-items: center;
     gap: var(--space-04);
+    pointer-events: auto;
   }
 
-  .grid-placeholder-eyebrow {
-    margin: 0;
-    font-family: var(--font-body);
-    font-size: var(--font-size-label);
-    color: var(--color-text-muted);
-  }
-
-  .grid-placeholder-title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--font-size-title);
-    line-height: var(--leading-compressed);
+  .hud-mobile-filter-trigger {
+    display: none;
+    background: transparent;
+    border: var(--border-hairline);
     color: var(--color-canvas-white);
-  }
-
-  .grid-placeholder-desc {
-    margin: 0;
-    font-family: var(--font-body);
-    font-size: var(--font-size-body);
-    color: var(--color-text-secondary);
-  }
-
-  .grid-return-map {
-    margin-top: var(--space-04);
-    background-color: var(--color-canvas-white);
-    color: var(--color-canvas-black);
-    border: none;
-    padding: var(--space-04) var(--space-07);
     font-family: var(--font-body);
     font-size: var(--font-size-label);
-    font-weight: 500;
+    padding: var(--space-02) var(--space-04);
+    align-items: center;
+    gap: var(--space-02);
     cursor: pointer;
+  }
+
+  .hud-filter-badge {
+    background-color: var(--color-accent);
+    color: var(--color-canvas-black);
+    font-size: var(--font-size-micro);
+    font-weight: 700;
+    padding: var(--space-00) var(--space-02);
+    line-height: 1.2;
   }
 
   /* Mobile Adaptation */
@@ -737,6 +742,31 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
       border-right: none;
       border-bottom: none;
     }
+
+    .routes-hud.is-grid-active {
+      position: sticky;
+      top: var(--header-height);
+      z-index: 25;
+      width: 100%;
+      height: auto;
+      padding: var(--space-03) var(--space-04);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .routes-hud.is-grid-active .hud-top-right {
+      position: static;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .routes-hud.is-grid-active .hud-mobile-filter-trigger {
+      display: inline-flex;
+    }
   }
 </style>
 
@@ -763,27 +793,50 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
     const gridToggleBtn = document.getElementById('view-toggle-grid');
     const hudContainer = document.getElementById('routes-hud');
     const gridViewContainer = document.getElementById('routes-grid-view');
-    const returnToMapBtn = document.getElementById('return-to-map-btn');
 
     function setView(view: 'map' | 'grid') {
+      const viewport = document.getElementById('routes-viewport') || document.querySelector('.routes-viewport');
+      const basemap = document.querySelector('.hk-basemap-container') as HTMLElement | null;
+
       if (view === 'grid') {
         gridToggleBtn?.classList.add('is-active');
         gridToggleBtn?.setAttribute('aria-pressed', 'true');
         mapToggleBtn?.classList.remove('is-active');
         mapToggleBtn?.setAttribute('aria-pressed', 'false');
+
+        viewport?.classList.add('is-grid-active');
+        hudContainer?.classList.add('is-grid-active');
+        if (basemap) basemap.style.display = 'none';
         if (gridViewContainer) gridViewContainer.hidden = false;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('view', 'grid');
+        window.history.replaceState(null, '', url.toString());
       } else {
         mapToggleBtn?.classList.add('is-active');
         mapToggleBtn?.setAttribute('aria-pressed', 'true');
         gridToggleBtn?.classList.remove('is-active');
         gridToggleBtn?.setAttribute('aria-pressed', 'false');
+
+        viewport?.classList.remove('is-grid-active');
+        hudContainer?.classList.remove('is-grid-active');
+        if (basemap) basemap.style.display = '';
         if (gridViewContainer) gridViewContainer.hidden = true;
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete('view');
+        window.history.replaceState(null, '', url.toString());
       }
     }
 
     mapToggleBtn?.addEventListener('click', () => setView('map'));
     gridToggleBtn?.addEventListener('click', () => setView('grid'));
-    returnToMapBtn?.addEventListener('click', () => setView('map'));
+
+    // Check initial view from URL
+    const initialUrl = new URL(window.location.href);
+    if (initialUrl.searchParams.get('view') === 'grid') {
+      setView('grid');
+    }
 
     // 3. Flight board minimize / expand toggle
     const flightBoardToggle = document.getElementById('flight-board-toggle');
