@@ -1,0 +1,813 @@
+---
+import type { SanityRoute } from '@/sanity/types';
+
+export interface Props {
+  routes: SanityRoute[] | null;
+  totalRoutes: number;
+  totalKm: number;
+  contactEmail: string;
+}
+
+const { routes = [], totalRoutes = 0, totalKm = 0, contactEmail = 'hello@adoptarun.org' } = Astro.props;
+
+// Filter for upcoming group runs
+const now = new Date().getTime();
+const groupRuns = (routes || [])
+  .filter((r) => {
+    if (!r.isGroupRun || !r.groupRunDateTime) return false;
+    const runTime = new Date(r.groupRunDateTime).getTime();
+    // Pinned until 24 hours after meetup time
+    return runTime + 24 * 60 * 60 * 1000 >= now;
+  })
+  .sort((a, b) => {
+    const timeA = new Date(a.groupRunDateTime!).getTime();
+    const timeB = new Date(b.groupRunDateTime!).getTime();
+    return timeA - timeB;
+  });
+
+function formatGroupRunDate(dateStr?: string): string {
+  if (!dateStr) return '';
+  try {
+    const date = new Date(dateStr);
+    const day = date.toLocaleDateString('en-GB', { weekday: 'short' }).toLowerCase();
+    const dayNum = date.getDate();
+    const month = date.toLocaleDateString('en-GB', { month: 'short' }).toLowerCase();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const mins = date.getMinutes().toString().padStart(2, '0');
+    return `${day}, ${dayNum} ${month} · ${hours}:${mins}`;
+  } catch {
+    return dateStr;
+  }
+}
+
+const mailtoSubject = encodeURIComponent('Suggest a GPS Art Route');
+const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
+---
+
+<div class="routes-hud page-frame" id="routes-hud">
+  <!-- Top-Left Editorial Header & Difficulty Filter -->
+  <header class="hud-top-left">
+    <div class="hud-scrim hud-scrim--top-left" aria-hidden="true"></div>
+    <div class="hud-top-left-content">
+      <h1 class="hud-title">
+        find your <span class="c-wordmark-run">run</span>
+      </h1>
+
+      <nav class="hud-difficulty-nav" aria-label="Filter routes by difficulty">
+        <ul class="hud-difficulty-list" role="tablist">
+          <li role="presentation">
+            <button
+              type="button"
+              class="hud-difficulty-btn is-active"
+              role="tab"
+              aria-selected="true"
+              data-difficulty="all"
+            >
+              <span class="hud-difficulty-label">all runs</span>
+            </button>
+          </li>
+          <li class="hud-difficulty-sep" aria-hidden="true">·</li>
+          <li role="presentation">
+            <button
+              type="button"
+              class="hud-difficulty-btn"
+              role="tab"
+              aria-selected="false"
+              data-difficulty="beginner"
+            >
+              <span class="hud-difficulty-label">beginner</span>
+            </button>
+          </li>
+          <li class="hud-difficulty-sep" aria-hidden="true">·</li>
+          <li role="presentation">
+            <button
+              type="button"
+              class="hud-difficulty-btn"
+              role="tab"
+              aria-selected="false"
+              data-difficulty="easy"
+            >
+              <span class="hud-difficulty-label">easy</span>
+            </button>
+          </li>
+          <li class="hud-difficulty-sep" aria-hidden="true">·</li>
+          <li role="presentation">
+            <button
+              type="button"
+              class="hud-difficulty-btn"
+              role="tab"
+              aria-selected="false"
+              data-difficulty="intermediate"
+            >
+              <span class="hud-difficulty-label">intermediate</span>
+            </button>
+          </li>
+          <li class="hud-difficulty-sep" aria-hidden="true">·</li>
+          <li role="presentation">
+            <button
+              type="button"
+              class="hud-difficulty-btn"
+              role="tab"
+              aria-selected="false"
+              data-difficulty="advanced"
+            >
+              <span class="hud-difficulty-label">expert</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Top-Right View Switcher -->
+  <aside class="hud-top-right">
+    <div class="hud-view-toggle" role="group" aria-label="Route view switcher">
+      <button
+        type="button"
+        class="hud-view-btn is-active"
+        id="view-toggle-map"
+        aria-pressed="true"
+        data-view="map"
+      >
+        <span class="hud-view-dot" aria-hidden="true">●</span>
+        <span>map</span>
+      </button>
+      <button
+        type="button"
+        class="hud-view-btn"
+        id="view-toggle-grid"
+        aria-pressed="false"
+        data-view="grid"
+      >
+        <span>grid</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Bottom-Left Telemetry & Route Suggestion -->
+  <footer class="hud-bottom-left">
+    <div class="hud-scrim hud-scrim--bottom-left" aria-hidden="true"></div>
+    <div class="hud-bottom-left-content">
+      <p class="hud-telemetry">
+        <span class="hud-telemetry-num">{totalRoutes}</span> routes · <span class="hud-telemetry-num">{totalKm.toFixed(1)}</span> km mapped
+      </p>
+      <a href={mailtoHref} class="hairline-link hairline-link--white hud-suggest-link">
+        suggest a route &rarr;
+      </a>
+    </div>
+  </footer>
+
+  <!-- Bottom-Right Group Run Flight Board -->
+  <section class="hud-bottom-right" id="group-flight-board" aria-label="Upcoming group runs board">
+    <div class="flight-board-card">
+      <div class="flight-board-header">
+        <div class="flight-board-status">
+          <span class="flight-board-pulse" aria-hidden="true">●</span>
+          <span class="flight-board-title">upcoming group runs ({groupRuns.length})</span>
+        </div>
+        <button
+          type="button"
+          class="flight-board-toggle"
+          id="flight-board-toggle"
+          aria-expanded="true"
+          aria-label="Toggle group runs board"
+        >
+          <span class="flight-toggle-icon" aria-hidden="true">&minus;</span>
+        </button>
+      </div>
+
+      <div class="flight-board-wrapper">
+        <div class="flight-board-body" id="flight-board-body">
+          {groupRuns.length > 0 ? (
+            <ul class="flight-board-list">
+              {groupRuns.map((run) => (
+                <li class="flight-run-item">
+                  <div class="flight-run-meta">
+                    <span class="flight-run-district">{run.district}</span>
+                    <span class="flight-run-time">{formatGroupRunDate(run.groupRunDateTime)}</span>
+                  </div>
+                  <div class="flight-run-main">
+                    <h2 class="flight-run-name">{run.title}</h2>
+                    <span class="flight-run-distance">{run.distanceKm} km</span>
+                  </div>
+                  <div class="flight-run-footer">
+                    <span class="flight-runner-badge">
+                      {run.groupRunSignupCount || 12} runners
+                    </span>
+                    <button
+                      type="button"
+                      class="flight-focus-btn"
+                      data-route-slug={run.slug.current}
+                      data-district={run.district}
+                    >
+                      focus on map &rarr;
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div class="flight-board-empty">
+              <p>no group runs scheduled today.</p>
+              <a href={mailtoHref} class="hairline-link hairline-link--white">
+                host a group run &rarr;
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Fallback Grid Placeholder (Displayed when switching to Grid view) -->
+<div class="routes-grid-fallback" id="routes-grid-view" hidden>
+  <div class="routes-grid-placeholder">
+    <p class="grid-placeholder-eyebrow">catalogue view</p>
+    <h2 class="grid-placeholder-title">route collection</h2>
+    <p class="grid-placeholder-desc">
+      full catalogue filter & card matrix loading (issue #7 integration).
+    </p>
+    <button type="button" class="cta-button grid-return-map" id="return-to-map-btn">
+      &larr; return to map view
+    </button>
+  </div>
+</div>
+
+<style>
+  .routes-hud {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding-block: var(--space-06);
+    box-sizing: border-box;
+    left: 0;
+    right: 0;
+  }
+
+  /* Scrims for text contrast against map */
+  .hud-scrim {
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .hud-scrim--top-left {
+    inset: -24px -48px -32px -24px;
+    background: radial-gradient(
+      ellipse at top left,
+      rgba(24, 19, 17, 0.92) 0%,
+      rgba(24, 19, 17, 0.72) 45%,
+      transparent 80%
+    );
+  }
+
+  .hud-scrim--bottom-left {
+    inset: -24px -32px -24px -24px;
+    background: radial-gradient(
+      ellipse at bottom left,
+      rgba(24, 19, 17, 0.90) 0%,
+      rgba(24, 19, 17, 0.60) 50%,
+      transparent 85%
+    );
+  }
+
+  /* Top-Left Section */
+  .hud-top-left {
+    grid-column: 1;
+    grid-row: 1;
+    position: relative;
+    align-self: flex-start;
+    justify-self: flex-start;
+    pointer-events: auto;
+    max-width: 580px;
+  }
+
+  .hud-top-left-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+  }
+
+  .hud-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(var(--font-size-metric), 4vw, var(--font-size-wordmark));
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    text-transform: lowercase;
+  }
+
+  /* Scale VF Wordmark for 'run' - optically balanced with Degular Display */
+  .c-wordmark-run {
+    font-family: var(--font-wordmark);
+    font-size: 0.82em;
+    font-weight: 900;
+    font-variation-settings: 'wdth' 175, 'wght' 900;
+    display: inline-block;
+    vertical-align: baseline;
+    line-height: inherit;
+  }
+
+  /* Difficulty Filter Nav */
+  .hud-difficulty-nav {
+    display: flex;
+    align-items: center;
+  }
+
+  .hud-difficulty-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-03);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+  }
+
+  .hud-difficulty-btn {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    padding: var(--space-01) var(--space-02);
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 400;
+    cursor: pointer;
+    text-transform: lowercase;
+    transition: color var(--duration-fast) var(--ease-out-expo), font-weight var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .hud-difficulty-btn:hover {
+    color: var(--color-canvas-white);
+  }
+
+  .hud-difficulty-btn.is-active {
+    color: var(--color-canvas-white);
+    font-weight: 500;
+  }
+
+  .hud-difficulty-sep {
+    color: rgba(255, 251, 249, 0.25);
+    user-select: none;
+  }
+
+  /* Top-Right View Switcher */
+  .hud-top-right {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: flex-start;
+    justify-self: flex-end;
+    pointer-events: auto;
+  }
+
+  .hud-view-toggle {
+    display: inline-flex;
+    border: var(--border-hairline);
+    background-color: rgba(24, 19, 17, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--rounded-none);
+    overflow: hidden;
+  }
+
+  .hud-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-02);
+    background: transparent;
+    border: none;
+    padding: var(--space-02) var(--space-05);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 400;
+    color: var(--color-canvas-white);
+    cursor: pointer;
+    text-transform: lowercase;
+    border-radius: var(--rounded-none);
+    transition: background-color var(--duration-fast) var(--ease-out-expo), color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .hud-view-btn.is-active {
+    background-color: var(--color-canvas-white);
+    color: var(--color-canvas-black);
+    font-weight: 500;
+  }
+
+  .hud-view-dot {
+    font-size: var(--font-size-micro);
+    line-height: 1;
+  }
+
+  /* Bottom-Left Telemetry & Route Suggestion */
+  .hud-bottom-left {
+    grid-column: 1;
+    grid-row: 2;
+    position: relative;
+    align-self: flex-end;
+    justify-self: flex-start;
+    pointer-events: auto;
+  }
+
+  .hud-bottom-left-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-02);
+  }
+
+  .hud-telemetry {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 400;
+    color: var(--color-text-secondary);
+  }
+
+  .hud-telemetry-num {
+    color: var(--color-canvas-white);
+    font-weight: 500;
+  }
+
+  .hud-suggest-link {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    text-transform: lowercase;
+    display: inline-flex;
+    width: fit-content;
+    max-width: max-content;
+    align-self: flex-start;
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .hud-suggest-link:hover {
+    color: var(--color-accent);
+  }
+
+  /* Bottom-Right Flight Board */
+  .hud-bottom-right {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: flex-end;
+    justify-self: flex-end;
+    pointer-events: auto;
+    width: 340px;
+    max-width: calc(100vw - var(--space-08));
+  }
+
+  .flight-board-card {
+    background-color: rgba(24, 19, 17, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: var(--border-hairline);
+    border-radius: var(--rounded-none);
+    overflow: hidden;
+  }
+
+  .flight-board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-03) var(--space-04);
+    border-bottom: var(--border-hairline);
+    background-color: rgba(255, 251, 249, 0.03);
+  }
+
+  .flight-board-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-02);
+  }
+
+  .flight-board-pulse {
+    color: var(--color-group-run-green);
+    font-size: var(--font-size-micro);
+    animation: pulseGlow 2s infinite ease-in-out;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .flight-board-title {
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    color: var(--color-canvas-white);
+    text-transform: lowercase;
+  }
+
+  .flight-board-toggle {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-label);
+    cursor: pointer;
+    padding: var(--space-01) var(--space-02);
+    line-height: 1;
+  }
+
+  .flight-board-toggle:hover {
+    color: var(--color-canvas-white);
+  }
+
+  .flight-board-wrapper {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows var(--duration-moderate) var(--ease-out-expo), opacity var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  .flight-board-card.is-minimized .flight-board-wrapper {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .flight-board-body {
+    min-height: 0;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .flight-board-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .flight-run-item {
+    padding: var(--space-04);
+    border-bottom: 1px solid rgba(255, 251, 249, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-02);
+  }
+
+  .flight-run-item:last-child {
+    border-bottom: none;
+  }
+
+  .flight-run-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    color: var(--color-text-muted);
+    text-transform: lowercase;
+  }
+
+  .flight-run-district {
+    color: var(--color-accent);
+  }
+
+  .flight-run-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-02);
+  }
+
+  .flight-run-name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--font-size-body);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    text-transform: lowercase;
+  }
+
+  .flight-run-distance {
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  .flight-run-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-01);
+  }
+
+  .flight-runner-badge {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    color: var(--color-group-run-green);
+    background-color: rgba(91, 190, 73, 0.12);
+    padding: var(--space-01) var(--space-02);
+    border-radius: var(--rounded-none);
+    font-weight: 500;
+  }
+
+  .flight-focus-btn {
+    background: transparent;
+    border: none;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0;
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .flight-focus-btn:hover {
+    color: var(--color-accent);
+  }
+
+  .flight-board-empty {
+    padding: var(--space-05);
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    color: var(--color-text-secondary);
+  }
+
+  /* Grid Fallback View Container */
+  .routes-grid-fallback {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-canvas-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: var(--space-06);
+    box-sizing: border-box;
+  }
+
+  .routes-grid-fallback[hidden] {
+    display: none !important;
+  }
+
+  .routes-grid-placeholder {
+    max-width: 500px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-04);
+  }
+
+  .grid-placeholder-eyebrow {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    color: var(--color-text-muted);
+  }
+
+  .grid-placeholder-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--font-size-title);
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+  }
+
+  .grid-placeholder-desc {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    color: var(--color-text-secondary);
+  }
+
+  .grid-return-map {
+    margin-top: var(--space-04);
+    background-color: var(--color-canvas-white);
+    color: var(--color-canvas-black);
+    border: none;
+    padding: var(--space-04) var(--space-07);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Mobile Adaptation */
+  @media (max-width: 768px) {
+    .routes-hud {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: var(--space-04);
+    }
+
+    .hud-top-right {
+      position: absolute;
+      top: var(--space-04);
+      right: var(--space-04);
+    }
+
+    .hud-bottom-left {
+      margin-bottom: 72px; /* Avoid overlapping mobile bottom sheet peek */
+    }
+
+    .hud-bottom-right {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      max-width: 100%;
+      z-index: 30;
+    }
+
+    .flight-board-card {
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+    }
+  }
+</style>
+
+<script>
+  function setupRoutesHud() {
+    // 1. Difficulty selector buttons
+    const diffButtons = document.querySelectorAll<HTMLButtonElement>('.hud-difficulty-btn');
+    diffButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        diffButtons.forEach((b) => {
+          b.classList.remove('is-active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-selected', 'true');
+
+        const difficulty = btn.getAttribute('data-difficulty');
+        window.dispatchEvent(new CustomEvent('routes:difficulty-changed', { detail: { difficulty } }));
+      });
+    });
+
+    // 2. Map / Grid view toggle
+    const mapToggleBtn = document.getElementById('view-toggle-map');
+    const gridToggleBtn = document.getElementById('view-toggle-grid');
+    const hudContainer = document.getElementById('routes-hud');
+    const gridViewContainer = document.getElementById('routes-grid-view');
+    const returnToMapBtn = document.getElementById('return-to-map-btn');
+
+    function setView(view: 'map' | 'grid') {
+      if (view === 'grid') {
+        gridToggleBtn?.classList.add('is-active');
+        gridToggleBtn?.setAttribute('aria-pressed', 'true');
+        mapToggleBtn?.classList.remove('is-active');
+        mapToggleBtn?.setAttribute('aria-pressed', 'false');
+        if (gridViewContainer) gridViewContainer.hidden = false;
+      } else {
+        mapToggleBtn?.classList.add('is-active');
+        mapToggleBtn?.setAttribute('aria-pressed', 'true');
+        gridToggleBtn?.classList.remove('is-active');
+        gridToggleBtn?.setAttribute('aria-pressed', 'false');
+        if (gridViewContainer) gridViewContainer.hidden = true;
+      }
+    }
+
+    mapToggleBtn?.addEventListener('click', () => setView('map'));
+    gridToggleBtn?.addEventListener('click', () => setView('grid'));
+    returnToMapBtn?.addEventListener('click', () => setView('map'));
+
+    // 3. Flight board minimize / expand toggle
+    const flightBoardToggle = document.getElementById('flight-board-toggle');
+    const flightBoardCard = document.querySelector('.flight-board-card');
+
+    flightBoardToggle?.addEventListener('click', () => {
+      const isMinimized = flightBoardCard?.classList.toggle('is-minimized');
+      flightBoardToggle.setAttribute('aria-expanded', isMinimized ? 'false' : 'true');
+      const icon = flightBoardToggle.querySelector('.flight-toggle-icon');
+      if (icon) icon.innerHTML = isMinimized ? '+' : '&minus;';
+    });
+
+    // 4. Focus on map clicks
+    const focusButtons = document.querySelectorAll<HTMLButtonElement>('.flight-focus-btn');
+    focusButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const slug = btn.getAttribute('data-route-slug');
+        const district = btn.getAttribute('data-district');
+        window.dispatchEvent(new CustomEvent('routes:focus-route', { detail: { slug, district } }));
+      });
+    });
+  }
+
+  // Initialize on page load and view transitions
+  setupRoutesHud();
+  document.addEventListener('astro:page-load', setupRoutesHud);
+</script>

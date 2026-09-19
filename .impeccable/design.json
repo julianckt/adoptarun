@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-03T10:09:00.000Z",
+  "generatedAt": "2026-09-19T08:47:00.000Z",
   "title": "Design System: adopt a run",
   "extensions": {
     "colorMeta": {
@@ -41,16 +41,28 @@
         "tonalRamp": ["#163810", "#24591a", "#358126", "#48ab34", "#5bbe49", "#83d074", "#ace2a2", "#dcf4d7"]
       },
       "route-coral": {
-        "role": "tertiary",
+        "role": "secondary",
         "displayName": "Route Coral",
         "canonical": "rgb(255, 132, 132)",
         "tonalRamp": ["#521515", "#802424", "#b33838", "#e05555", "#ff8484", "#ffa3a3", "#ffc4c4", "#ffe5e5"]
       },
       "route-blush": {
-        "role": "tertiary",
+        "role": "secondary",
         "displayName": "Route Blush",
         "canonical": "rgb(229, 153, 158)",
         "tonalRamp": ["#451f22", "#6e3337", "#994950", "#c26770", "#e5999e", "#ebb3b7", "#f3cfd2", "#faebeb"]
+      },
+      "exercise-pink": {
+        "role": "secondary",
+        "displayName": "Exercise Pink",
+        "canonical": "rgb(231, 122, 226)",
+        "tonalRamp": ["#481946", "#732770", "#a0379c", "#cb4ac6", "#e77ae2", "#ed9be9", "#f4bcf1", "#fadedc"]
+      },
+      "art-cyan": {
+        "role": "secondary",
+        "displayName": "Art Cyan",
+        "canonical": "rgb(66, 190, 224)",
+        "tonalRamp": ["#0c3b47", "#145f73", "#1e87a3", "#2ab2d7", "#42bee0", "#6ed0e8", "#9ee1f1", "#d5f3fa"]
       },
       "placeholder-grey": {
         "role": "neutral",
@@ -89,10 +101,6 @@
       "wordmark": {
         "displayName": "Scale VF Wordmark",
         "purpose": "Two-line stacked brand wordmark ('adopt / a run') and hero CTA."
-      },
-      "chinese": {
-        "displayName": "Source Han Sans HK VF",
-        "purpose": "Traditional and Simplified Chinese display and typography specs."
       }
     },
     "shadows": [
@@ -105,23 +113,48 @@
         "name": "ambient-glow-button",
         "value": "0 0 20px rgba(255, 251, 249, 0.35)",
         "purpose": "Subtle widening glow on primary CTA hover."
+      },
+      {
+        "name": "header-shadow",
+        "value": "0 4px 24px rgba(0, 0, 0, 0.45)",
+        "purpose": "Soft downward ambient shadow under sticky header veil."
+      },
+      {
+        "name": "shadow-toast",
+        "value": "0 12px 40px rgba(0, 0, 0, 0.6)",
+        "purpose": "Elevation shadow for notification toasts."
       }
     ],
     "motion": [
       {
-        "name": "ease-standard",
-        "value": "cubic-bezier(0.2, 0, 0, 1)",
-        "purpose": "Default easing for link underline and hover transitions."
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Standard snappy easing for entrances and reveals."
+      },
+      {
+        "name": "ease-in-out-soft",
+        "value": "cubic-bezier(0.62, 0.05, 0.22, 1)",
+        "purpose": "Gentle departure, long quiet settle for linked physical motion."
       },
       {
         "name": "duration-fast",
-        "value": "160ms",
+        "value": "150ms",
         "purpose": "Micro-interaction and hover state response."
+      },
+      {
+        "name": "duration-normal",
+        "value": "300ms",
+        "purpose": "Transitions and standard UI animations."
+      },
+      {
+        "name": "duration-ambient",
+        "value": "2.4s",
+        "purpose": "Slow ambient pulse or mesh movement."
       }
     ],
     "breakpoints": [
       { "name": "desktop", "value": "1512px" },
-      { "name": "tablet", "value": "982px" },
+      { "name": "tablet", "value": "1024px" },
       { "name": "mobile", "value": "640px" }
     ]
   },
@@ -132,7 +165,7 @@
       "refersTo": "cta-button",
       "description": "Primary action button with sharp corners, lowercase type, and subtle hover glow.",
       "html": "<button class=\"ds-btn-primary\">run with us</button>",
-      "css": ".ds-btn-primary { background: rgb(255, 251, 249); color: rgb(24, 19, 17); border: none; border-radius: 0px; padding: 16px 32px; font-family: 'Runda', system-ui, sans-serif; font-size: 20px; font-weight: 500; line-height: 1; cursor: pointer; text-transform: lowercase; transition: background 160ms cubic-bezier(0.2, 0, 0, 1), box-shadow 160ms cubic-bezier(0.2, 0, 0, 1), transform 160ms cubic-bezier(0.2, 0, 0, 1); } .ds-btn-primary:hover { background: rgb(255, 255, 255); box-shadow: 0 0 20px rgba(255, 251, 249, 0.35); } .ds-btn-primary:active { transform: scale(0.985); }"
+      "css": ".ds-btn-primary { background: rgb(255, 251, 249); color: rgb(24, 19, 17); border: none; border-radius: 0px; padding: 16px 32px; font-family: 'Runda', system-ui, sans-serif; font-size: 20px; font-weight: 500; line-height: 0.8; cursor: pointer; text-transform: lowercase; transition: background 150ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary:hover { background: rgb(255, 255, 255); box-shadow: 0 0 20px rgba(255, 251, 249, 0.35); } .ds-btn-primary:active { transform: scale(0.985); }"
     },
     {
       "name": "Brand Wordmark",
@@ -140,15 +173,15 @@
       "refersTo": "wordmark",
       "description": "Two-line stacked typographic brand wordmark set in Scale VF.",
       "html": "<div class=\"ds-wordmark\"><span>adopt</span><span>a run</span></div>",
-      "css": ".ds-wordmark { font-family: 'Scale VF', system-ui, sans-serif; font-variation-settings: 'wdth' 125, 'wght' 200; font-weight: 200; font-size: 48px; line-height: 0.69; color: rgb(255, 255, 255); text-transform: lowercase; display: flex; flex-direction: column; gap: 2px; user-select: none; }"
+      "css": ".ds-wordmark { font-family: 'Scale VF', system-ui, sans-serif; font-variation-settings: 'wdth' 125, 'wght' 200; font-weight: 200; font-size: 48px; line-height: 0.75; color: rgb(255, 255, 255); text-transform: lowercase; display: flex; flex-direction: column; gap: 2px; user-select: none; }"
     },
     {
       "name": "Navigation Bar",
       "kind": "nav",
       "refersTo": "nav",
-      "description": "Primary header navigation with all-lowercase links and animated left-to-right underline.",
+      "description": "Primary header navigation with all-lowercase links and Route Orange hover state.",
       "html": "<nav class=\"ds-nav\"><a href=\"#routes\" class=\"ds-nav-link\">routes</a><a href=\"#charities\" class=\"ds-nav-link\">charities</a><a href=\"#donate\" class=\"ds-nav-link\">donate</a><a href=\"#log\" class=\"ds-nav-link\">log a run</a></nav>",
-      "css": ".ds-nav { display: flex; gap: 32px; align-items: center; } .ds-nav-link { font-family: 'Runda', system-ui, sans-serif; font-size: 20px; font-weight: 500; line-height: 1; color: rgb(255, 251, 249); text-decoration: none; text-transform: lowercase; position: relative; padding-bottom: 4px; transition: opacity 160ms cubic-bezier(0.2, 0, 0, 1); } .ds-nav-link::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0%; height: 1px; background: currentColor; transition: width 160ms cubic-bezier(0.2, 0, 0, 1); } .ds-nav-link:hover { opacity: 0.8; } .ds-nav-link:hover::after { width: 100%; }"
+      "css": ".ds-nav { display: flex; gap: 32px; align-items: center; } .ds-nav-link { font-family: 'Runda', system-ui, sans-serif; font-size: 16px; font-weight: 500; line-height: 0.8; color: rgb(255, 251, 249); text-decoration: none; text-transform: lowercase; transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-nav-link:hover { color: rgb(245, 174, 102); }"
     },
     {
       "name": "Route Card Standard",
@@ -156,7 +189,7 @@
       "refersTo": "route-card",
       "description": "The brand signature route card: 760x960 base, sharp corners, Route Orange background, rotated GPS trace, and structured telemetry info block.",
       "html": "<div class=\"ds-route-card\"><div class=\"ds-route-minimap\"><div class=\"ds-minimap-trace\"></div></div><div class=\"ds-route-info\"><span class=\"ds-route-place\">Wan Chai</span><span class=\"ds-route-blurb\">Near MTR · Traffic-Free Promenade Run</span><div class=\"ds-route-duration\"><span class=\"ds-meta-sub\">est.</span><br/>10min</div><div class=\"ds-route-elev\"><span class=\"ds-meta-sub\">elev.</span><br/>+4m</div><span class=\"ds-route-level\">Beginner</span><span class=\"ds-route-distance\">14km</span></div></div>",
-      "css": ".ds-route-card { width: 380px; height: 480px; background: rgb(245, 174, 102); color: rgb(24, 19, 17); border-radius: 0px; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; position: relative; font-family: 'Runda', system-ui, sans-serif; transition: box-shadow 160ms cubic-bezier(0.2, 0, 0, 1), transform 160ms cubic-bezier(0.2, 0, 0, 1); } .ds-route-card:hover { box-shadow: 0 0 24px rgba(245, 174, 102, 0.28); } .ds-route-minimap { position: relative; height: 216px; overflow: hidden; background: rgba(0,0,0,0.06); } .ds-minimap-trace { position: absolute; inset: 0; opacity: 0.85; } .ds-route-info { position: relative; height: 240px; padding: 6px; box-sizing: border-box; } .ds-route-place { position: absolute; left: 6px; top: 6px; font-weight: 700; font-size: 32px; line-height: 1; } .ds-route-blurb { position: absolute; left: 6px; top: 46px; width: 220px; font-weight: 300; font-size: 16px; line-height: 1.1; opacity: 0.9; } .ds-route-duration { position: absolute; right: 6px; top: 6px; text-align: right; font-weight: 300; font-size: 20px; line-height: 0.9; } .ds-route-elev { position: absolute; right: 6px; top: 54px; text-align: right; font-weight: 300; font-size: 20px; line-height: 0.9; } .ds-meta-sub { font-size: 12px; opacity: 0.75; } .ds-route-level { position: absolute; left: 6px; bottom: 6px; font-weight: 300; font-size: 16px; line-height: 1; } .ds-route-distance { position: absolute; right: 6px; bottom: 0px; font-weight: 400; font-size: 80px; line-height: 1; letter-spacing: -0.02em; }"
+      "css": ".ds-route-card { width: 380px; height: 480px; background: rgb(245, 174, 102); color: rgb(24, 19, 17); border-radius: 0px; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; position: relative; font-family: 'Runda', system-ui, sans-serif; transition: box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-route-card:hover { box-shadow: 0 0 24px rgba(245, 174, 102, 0.28); } .ds-route-minimap { position: relative; height: 216px; overflow: hidden; background: rgba(0,0,0,0.06); } .ds-minimap-trace { position: absolute; inset: 0; opacity: 0.85; } .ds-route-info { position: relative; height: 240px; padding: 6px; box-sizing: border-box; } .ds-route-place { position: absolute; left: 6px; top: 6px; font-weight: 700; font-size: 32px; line-height: 1; } .ds-route-blurb { position: absolute; left: 6px; top: 46px; width: 220px; font-weight: 300; font-size: 16px; line-height: 1.1; opacity: 0.9; } .ds-route-duration { position: absolute; right: 6px; top: 6px; text-align: right; font-weight: 300; font-size: 20px; line-height: 0.9; } .ds-route-elev { position: absolute; right: 6px; top: 54px; text-align: right; font-weight: 300; font-size: 20px; line-height: 0.9; } .ds-meta-sub { font-size: 12px; opacity: 0.75; } .ds-route-level { position: absolute; left: 6px; bottom: 6px; font-weight: 300; font-size: 16px; line-height: 1; } .ds-route-distance { position: absolute; right: 6px; bottom: 0px; font-weight: 400; font-size: 80px; line-height: 1; letter-spacing: normal; }"
     },
     {
       "name": "Route Card Group Run",
@@ -164,7 +197,7 @@
       "refersTo": "route-card-group-band",
       "description": "Route Card featuring the Group Run Green scheduled band and compacted telemetry block.",
       "html": "<div class=\"ds-route-card ds-card-group\"><div class=\"ds-route-minimap\"><div class=\"ds-minimap-trace\"></div></div><div class=\"ds-group-band\"><span class=\"ds-group-schedule\">Sat Sep 2  07:30 am</span></div><div class=\"ds-route-info ds-info-compact\"><span class=\"ds-route-place\">Wan Chai</span><span class=\"ds-route-blurb\">Near MTR · Traffic-Free Promenade Run</span><div class=\"ds-route-duration\"><span class=\"ds-meta-sub\">est.</span><br/>10min</div><div class=\"ds-route-elev\"><span class=\"ds-meta-sub\">elev.</span><br/>+4m</div><span class=\"ds-route-level\">Beginner</span><span class=\"ds-route-distance\">14km</span></div></div>",
-      "css": ".ds-card-group { gap: 12px; } .ds-group-band { height: 52px; background: rgb(91, 190, 73); color: rgb(24, 19, 17); display: flex; align-items: center; padding: 0 8px; box-sizing: border-box; flex-shrink: 0; } .ds-group-schedule { font-family: 'Degular Display', system-ui, sans-serif; font-weight: 600; font-size: 36px; line-height: 1; white-space: nowrap; } .ds-info-compact { height: 190px; }"
+      "css": ".ds-card-group { gap: 12px; } .ds-group-band { height: 52px; background: rgb(91, 190, 73); color: rgb(24, 19, 17); display: flex; align-items: center; padding: 0 8px; box-sizing: border-box; flex-shrink: 0; } .ds-group-schedule { font-family: 'Degular Display', system-ui, sans-serif; font-weight: 600; font-size: 36px; line-height: 0.8; white-space: nowrap; } .ds-info-compact { height: 190px; }"
     },
     {
       "name": "Route Metric Abbreviation",
@@ -173,18 +206,26 @@
       "description": "Abbreviated typographic telemetry element replacing traditional icons.",
       "html": "<div class=\"ds-metric-block\"><span class=\"ds-metric-tag\">elev.</span><span class=\"ds-metric-val\">+4m</span><span class=\"ds-metric-dot\">·</span><span class=\"ds-metric-tag\">est.</span><span class=\"ds-metric-val\">10min</span></div>",
       "css": ".ds-metric-block { display: inline-flex; align-items: baseline; gap: 6px; font-family: 'Runda', system-ui, sans-serif; font-size: 16px; color: rgb(255, 251, 249); } .ds-metric-tag { font-size: 12px; opacity: 0.7; } .ds-metric-val { font-weight: 500; } .ds-metric-dot { opacity: 0.5; margin: 0 4px; }"
+    },
+    {
+      "name": "Hairline Arrow Link",
+      "kind": "custom",
+      "refersTo": "hairline-link",
+      "description": "Editorial action link with inline hairline SVG arrow responding with Route Orange or Route Coral accent.",
+      "html": "<a href=\"#\" class=\"ds-hairline-link\"><span>adopt this route</span><svg class=\"ds-hairline-arrow\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" aria-hidden=\"true\"><path d=\"M3 8h10M9 4l4 4-4 4\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"square\"/></svg></a>",
+      "css": ".ds-hairline-link { display: inline-flex; align-items: center; gap: 8px; font-family: 'Runda', system-ui, sans-serif; font-size: 16px; font-weight: 500; line-height: 0.8; color: rgb(255, 251, 249); text-decoration: none; text-transform: lowercase; transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-hairline-link:hover { color: rgb(245, 174, 102); } .ds-hairline-arrow { width: 16px; height: 16px; transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-hairline-link:hover .ds-hairline-arrow { transform: translateX(3px); }"
     }
   ],
   "narrative": {
     "northStar": "The Street-Level Caretaker",
-    "overview": "adopt a run is an international GPS-art running community movement debuting in Hong Kong. Runners 'adopt' a route whose GPS trace draws an animal or guardian companion, run/jog/walk it, and fundraise directly for a paired Section 88 charity cause. The visual philosophy unites warm human earnestness with uncompromising architectural precision on a disciplined binary canvas of warm Canvas Black and Canvas White, punctuated exclusively by organic mesh noise gradient elements and distinct, pastel-chroma route exceptions.",
+    "overview": "adopt a run is an international GPS-art running community movement debuting in Hong Kong. Runners \"adopt\" a route whose GPS trace draws an animal or guardian companion, run/jog/walk it, and fundraise directly for a paired Section 88 charity cause. In the brand's own words: \"the new way to push yourself in training and in giving back.\" The foundational mission lines define the soul of the visual world: \"by bringing people together through long-distance running and community art, our project aims to help champion a kinder city — a city where our shared compassion moves us forward.\"\n\nThe visual philosophy unites warm human earnestness with uncompromising architectural precision. The digital experience rejects the cold, sterile metrics of generic fitness trackers and the corporate gloss of traditional charity race portals. Instead, the interface operates on a disciplined binary canvas of warm Canvas Black (rgb(24,19,17)) and Canvas White (rgb(255,251,249)), punctuated exclusively by organic mesh noise gradient elements (warm sunset oranges, corals, and mauves with visible grain) and distinct, pastel-chroma route exceptions.\n\nStructure and form are razor-sharp: zero border-radius everywhere, hairline dividers, and tightly nested micro-frames built on an 8px modular cadence. The voice is quiet yet ambitious, employing strict all-lowercase casing for interactive navigation and actions, tight editorial Title Case headings in Degular Display set at an ultra-compressed 80% line-height, and honest flat grey placeholders (rgb(217,217,217)) for unresolved visual assets.",
     "keyCharacteristics": [
-      "Lowercase UI Voice: All navigation, CTAs, action buttons, metadata labels, and the wordmark are strictly lowercase.",
-      "Binary Warm Canvas: Grounded in warm Canvas Black (rgb(24,19,17)) and Canvas White (rgb(255,251,249)).",
-      "Mesh Noise Color Splashes: All vibrant color splashes originate from warm mesh noise gradient bitmaps with authentic film noise.",
+      "Lowercase UI Voice: All navigation, CTAs, action buttons, metadata labels, and the wordmark are strictly lowercase (routes, charities, donate, log a run, run with us, adopt a run). The one sanctioned exception is conversational lead-in copy that introduces a value, which reads in sentence case (the footer's Contact us at).",
+      "Binary Warm Canvas: Grounded in warm Canvas Black (rgb(24,19,17)) and Canvas White (rgb(255,251,249)) — never cold terminal black or stark clinical white.",
+      "Mesh Noise Color Splashes: All vibrant color splashes originate from warm mesh noise gradient bitmaps with authentic film noise — never synthetic CSS linear gradients.",
       "Zero-Radius Architecture: Every button, card, input, badge, and image frame features crisp 0px corners (--radius-none: 0px).",
-      "Pure Typographic Interface: Unicode characters (↓, ·, +, ×) and abbreviated metric glyphs (elev., est., km, min) replace traditional icon sets.",
-      "Strict Typographic Roles: Degular Display (line-height 0.8), Runda (line-height 0.9–1.0), and Scale VF strictly reserved for wordmark and hero CTA."
+      "Pure Typographic Interface: Unicode characters (↓, ·, +, ×) and abbreviated metric glyphs (elev., est., km, min) replace traditional icon sets; zero emoji anywhere. The only drawn marks are hand-authored inline hairline-stroke SVGs (see The Hairline Mark Rule).",
+      "Strict Typographic Roles: Degular Display for compressed editorial headings (line-height 0.8), Runda for body, metadata, and numerals (line-height 0.9–1.0), and Scale VF strictly reserved for the wordmark and hero CTA."
     ],
     "rules": [
       {
@@ -194,7 +235,7 @@
       },
       {
         "name": "The Sanctioned Route Palette Rule",
-        "body": "Chromatic fills (--route-orange, --group-run-green, --route-coral, --route-blush) are strictly restricted to Route Cards and status badges. All general page surfaces, headers, and navigation bars remain Canvas Black or Canvas White.",
+        "body": "Route colours (--route-orange, --group-run-green, --route-coral, --route-blush) may fill surfaces only on Route Cards and status badges. Outside them they appear strictly as small accents on type and hairlines: link and nav hover colour, focus outlines, drawn route traces and arrows, journey stage numerals, the About pillar words, and the About tally underscores (orange, coral, cyan, green). All general page surfaces, headers, and navigation bars remain Canvas Black or Canvas White.",
         "section": "colors"
       },
       {
@@ -208,6 +249,11 @@
         "section": "typography"
       },
       {
+        "name": "The Typography Line-Height Rules",
+        "body": "Degular Display always set at 0.8 (80%) (--leading-compressed). Runda always set at 1.0 (100%) (--leading-body) for standard body and metadata. Scale VF and Runda paired with the wordmark must be set at 0.75 (75%) (--leading-wordmark). Scale VF hero wordmark set at line-height 66px / font-size 96px (~0.6875) (--leading-hero-wordmark). All buttons, links, dismissal buttons, and interactive elements must be set at 0.8 (80%) (--leading-action). All other text defaults to 1.0 (100%) (--leading-default).",
+        "section": "typography"
+      },
+      {
         "name": "The Runda Weight Ceiling Rule",
         "body": "No text set in Runda should ever exceed Medium width/weight (500). Bold and Black weights are prohibited in general UI copy; H4 is rendered as Runda Medium all-caps.",
         "section": "typography"
@@ -218,8 +264,13 @@
         "section": "typography"
       },
       {
+        "name": "The Natural Letter-Spacing Rule (No Custom Tracking)",
+        "body": "Degular Display already features built-in tight optical letter-spacing. Do not apply custom letter-spacing (such as -0.02em or negative tracking) to headings, display type, or copy across the website; allow all fonts to render at their natural tracking (letter-spacing: normal / 0).",
+        "section": "typography"
+      },
+      {
         "name": "The Lowercase Identity Rule",
-        "body": "Navigation links, primary buttons, taglines, metric abbreviations, and the wordmark are strictly lowercase (routes, charities, donate, log a run, run with us). Editorial titles alone use Title Case.",
+        "body": "Navigation links, primary buttons, taglines, metric abbreviations, and the wordmark are strictly lowercase (routes, charities, donate, log a run, run with us). Editorial titles use Title Case. Conversational lead-in copy that introduces a value (the footer's Contact us at) reads in sentence case; it is copy, not a label.",
         "section": "typography"
       },
       {
@@ -241,27 +292,33 @@
         "name": "The Hairline Seam Rule",
         "body": "Separation between adjacent zones and nested frames must be achieved through razor-thin hairline borders rather than heavy bevels, drop shadows, or thick divider lines.",
         "section": "shapes"
+      },
+      {
+        "name": "The Hairline Mark Rule",
+        "body": "A small set of hand-authored inline SVGs is sanctioned: the diagonal and up arrows in footer and drawer links, and the route trace in the header CTA. They are aria-hidden, drawn with a thin currentColor stroke (1.5), carry no fill, sit at label scale, and take a route-colour accent only on hover or active state. No other SVG icons are added, and icon libraries stay banned.",
+        "section": "components"
       }
     ],
     "dos": [
-      "Do format all navigation, buttons, CTAs, brand taglines, and the wordmark in strict all-lowercase (routes, charities, donate, log a run, run with us, adopt a run).",
+      "Do format all navigation, buttons, CTAs, brand taglines, and the wordmark in strict all-lowercase (routes, charities, donate, log a run, run with us, adopt a run). Sentence case is only for conversational lead-in copy such as Contact us at.",
       "Do maintain sharp 0px corners (border-radius: 0px) on every component, card, button, and container.",
       "Do set all Degular Display editorial headings at an ultra-compressed line-height of 0.8 (80%).",
       "Do set body copy, UI metadata, and numerals in Runda, strictly capping weight at Medium (500).",
       "Do use warm mesh noise gradient bitmaps (sunset orange, coral, mauve with organic grain) for color splashes.",
-      "Do use Unicode glyphs (↓, ·, +, ×) and abbreviated metric words (elev., est., km, min) in place of icon libraries.",
+      "Do use Unicode glyphs (↓, ·, +, ×) and abbreviated metric words (elev., est., km, min) in place of icon libraries. Reach for a drawn mark only within The Hairline Mark Rule.",
       "Do render the brand wordmark exclusively as stacked type in Scale VF ('wdth' 125, 'wght' 200).",
       "Do use flat grey (rgb(217, 217, 217)) rectangles for unresolved media instead of placeholder stock photos."
     ],
     "donts": [
       "Don't add border-radius to any element under any circumstance.",
-      "Don't import or use icon libraries (no Lucide, Heroicons, FontAwesome, or custom outline SVGs) or emoji anywhere in the UI.",
+      "Don't import or use icon libraries (no Lucide, Heroicons, FontAwesome) or emoji anywhere in the UI, and don't add custom SVG icons beyond the hairline arrows and route trace sanctioned by The Hairline Mark Rule.",
       "Don't draw, trace, or generate a graphic logo; the brand mark is strictly typographic.",
       "Don't use synthetic CSS linear gradients or cool bluish-purple gradients for background color splashes.",
       "Don't use stark #000000 or #ffffff for page backgrounds or body text; use Canvas Black (rgb(24,19,17)) and Canvas White (rgb(255,251,249)).",
       "Don't set Runda in weights exceeding Medium (500).",
       "Don't use Scale VF for standard body text, section headings, or general navigation.",
-      "Don't use Title Case or UPPERCASE for buttons, navigation links, or action labels."
+      "Don't use Title Case or UPPERCASE for buttons, navigation links, or action labels.",
+      "Don't apply custom letter-spacing (especially negative tracking like -0.02em); Degular Display already features built-in tight letter-spacing, and extra negative tracking causes glyphs to collide."
     ]
   }
 }

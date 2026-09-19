@@ -348,21 +348,23 @@ const {
   function initBottomCtaFallback() {
     if (!document.documentElement.classList.contains('no-scroll-timeline')) return;
 
-    const finale = document.querySelector<HTMLElement>('.finale');
-    if (!finale) return;
+    const finaleInner = document.querySelector<HTMLElement>('.finale-inner');
+    const finaleContainer = document.querySelector<HTMLElement>('.finale');
+    if (!finaleInner || !finaleContainer) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-          }
+          finaleContainer.classList.toggle('is-visible', entry.isIntersecting);
         });
       },
-      { threshold: 0.15 }
+      {
+        rootMargin: '0px 0px -20% 0px',
+        threshold: 0.05,
+      }
     );
 
-    observer.observe(finale);
+    observer.observe(finaleInner);
   }
 
   if (document.readyState === 'loading') {

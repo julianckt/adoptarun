@@ -11,11 +11,6 @@ export interface StubPage {
 
 export const STUB_PAGES: readonly StubPage[] = [
   {
-    slug: 'routes',
-    title: 'routes',
-    description: 'the full route directory is on its way. the featured routes on the home page are ready to run today.',
-  },
-  {
     slug: 'charities',
     title: 'charities',
     description: 'partner charity profiles are on their way.',

@@ -1,0 +1,48 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HkBasemapSvg from '@/components/routes/HkBasemapSvg.astro';
+import RoutesHud from '@/components/routes/RoutesHud.astro';
+import { getRoutes, getSettings, getSiteCopy } from '@/sanity/queries';
+
+// Static build: fetch routes, site settings, and copy
+const [routes, settings, siteCopy] = await Promise.all([
+  getRoutes().catch(() => null),
+  getSettings().catch(() => null),
+  getSiteCopy().catch(() => null),
+]);
+
+const totalRoutes = routes?.length || 0;
+const totalKm = routes?.reduce((acc, r) => acc + (r.distanceKm || 0), 0) || 0;
+const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
+---
+
+<BaseLayout
+  title="routes — adopt a run"
+  description="Explore GPS-art routes across Hong Kong. Adopt a route companion, join scheduled group runs, and turn your run into charity fundraising."
+  hideFooter={true}
+  settings={settings}
+>
+  <main class="routes-viewport">
+    <!-- Layer 0: Full-Bleed Hong Kong Vector Basemap Placeholder with Radar Sweep -->
+    <HkBasemapSvg />
+
+    <!-- Layer 1: Floating Tactical HUD Controls -->
+    <RoutesHud
+      routes={routes}
+      totalRoutes={totalRoutes}
+      totalKm={totalKm}
+      contactEmail={contactEmail}
+    />
+  </main>
+</BaseLayout>
+
+<style>
+  .routes-viewport {
+    position: relative;
+    width: 100vw;
+    height: calc(100vh - var(--header-height));
+    min-height: 540px;
+    background-color: var(--color-canvas-black);
+    overflow: hidden;
+  }
+</style>
