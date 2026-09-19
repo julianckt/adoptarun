@@ -659,17 +659,19 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
 
   /* Grid View Mode Active State on HUD */
   .routes-hud.is-grid-active {
-    position: sticky;
-    top: var(--header-height);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 25;
     height: auto;
     min-height: 0;
     display: flex;
     justify-content: flex-end;
-    padding-block: var(--space-04);
-    background-color: var(--color-canvas-black);
-    border-bottom: var(--border-hairline);
-    pointer-events: auto;
+    padding-block: var(--space-06);
+    background-color: transparent;
+    border-bottom: none;
+    pointer-events: none;
   }
 
   .routes-hud.is-grid-active .hud-top-left,
@@ -749,11 +751,14 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
       z-index: 25;
       width: 100%;
       height: auto;
-      padding: var(--space-03) var(--space-04);
+      padding: var(--space-04);
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: flex-end;
+      background-color: transparent;
+      border-bottom: none;
+      pointer-events: none;
     }
 
     .routes-hud.is-grid-active .hud-top-right {
@@ -762,10 +767,12 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      pointer-events: auto;
     }
 
     .routes-hud.is-grid-active .hud-mobile-filter-trigger {
       display: inline-flex;
+      pointer-events: auto;
     }
   }
 </style>
@@ -796,7 +803,7 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
 
     function setView(view: 'map' | 'grid') {
       const viewport = document.getElementById('routes-viewport') || document.querySelector('.routes-viewport');
-      const basemap = document.querySelector('.hk-basemap-container') as HTMLElement | null;
+      const mapLayer = (document.getElementById('routes-map-container') || document.querySelector('.hk-basemap-container')) as HTMLElement | null;
 
       if (view === 'grid') {
         gridToggleBtn?.classList.add('is-active');
@@ -806,7 +813,7 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
 
         viewport?.classList.add('is-grid-active');
         hudContainer?.classList.add('is-grid-active');
-        if (basemap) basemap.style.display = 'none';
+        if (mapLayer) mapLayer.style.display = 'none';
         if (gridViewContainer) gridViewContainer.hidden = false;
 
         const url = new URL(window.location.href);
@@ -820,8 +827,11 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
 
         viewport?.classList.remove('is-grid-active');
         hudContainer?.classList.remove('is-grid-active');
-        if (basemap) basemap.style.display = '';
+        if (mapLayer) mapLayer.style.display = '';
         if (gridViewContainer) gridViewContainer.hidden = true;
+
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        window.dispatchEvent(new Event('resize'));
 
         const url = new URL(window.location.href);
         url.searchParams.delete('view');

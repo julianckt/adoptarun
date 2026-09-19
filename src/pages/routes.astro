@@ -1,14 +1,13 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import HkBasemapSvg from '@/components/routes/HkBasemapSvg.astro';
+import RoutesMap from '@/components/routes/RoutesMap.astro';
 import RoutesHud from '@/components/routes/RoutesHud.astro';
-import { getRoutes, getSettings, getSiteCopy } from '@/sanity/queries';
+import { getRoutes, getSettings } from '@/sanity/queries';
 
-// Static build: fetch routes, site settings, and copy
-const [routes, settings, siteCopy] = await Promise.all([
+// Static build: fetch routes and site settings
+const [routes, settings] = await Promise.all([
   getRoutes().catch(() => null),
   getSettings().catch(() => null),
-  getSiteCopy().catch(() => null),
 ]);
 
 const totalRoutes = routes?.length || 0;
@@ -23,8 +22,8 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
   settings={settings}
 >
   <main class="routes-viewport" id="routes-viewport">
-    <!-- Layer 0: Full-Bleed Hong Kong Vector Basemap Placeholder with Radar Sweep -->
-    <HkBasemapSvg />
+    <!-- Layer 0: Full-Bleed Interactive Leaflet Routes Map -->
+    <RoutesMap routes={routes} />
 
     <!-- Layer 1: Floating Tactical HUD Controls -->
     <RoutesHud

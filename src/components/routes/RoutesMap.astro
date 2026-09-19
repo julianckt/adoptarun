@@ -1,0 +1,518 @@
+---
+import type { SanityRoute } from '@/sanity/types';
+import RouteCard from '@/components/RouteCard.astro';
+
+export interface Props {
+  routes: SanityRoute[] | null;
+  class?: string;
+}
+
+const { routes = [], class: className = '' } = Astro.props;
+
+// Route card color palette rotation matching FeaturedRoutes & RouteCatalogue
+const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
+  'route-orange',
+  'route-coral',
+  'route-blush',
+];
+
+const colorMap = {
+  'route-orange': 'rgb(245, 174, 102)',
+  'route-coral': 'rgb(255, 132, 132)',
+  'route-blush': 'rgb(229, 153, 158)',
+};
+
+// Filter and prepare geo payload for client-side Leaflet rendering
+const routeData = (routes || [])
+  .filter((r) => r.slug?.current && r.routePolyline)
+  .map((r, idx) => {
+    const theme = themeCycles[idx % themeCycles.length];
+    return {
+      slug: r.slug.current,
+      title: r.title,
+      district: r.district,
+      difficulty: r.difficulty || 'beginner',
+      colorTheme: theme,
+      color: colorMap[theme],
+      polyline: r.routePolyline,
+    };
+  });
+
+// Resolve CARTO Basemap API Key based on environment (dev vs prod)
+const isDev = import.meta.env.DEV;
+const cartoApiKey = (
+  isDev
+    ? (import.meta.env.PUBLIC_CARTO_API_KEY_DEV || import.meta.env.PUBLIC_CARTO_API_KEY_PROD || '')
+    : (import.meta.env.PUBLIC_CARTO_API_KEY_PROD || import.meta.env.PUBLIC_CARTO_API_KEY_DEV || '')
+).trim();
+
+const tileUrl = cartoApiKey
+  ? `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoApiKey)}`
+  : 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png';
+---
+
+<div class={`routes-map-container ${className}`} id="routes-map-container">
+  <!-- Full-screen Leaflet container -->
+  <div
+    id="routes-map"
+    class="routes-map"
+    role="region"
+    aria-label="Hong Kong GPS Running Routes Interactive Map"
+    data-tile-url={tileUrl}
+  ></div>
+
+  <!-- Offscreen SSR template cache for RouteCards -->
+  <div id="route-cards-cache" class="u-visually-hidden" hidden aria-hidden="true">
+    {
+      (routes || []).map((route, idx) => {
+        const theme = themeCycles[idx % themeCycles.length];
+        return (
+          <div class="route-card-template" data-slug={route.slug.current}>
+            <RouteCard route={route} colorTheme={theme} />
+          </div>
+        );
+      })
+    }
+  </div>
+
+  <!-- Mobile Bottom-Pinned Card Dock (<768px) -->
+  <div id="routes-mobile-card-dock" class="routes-mobile-card-dock" hidden>
+    <div class="mobile-card-scrim" id="mobile-card-scrim" aria-hidden="true"></div>
+    <div class="mobile-card-content" id="mobile-card-content"></div>
+  </div>
+</div>
+
+<!-- Embedded Route Geo Data -->
+<script is:inline id="routes-geo-data" type="application/json" set:html={JSON.stringify(routeData)} />
+
+<style>
+  .routes-map-container {
+    position: absolute;
+    inset: var(--space-00);
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--color-canvas-black);
+    z-index: 1;
+  }
+
+  .routes-map {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-canvas-black);
+  }
+
+  /* Mobile Bottom-Pinned Card Dock (<768px) */
+  .routes-mobile-card-dock {
+    position: fixed;
+    bottom: var(--space-00);
+    left: var(--space-00);
+    right: var(--space-00);
+    z-index: 35;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding: var(--space-03);
+    box-sizing: border-box;
+    pointer-events: none;
+    transition: transform var(--duration-moderate) var(--ease-out-expo), opacity var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  .routes-mobile-card-dock[hidden] {
+    display: none !important;
+  }
+
+  .mobile-card-scrim {
+    position: fixed;
+    inset: var(--space-00);
+    background-color: var(--color-overlay-dark);
+    pointer-events: auto;
+    z-index: 1;
+  }
+
+  .mobile-card-content {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+    width: 100%;
+    max-width: calc(var(--space-12) * 5.625);
+    box-shadow: var(--shadow-toast);
+  }
+
+  /* Leaflet Global Style Overrides */
+  :global(.leaflet-container) {
+    background-color: var(--color-canvas-black) !important;
+    font-family: var(--font-body) !important;
+  }
+
+  :global(.leaflet-control-attribution) {
+    display: none !important; /* Attribution placed clean in telemetry HUD */
+  }
+
+  /* Tactical Route Map Popup Overrides */
+  :global(.leaflet-popup.route-map-leaflet-popup) {
+    margin-bottom: var(--space-04);
+  }
+
+  :global(.route-map-leaflet-popup .leaflet-popup-content-wrapper) {
+    background: transparent !important;
+    padding: var(--space-00) !important;
+    border-radius: var(--radius-none) !important;
+    box-shadow: var(--shadow-toast) !important;
+    border: none !important;
+  }
+
+  :global(.route-map-leaflet-popup .leaflet-popup-content) {
+    margin: var(--space-00) !important;
+    line-height: inherit !important;
+    width: auto !important;
+    contain: paint layout;
+  }
+
+  :global(.route-map-leaflet-popup .leaflet-popup-tip-container) {
+    width: var(--space-05);
+    height: var(--space-03);
+  }
+
+  :global(.route-map-leaflet-popup .leaflet-popup-tip) {
+    background-color: var(--color-canvas-black) !important;
+    border: var(--border-hairline) !important;
+    box-shadow: none !important;
+  }
+
+  /* Smooth GPU stroke transition */
+  :global(.route-polyline-path) {
+    transition: stroke-opacity var(--duration-fast) var(--ease-out-expo);
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+  import { decodePolyline } from '@/geo/gpx-parser';
+
+  interface RouteGeoItem {
+    slug: string;
+    title: string;
+    district: string;
+    difficulty: string;
+    colorTheme: string;
+    color: string;
+    polyline: string;
+  }
+
+  interface RouteLayerItem {
+    slug: string;
+    difficulty: string;
+    polyline: L.Polyline;
+  }
+
+  let mapInstance: L.Map | null = null;
+  let currentPopup: L.Popup | null = null;
+  let activeSlug: string | null = null;
+  let hoveredSlug: string | null = null;
+  let currentDifficulty: string = 'all';
+  let routeLayers: RouteLayerItem[] = [];
+
+  function updatePolylineStyles() {
+    routeLayers.forEach(({ slug, difficulty, polyline }) => {
+      let opacity = 0.75; // Standard base opacity
+      const isFilteredOut = currentDifficulty !== 'all' && difficulty !== currentDifficulty;
+
+      if (activeSlug) {
+        // A route is currently locked in / selected
+        if (slug === activeSlug) {
+          opacity = 1.0;
+        } else {
+          opacity = 0.4;
+        }
+      } else if (hoveredSlug) {
+        // A route is currently hovered
+        if (slug === hoveredSlug) {
+          opacity = 1.0;
+        } else {
+          opacity = 0.4;
+        }
+      } else if (isFilteredOut) {
+        // Out of difficulty filter
+        opacity = 0.4;
+      } else {
+        // Standard in-filter state
+        opacity = 0.75;
+      }
+
+      polyline.setStyle({
+        opacity: opacity,
+        weight: 3, // Strictly constant 3px width across all states
+      });
+
+      // Bring in-focus polyline to front
+      if (opacity === 1.0) {
+        polyline.bringToFront();
+      }
+    });
+  }
+
+  function closeMobileDock() {
+    const dock = document.getElementById('routes-mobile-card-dock');
+    const content = document.getElementById('mobile-card-content');
+    if (dock) {
+      dock.hidden = true;
+    }
+    if (content) {
+      content.innerHTML = '';
+    }
+  }
+
+  function closeCard() {
+    if (currentPopup && mapInstance) {
+      mapInstance.closePopup();
+      currentPopup = null;
+    }
+    closeMobileDock();
+  }
+
+  function openCard(slug: string, latlng: L.LatLng) {
+    if (!mapInstance) return;
+
+    const isMobile = window.innerWidth < 768;
+    const tpl = document.querySelector(`.route-card-template[data-slug="${slug}"]`);
+    if (!tpl) return;
+    const cardNode = tpl.firstElementChild?.cloneNode(true) as HTMLElement;
+    if (!cardNode) return;
+
+    // Attach close listener if future card includes a close button
+    const closeBtn = cardNode.querySelector('[data-close-card], .route-card-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        activeSlug = null;
+        closeCard();
+        updatePolylineStyles();
+      });
+    }
+
+    if (isMobile) {
+      if (currentPopup) {
+        mapInstance.closePopup();
+        currentPopup = null;
+      }
+      const dock = document.getElementById('routes-mobile-card-dock');
+      const content = document.getElementById('mobile-card-content');
+      if (dock && content) {
+        content.innerHTML = '';
+        content.appendChild(cardNode);
+        dock.hidden = false;
+      }
+    } else {
+      closeMobileDock();
+      if (currentPopup) {
+        mapInstance.closePopup();
+      }
+      currentPopup = L.popup({
+        className: 'route-map-leaflet-popup',
+        closeButton: false,
+        autoPan: true,
+        autoPanPadding: [60, 60],
+        maxWidth: 380,
+        minWidth: 320,
+        offset: [0, -10],
+      })
+        .setLatLng(latlng)
+        .setContent(cardNode)
+        .openOn(mapInstance);
+
+      currentPopup.on('remove', () => {
+        if (activeSlug === slug) {
+          activeSlug = null;
+          updatePolylineStyles();
+        }
+      });
+    }
+  }
+
+  function initRoutesMap() {
+    const mapEl = document.getElementById('routes-map');
+    if (!mapEl) return;
+
+    // Clean up previous instance if navigating via View Transitions
+    if (mapInstance) {
+      mapInstance.remove();
+      mapInstance = null;
+    }
+
+    activeSlug = null;
+    hoveredSlug = null;
+    routeLayers = [];
+
+    // Parse geo data payload
+    const dataEl = document.getElementById('routes-geo-data');
+    if (!dataEl) return;
+
+    let routes: RouteGeoItem[] = [];
+    try {
+      routes = JSON.parse(dataEl.textContent || '[]');
+    } catch {
+      return;
+    }
+
+    // Default Hong Kong center
+    const hkCenter: [number, number] = [22.3193, 114.1694];
+    const map = L.map(mapEl, {
+      center: hkCenter,
+      zoom: 11,
+      zoomControl: false,
+      attributionControl: false,
+      minZoom: 10,
+      maxZoom: 18,
+    });
+    mapInstance = map;
+
+    // CARTO Dark Matter raster tiles
+    const tileUrl =
+      mapEl.getAttribute('data-tile-url') ||
+      'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png';
+    L.tileLayer(tileUrl, {
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
+
+    const featureGroup = L.featureGroup();
+
+    routes.forEach((route) => {
+      const coords = decodePolyline(route.polyline);
+      if (!coords || coords.length === 0) return;
+
+      const polyline = L.polyline(coords, {
+        color: route.color,
+        weight: 3,
+        opacity: 0.75,
+        lineCap: 'round',
+        lineJoin: 'round',
+        className: 'route-polyline-path',
+      });
+
+      polyline.on('mouseover', () => {
+        hoveredSlug = route.slug;
+        updatePolylineStyles();
+      });
+
+      polyline.on('mouseout', () => {
+        hoveredSlug = null;
+        updatePolylineStyles();
+      });
+
+      polyline.on('click', (e: L.LeafletMouseEvent) => {
+        L.DomEvent.stopPropagation(e);
+        if (activeSlug === route.slug) {
+          // Toggle off
+          activeSlug = null;
+          closeCard();
+          updatePolylineStyles();
+        } else {
+          activeSlug = route.slug;
+          openCard(route.slug, e.latlng);
+          updatePolylineStyles();
+        }
+      });
+
+      polyline.addTo(map);
+      featureGroup.addLayer(polyline);
+
+      routeLayers.push({
+        slug: route.slug,
+        difficulty: route.difficulty,
+        polyline,
+      });
+    });
+
+    // Fit map bounds to encompass all Hong Kong routes comfortably
+    if (featureGroup.getLayers().length > 0) {
+      map.fitBounds(featureGroup.getBounds(), {
+        padding: [60, 60],
+        maxZoom: 13,
+      });
+    }
+
+    // Empty map canvas click dismisses selection
+    map.on('click', () => {
+      if (activeSlug) {
+        activeSlug = null;
+        closeCard();
+        updatePolylineStyles();
+      }
+    });
+
+    // Mobile scrim click dismisses dock
+    const scrim = document.getElementById('mobile-card-scrim');
+    scrim?.addEventListener('click', () => {
+      activeSlug = null;
+      closeCard();
+      updatePolylineStyles();
+    });
+
+    // Escape key dismisses active card
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && activeSlug) {
+        activeSlug = null;
+        closeCard();
+        updatePolylineStyles();
+      }
+    };
+    window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener('keydown', onKeyDown);
+
+    // Sync with HUD Difficulty filter
+    const onDifficultyChanged = (e: Event) => {
+      const customEvent = e as CustomEvent<{ difficulty?: string }>;
+      currentDifficulty = customEvent.detail?.difficulty || 'all';
+
+      // If active route is filtered out, dismiss its card
+      if (activeSlug) {
+        const activeRoute = routes.find((r) => r.slug === activeSlug);
+        if (activeRoute && currentDifficulty !== 'all' && activeRoute.difficulty !== currentDifficulty) {
+          activeSlug = null;
+          closeCard();
+        }
+      }
+      updatePolylineStyles();
+    };
+    window.removeEventListener('routes:difficulty-changed', onDifficultyChanged);
+    window.addEventListener('routes:difficulty-changed', onDifficultyChanged);
+
+    // Sync with Flight Board "focus on map ->"
+    const onFocusRoute = (e: Event) => {
+      const customEvent = e as CustomEvent<{ slug?: string }>;
+      const targetSlug = customEvent.detail?.slug;
+      if (!targetSlug) return;
+
+      const layerObj = routeLayers.find((l) => l.slug === targetSlug);
+      if (layerObj) {
+        map.flyToBounds(layerObj.polyline.getBounds(), {
+          padding: [80, 80],
+          duration: 1.0,
+        });
+        activeSlug = targetSlug;
+        const center = layerObj.polyline.getBounds().getCenter();
+        openCard(targetSlug, center);
+        updatePolylineStyles();
+      }
+    };
+    window.removeEventListener('routes:focus-route', onFocusRoute);
+    window.addEventListener('routes:focus-route', onFocusRoute);
+
+    // Ensure map tiles recalculate size on window resize
+    window.addEventListener('resize', () => {
+      map.invalidateSize();
+    });
+  }
+
+  // Initialize immediately and on Astro view transition page loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRoutesMap);
+  } else {
+    initRoutesMap();
+  }
+  document.addEventListener('astro:page-load', initRoutesMap);
+</script>

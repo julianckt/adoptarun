@@ -15,27 +15,14 @@ const { routes = [] } = Astro.props;
 // Default server-rendered route list
 const initialRoutes = filterAndSortRoutes(routes, DEFAULT_FILTER_STATE);
 
-// Extract all unique feature tags from routes, supplemented with standard tags
-const standardFeatureTags = [
-  'traffic-free',
-  'kid-friendly',
-  'test run',
-  'trail-running',
-  'near MTR',
-];
-
-const dynamicTags = Array.from(
+// Extract all unique feature tags directly from Sanity routes
+const allFeatureTags: string[] = Array.from(
   new Set(
     (routes || [])
       .flatMap((r) => r.tags || [])
       .map((t) => t.trim())
       .filter(Boolean)
   )
-);
-
-// Combine and deduplicate tags while preserving user's priority order
-const allFeatureTags: string[] = Array.from(
-  new Set([...standardFeatureTags, ...dynamicTags])
 );
 
 // Color rotation for route cards (same as FeaturedRoutesSection)
@@ -243,30 +230,34 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
         </section>
 
         <!-- Features Section (Wrapping) -->
-        <section class="filter-group">
-          <h2 class="filter-heading">Features</h2>
-          <div class="filter-features-wrap" role="group" aria-label="Feature tags filter">
-            {
-              allFeatureTags.map((tag, idx) => (
-                <div class="filter-feature-item">
-                  <button
-                    type="button"
-                    class="filter-btn filter-btn--feature"
-                    data-filter-type="feature"
-                    data-filter-value={tag.toLowerCase()}
-                    aria-pressed="false"
-                  >
-                    <span class="filter-dot" aria-hidden="true">&#9679;</span>
-                    <span class="filter-text">{tag.toLowerCase()}</span>
-                  </button>
-                  {idx < allFeatureTags.length - 1 && (
-                    <span class="filter-separator" aria-hidden="true">|</span>
-                  )}
-                </div>
-              ))
-            }
-          </div>
-        </section>
+        {
+          allFeatureTags.length > 0 && (
+            <section class="filter-group">
+              <h2 class="filter-heading">Features</h2>
+              <div class="filter-features-wrap" role="group" aria-label="Feature tags filter">
+                {
+                  allFeatureTags.map((tag, idx) => (
+                    <div class="filter-feature-item">
+                      <button
+                        type="button"
+                        class="filter-btn filter-btn--feature"
+                        data-filter-type="feature"
+                        data-filter-value={tag.toLowerCase()}
+                        aria-pressed="false"
+                      >
+                        <span class="filter-dot" aria-hidden="true">&#9679;</span>
+                        <span class="filter-text">{tag.toLowerCase()}</span>
+                      </button>
+                      {idx < allFeatureTags.length - 1 && (
+                        <span class="filter-separator" aria-hidden="true">|</span>
+                      )}
+                    </div>
+                  ))
+                }
+              </div>
+            </section>
+          )
+        }
 
         <!-- Clear All Filters Action Button -->
         <div class="catalogue-clear-wrapper">
@@ -368,7 +359,7 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
     display: grid;
     grid-template-columns: minmax(calc(var(--space-13) + var(--space-05)), calc(var(--space-13) + var(--space-11))) 1fr;
     gap: var(--space-09);
-    padding-top: var(--space-08);
+    padding-top: var(--space-11);
   }
 
   /* Left Filter Sidebar */
@@ -430,7 +421,7 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
     font-family: var(--font-body);
     font-size: var(--font-size-label);
     font-weight: 400;
-    line-height: var(--leading-default);
+    line-height: var(--leading-action);
     cursor: pointer;
     padding: var(--space-01) 0;
     display: inline-flex;
