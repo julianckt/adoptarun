@@ -78,7 +78,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
         {faqGroups.map(({ category, items }) => (
           <div class="faq-section" id={category.anchorId}>
             <header class="faq-section-header">
-              <h2 class="faq-section-title font-display">{category.label}</h2>
+              <h2 class="faq-section-title">{category.label}</h2>
             </header>
 
             {items.length > 0 ? (
@@ -450,10 +450,11 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
 
   .faq-section-title {
     margin: 0;
-    font-size: var(--font-size-h3);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
     font-weight: 500;
-    line-height: var(--leading-compressed);
-    color: var(--color-canvas-white);
+    line-height: var(--leading-action);
+    color: var(--color-text-secondary);
     letter-spacing: normal;
     text-transform: lowercase;
   }
@@ -472,9 +473,9 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-04);
+    gap: var(--space-06);
     min-height: var(--space-12);
-    padding-block: var(--space-05);
+    padding-block: var(--space-06);
     padding-inline: 0px;
     cursor: pointer;
     list-style: none;
@@ -497,7 +498,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
   }
 
   .faq-question-text {
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-tagline);
     font-weight: 500;
     line-height: var(--leading-compressed);
     color: var(--color-canvas-white);
@@ -507,7 +508,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
 
   .faq-toggle {
     font-family: var(--font-body);
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-tagline);
     line-height: 1;
     color: var(--color-text-secondary);
     transition: transform var(--duration-fast) var(--ease-out-expo), color var(--duration-fast) var(--ease-out-expo);
@@ -539,5 +540,19 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
 
   .faq-section-empty {
     min-height: var(--space-06);
+  }
+
+  @media (width <= 768px) {
+    .faq-question-text {
+      font-size: var(--font-size-metric);
+    }
+
+    .faq-toggle {
+      font-size: var(--font-size-metric);
+    }
+
+    .faq-answer-text {
+      font-size: var(--font-size-label);
+    }
   }
 </style>
