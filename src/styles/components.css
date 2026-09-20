@@ -607,8 +607,8 @@
     background: linear-gradient(to bottom,
         var(--color-header-veil-top) 0%,
         var(--color-header-veil-bottom) 100%);
-    backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     border-bottom: var(--border-hairline);
     box-shadow: 0 var(--space-03) var(--space-06) calc(-1 * var(--space-04)) var(--color-header-shadow);
     opacity: 0;
@@ -1024,8 +1024,8 @@
     background: linear-gradient(to bottom,
         var(--color-header-veil-top) 0%,
         var(--color-header-veil-bottom) 100%);
-    backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
     animation: nav-veil-in var(--duration-moderate) var(--ease-out-expo) both;
   }
 

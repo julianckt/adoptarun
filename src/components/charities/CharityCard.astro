@@ -1,0 +1,585 @@
+---
+/**
+ * CharityCard.astro
+ *
+ * Modular architectural dossier card displaying a partner charity (Issue #8).
+ * Features:
+ * - Crisp 0px zero-radius framing and razor hairline borders.
+ * - Full-bleed documentary photo frame with graceful fallback.
+ * - Header with partner logo and official website link.
+ * - Mission overview and distinct campaign focus sub-box.
+ * - Interactive Dynamic Impact Tier Stepper (HK$100, HK$300, HK$500, HK$1,000).
+ * - Direct route adoption CTA linking to /signup?charity=<slug>.
+ * - Strict Lumos design token compliance (DESIGN.md).
+ */
+import type { SanityCharity } from '@/sanity/types';
+import {
+  resolveCharityPhoto,
+  resolveCharityLogo,
+  formatImpactDisplay,
+  getRouteAdoptionUrl,
+  IMPACT_TIER_PRESETS,
+} from '@/utils/charity-utils';
+import { cleanStegaNumber, cleanStegaString } from '@/sanity/cleanStega';
+
+export interface Props {
+  charity: SanityCharity;
+  class?: string;
+}
+
+const { charity, class: className } = Astro.props;
+
+const name = cleanStegaString(charity.name || 'Partner Charity');
+const slug = cleanStegaString(charity.slug?.current || '');
+const websiteUrl = cleanStegaString(charity.websiteUrl || '');
+const charityDescription = cleanStegaString(charity.charityDescription || '');
+const causeDescription = cleanStegaString(charity.causeDescription || '');
+const impactMultiplier = cleanStegaNumber(charity.impactMultiplierPerHkd, 0.3);
+const impactTemplate = cleanStegaString(
+  charity.impactDisplayTemplate || 'Every HK${amount} saves {impact} animals'
+);
+
+const photo = resolveCharityPhoto(charity);
+const logo = resolveCharityLogo(charity);
+const signupHref = getRouteAdoptionUrl(slug);
+
+const defaultTier = IMPACT_TIER_PRESETS[1] ?? 300; // HK$300 default
+const initialImpactText = formatImpactDisplay(impactTemplate, defaultTier, impactMultiplier);
+
+// Extract clean hostname for website link display (e.g. spca.org.hk)
+let displayHost = 'website';
+try {
+  if (websiteUrl) {
+    displayHost = new URL(websiteUrl).hostname.replace(/^www\./, '');
+  }
+} catch {
+  displayHost = 'website';
+}
+---
+
+<article
+  class:list={['charity-card', className]}
+  data-charity-card
+  data-multiplier={impactMultiplier}
+  data-template={impactTemplate}
+  aria-labelledby={`charity-title-${slug || 'item'}`}
+>
+  <!-- 1. Documentary Photography Frame -->
+  <div class="charity-card-media">
+    {photo ? (
+      <img
+        src={photo.src}
+        alt={photo.alt}
+        class="charity-card-photo"
+        loading="lazy"
+        decoding="async"
+        width="960"
+        height="640"
+      />
+    ) : (
+      <div class="charity-card-placeholder" aria-hidden="true">
+        <span class="charity-card-placeholder-label font-body">documentary media pending</span>
+      </div>
+    )}
+  </div>
+
+  <!-- 2. Card Header: Logo, Name & Website Link -->
+  <header class="charity-card-header">
+    <div class="charity-card-brand">
+      {logo && (
+        <div class="charity-card-logo-frame">
+          <img
+            src={logo.src}
+            alt={logo.alt}
+            class="charity-card-logo"
+            loading="lazy"
+            decoding="async"
+            width="80"
+            height="80"
+          />
+        </div>
+      )}
+      <div class="charity-card-identity">
+        <h3 id={`charity-title-${slug || 'item'}`} class="charity-card-name font-display">
+          {name}
+        </h3>
+        <span class="charity-card-tag font-body">verified partner</span>
+      </div>
+    </div>
+
+    {websiteUrl && (
+      <a
+        href={websiteUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="charity-card-external-link font-body"
+        aria-label={`Visit official website of ${name}`}
+      >
+        <span>visit {displayHost}</span>
+        <svg
+          class="charity-card-external-arrow"
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="2" y1="10" x2="10" y2="2"></line>
+          <polyline points="4 2 10 2 10 8"></polyline>
+        </svg>
+      </a>
+    )}
+  </header>
+
+  <!-- 3. Narrative Compartment: Mission & Cause -->
+  <div class="charity-card-body">
+    {charityDescription && (
+      <div class="charity-card-mission">
+        <p class="charity-card-description font-body">
+          {charityDescription}
+        </p>
+      </div>
+    )}
+
+    {causeDescription && (
+      <div class="charity-card-cause-frame">
+        <span class="charity-card-sublabel font-body">active campaign focus</span>
+        <p class="charity-card-cause-text font-body">
+          {causeDescription}
+        </p>
+      </div>
+    )}
+  </div>
+
+  <!-- 4. Dynamic Impact Multiplier Ledger & Stepper -->
+  <section class="charity-card-impact" aria-label={`Fundraising impact for ${name}`}>
+    <div class="charity-card-impact-header">
+      <span class="charity-card-sublabel font-body">fundraising impact</span>
+      <span class="charity-card-impact-formula font-body">
+        (1 HKD = {impactMultiplier} units)
+      </span>
+    </div>
+
+    <!-- Stepper Tier Chips -->
+    <div
+      class="charity-card-steppers"
+      role="group"
+      aria-label="Select donation tier to preview impact"
+    >
+      {IMPACT_TIER_PRESETS.map((tier) => (
+        <button
+          type="button"
+          class:list={['charity-card-tier-btn', 'font-body', { 'is-active': tier === defaultTier }]}
+          data-amount={tier}
+          aria-pressed={tier === defaultTier ? 'true' : 'false'}
+        >
+          HK${tier.toLocaleString('en-US')}
+        </button>
+      ))}
+    </div>
+
+    <!-- Live Dynamic Calculation Sentence -->
+    <div class="charity-card-impact-statement" aria-live="polite">
+      <svg
+        class="charity-card-impact-glyph"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="3 8 7 12 13 4"></polyline>
+      </svg>
+      <p class="charity-card-impact-text font-body" data-impact-text>
+        {initialImpactText}
+      </p>
+    </div>
+  </section>
+
+  <!-- 5. Card Footer: Route Adoption Action -->
+  <footer class="charity-card-footer">
+    <a href={signupHref} class="charity-card-cta font-body">
+      <span>adopt a route for {name.toLowerCase()}</span>
+      <span class="charity-card-cta-arrow" aria-hidden="true">&rarr;</span>
+    </a>
+  </footer>
+</article>
+
+<style>
+  .charity-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-canvas-black);
+    border: var(--border-hairline);
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 1. Media Frame */
+  .charity-card-media {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--color-surface-canvas);
+    border-bottom: var(--border-hairline);
+  }
+
+  .charity-card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    display: block;
+    transition: transform var(--duration-moderate) var(--ease-out-expo);
+  }
+
+  .charity-card:hover .charity-card-photo {
+    transform: scale(1.02);
+  }
+
+  .charity-card-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-placeholder-grey);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-06);
+  }
+
+  .charity-card-placeholder-label {
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    font-weight: 500;
+    color: var(--color-canvas-black);
+    text-transform: lowercase;
+  }
+
+  /* 2. Header Bar */
+  .charity-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-06) var(--space-06) var(--space-04);
+    border-bottom: var(--border-hairline);
+    gap: var(--space-04);
+    flex-wrap: wrap;
+  }
+
+  .charity-card-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-04);
+  }
+
+  .charity-card-logo-frame {
+    width: var(--space-08);
+    height: var(--space-08);
+    background-color: var(--color-canvas-white);
+    padding: var(--space-01);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--border-hairline);
+    flex-shrink: 0;
+  }
+
+  .charity-card-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .charity-card-identity {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .charity-card-name {
+    font-size: var(--font-size-metric);
+    line-height: var(--leading-compressed);
+    font-weight: 600;
+    color: var(--color-canvas-white);
+    margin: 0;
+  }
+
+  .charity-card-tag {
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-action);
+    font-weight: 500;
+    color: var(--color-accent);
+    text-transform: lowercase;
+    margin-top: var(--space-01);
+  }
+
+  .charity-card-external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-02);
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-action);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    text-transform: lowercase;
+    border-bottom: var(--border-width-hairline) solid transparent;
+    transition: color var(--duration-fast) var(--ease-out-expo),
+                border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .charity-card-external-link:hover {
+    color: var(--color-canvas-white);
+    border-bottom-color: var(--color-canvas-white);
+  }
+
+  .charity-card-external-arrow {
+    flex-shrink: 0;
+  }
+
+  /* 3. Narrative Compartment */
+  .charity-card-body {
+    padding: var(--space-06);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-05);
+    flex-grow: 1;
+  }
+
+  .charity-card-description {
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .charity-card-cause-frame {
+    background-color: var(--color-surface-canvas);
+    border: var(--border-hairline);
+    padding: var(--space-04);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-02);
+  }
+
+  .charity-card-sublabel {
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-action);
+    font-weight: 500;
+    color: var(--color-accent);
+    text-transform: lowercase;
+    letter-spacing: normal;
+  }
+
+  .charity-card-cause-text {
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    font-weight: 400;
+    color: var(--color-canvas-white);
+    margin: 0;
+  }
+
+  /* 4. Impact Multiplier Ledger */
+  .charity-card-impact {
+    padding: var(--space-06);
+    background-color: var(--color-surface-canvas);
+    border-top: var(--border-hairline);
+    border-bottom: var(--border-hairline);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+  }
+
+  .charity-card-impact-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-03);
+  }
+
+  .charity-card-impact-formula {
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-action);
+    font-weight: 400;
+    color: var(--color-text-muted);
+  }
+
+  .charity-card-steppers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-02);
+  }
+
+  .charity-card-tier-btn {
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    border: var(--border-hairline);
+    padding: var(--space-03) var(--space-02);
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-action);
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color var(--duration-fast) var(--ease-out-expo),
+                color var(--duration-fast) var(--ease-out-expo),
+                border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .charity-card-tier-btn:hover {
+    color: var(--color-canvas-white);
+    border-color: var(--color-border-strong);
+  }
+
+  .charity-card-tier-btn.is-active {
+    background-color: var(--color-canvas-white);
+    color: var(--color-canvas-black);
+    border-color: var(--color-pure-white);
+  }
+
+  .charity-card-tier-btn:focus-visible {
+    outline: var(--space-01) solid var(--color-accent);
+    outline-offset: var(--space-01);
+  }
+
+  .charity-card-impact-statement {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-03);
+    padding-top: var(--space-02);
+  }
+
+  .charity-card-impact-glyph {
+    color: var(--color-group-run-green);
+    flex-shrink: 0;
+    margin-top: var(--space-01);
+  }
+
+  .charity-card-impact-text {
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    font-weight: 500;
+    color: var(--color-canvas-white);
+    margin: 0;
+  }
+
+  /* 5. Footer CTA */
+  .charity-card-footer {
+    padding: var(--space-06);
+    background-color: var(--color-canvas-black);
+  }
+
+  .charity-card-cta {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-03);
+    background-color: var(--color-action-primary);
+    color: var(--color-action-primary-text);
+    padding: var(--space-05) var(--space-06);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+    font-weight: 500;
+    text-decoration: none;
+    text-transform: lowercase;
+    box-sizing: border-box;
+    transition: background-color var(--duration-fast) var(--ease-out-expo),
+                color var(--duration-fast) var(--ease-out-expo),
+                box-shadow var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .charity-card-cta:hover {
+    background-color: var(--color-action-primary-hover);
+    color: var(--color-canvas-black);
+    box-shadow: 0 0 var(--space-06) var(--color-accent);
+  }
+
+  .charity-card-cta:focus-visible {
+    outline: var(--space-01) solid var(--color-accent);
+    outline-offset: var(--space-01);
+  }
+
+  .charity-card-cta-arrow {
+    transition: transform var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .charity-card-cta:hover .charity-card-cta-arrow {
+    transform: translateX(var(--space-01));
+  }
+
+  @media (width <= 480px) {
+    .charity-card-steppers {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .charity-card-photo,
+    .charity-card-tier-btn,
+    .charity-card-cta,
+    .charity-card-cta-arrow,
+    .charity-card-external-link {
+      transition: none;
+    }
+
+    .charity-card:hover .charity-card-photo {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  function initCharitySteppers() {
+    const cards = document.querySelectorAll<HTMLElement>('[data-charity-card]');
+
+    cards.forEach((card) => {
+      const multiplier = parseFloat(card.dataset.multiplier || '0.3');
+      const template = card.dataset.template || 'Every HK${amount} saves {impact} animals';
+      const outputEl = card.querySelector<HTMLElement>('[data-impact-text]');
+      const buttons = card.querySelectorAll<HTMLButtonElement>('[data-amount]');
+
+      if (!outputEl || buttons.length === 0) return;
+
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const amount = parseInt(btn.dataset.amount || '300', 10);
+          const impact = Math.round(amount * multiplier);
+
+          const formattedAmount = amount.toLocaleString('en-US');
+          const formattedImpact = impact.toLocaleString('en-US');
+
+          const newText = template
+            .replace(/\{amount\}/g, formattedAmount)
+            .replace(/\{impact\}/g, formattedImpact);
+
+          outputEl.textContent = newText;
+
+          buttons.forEach((b) => {
+            const isActive = b === btn;
+            b.classList.toggle('is-active', isActive);
+            b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+          });
+        });
+      });
+    });
+  }
+
+  // Initialize on page load and support view transitions
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCharitySteppers);
+  } else {
+    initCharitySteppers();
+  }
+  document.addEventListener('astro:page-load', initCharitySteppers);
+</script>

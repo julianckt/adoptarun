@@ -1,0 +1,369 @@
+---
+/**
+ * privacy.astro
+ *
+ * Standalone Privacy Policy Page (/privacy).
+ * Plain-language, personable privacy commitments covering data collection,
+ * ephemeral Strava verification, in-memory GPX processing, Cloudflare server security,
+ * and global data subject rights under the Hong Kong PDPO.
+ * Fully compliant with DESIGN.md and Lumos tokens, matching terms.astro layout.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getSettings } from '@/sanity/queries';
+
+const settings = await getSettings().catch(() => null);
+const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
+---
+
+<BaseLayout
+  title="privacy policy — adopt a run"
+  description="Simple, clear privacy commitments for Adopt A Run. How we handle GPS telemetry, ephemeral Strava verification, secure Cloudflare storage, and your rights."
+  footerVariant="full"
+  settings={settings}
+>
+  <main class="privacy-page page-frame">
+    <!-- Hero Header -->
+    <header class="privacy-hero">
+      <div class="privacy-hero-inner">
+        <h1 class="privacy-title font-display">privacy policy</h1>
+        <p class="privacy-meta font-label">last updated: september 2026</p>
+      </div>
+    </header>
+
+    <!-- Content Sections -->
+    <section class="privacy-content" aria-label="Privacy Policy Content">
+      <div class="privacy-container">
+        <!-- Section 1 -->
+        <article class="privacy-section">
+          <header class="privacy-section-header">
+            <span class="privacy-section-num font-label" aria-hidden="true">01</span>
+            <h2 class="privacy-section-title font-title">our privacy standard</h2>
+          </header>
+          <div class="privacy-section-body font-body">
+            <p>
+              We believe privacy should be simple, honest, and absolute.
+              When you participate in Adopt A Run, your personal information belongs to you.
+            </p>
+            <p>
+              Your personal data is <strong>never sold</strong>, <strong>never rented</strong>, and <strong>never given to outside parties or advertisers</strong>.
+              All data we retain is stored securely on <strong>Cloudflare’s enterprise-grade servers</strong> to ensure high standards of physical and digital security.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 2 -->
+        <article class="privacy-section">
+          <header class="privacy-section-header">
+            <span class="privacy-section-num font-label" aria-hidden="true">02</span>
+            <h2 class="privacy-section-title font-title">what we collect &amp; why</h2>
+          </header>
+          <div class="privacy-section-body font-body">
+            <p>
+              We only ask for information that is directly necessary to coordinate your route adoption and celebrate your run:
+            </p>
+            <ul class="privacy-list">
+              <li>
+                <strong>route adoption details:</strong> When you adopt an artwork or log a walk-in run, we collect your name, email address, custom animal companion name, chosen charity cause, and commitment targets to issue your unique Adopter ID (formatted as <code>NNNN-CC</code>).
+              </li>
+              <li>
+                <strong>verified run metrics:</strong> When you complete and confirm a run, we record summary metrics (distance, elapsed time, elevation gain, average pace) and the resulting artwork route trace to create your permanent, public Digital Certificate.
+              </li>
+              <li>
+                <strong>what we never collect:</strong> We do not run background location tracking, we do not monitor your real-time GPS movements, and we do not track where you go before or after your run.
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Section 3 -->
+        <article class="privacy-section">
+          <header class="privacy-section-header">
+            <span class="privacy-section-num font-label" aria-hidden="true">03</span>
+            <h2 class="privacy-section-title font-title">strava &amp; gpx files</h2>
+          </header>
+          <div class="privacy-section-body font-body">
+            <p>
+              We offer two simple ways to verify your completed GPS artwork:
+            </p>
+            <ul class="privacy-list">
+              <li>
+                <strong>strava sync:</strong> When you connect your Strava account to verify a run, our servers check your recent activity data in-memory solely to confirm the route shape and calculate your completion metrics. We <strong>never store your Strava passwords or access tokens</strong> — once verification is finished, the connection tokens are discarded immediately.
+              </li>
+              <li>
+                <strong>gpx file uploads:</strong> If you upload a <code>.gpx</code> file from your GPS watch or fitness app, we process the file in-memory to extract the artwork outline and telemetry for your certificate. The raw file itself is <strong>never stored on our servers</strong>.
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Section 4 -->
+        <article class="privacy-section">
+          <header class="privacy-section-header">
+            <span class="privacy-section-num font-label" aria-hidden="true">04</span>
+            <h2 class="privacy-section-title font-title">charities &amp; donations</h2>
+          </header>
+          <div class="privacy-section-body font-body">
+            <p>
+              Our movement is built to champion charitable causes like rescue animals and wildlife welfare, with complete separation between runner privacy and charity coordination:
+            </p>
+            <ul class="privacy-list">
+              <li>
+                <strong>aggregate impact only:</strong> We share only aggregated, non-identifiable community impact numbers with our partner non-profits (such as total kilometers covered and total collective funds raised). We never hand over your private contact information or email address to charity partners.
+              </li>
+              <li>
+                <strong>independent donation platform:</strong> Online donations and fundraising campaigns are hosted independently on dedicated peer-to-peer donation platforms (such as Raisely). Contributions made there are governed by the donation platform’s own privacy terms and secure payment processing.
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Section 5 -->
+        <article class="privacy-section">
+          <header class="privacy-section-header">
+            <span class="privacy-section-num font-label" aria-hidden="true">05</span>
+            <h2 class="privacy-section-title font-title">cookies &amp; local storage</h2>
+          </header>
+          <div class="privacy-section-body font-body">
+            <p>
+              We keep our website clean, lightweight, and respectful of your browser:
+            </p>
+            <ul class="privacy-list">
+              <li>
+                <strong>zero advertising trackers:</strong> We do not use third-party advertising cookies or cross-site tracking scripts. You will not be followed around the web after visiting our site.
+              </li>
+              <li>
+                <strong>essential convenience storage:</strong> We may use minimal local browser storage solely to remember your immediate user preferences — such as active route filter selections or your adoption form progress.
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Section 6 -->
+        <article class="privacy-section">
+          <header class="privacy-section-header">
+            <span class="privacy-section-num font-label" aria-hidden="true">06</span>
+            <h2 class="privacy-section-title font-title">your rights &amp; deleting your data</h2>
+          </header>
+          <div class="privacy-section-body font-body">
+            <p>
+              Whether you are running in Hong Kong, Europe, North America, or anywhere else in the world, we uphold clear, universal data rights (aligned with GDPR and international standards):
+            </p>
+            <ul class="privacy-list">
+              <li>
+                <strong>right to access &amp; correction:</strong> You can ask to view any personal details associated with your email or Adopter ID, or request corrections at any time.
+              </li>
+              <li>
+                <strong>right to complete erasure:</strong> If you ever wish to remove your adoption record, Adopter ID, and Digital Certificate, simply email us. We will permanently erase your personal data from our systems without hassle or automated runarounds.
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Section 7 -->
+        <article class="privacy-section">
+          <header class="privacy-section-header">
+            <span class="privacy-section-num font-label" aria-hidden="true">07</span>
+            <h2 class="privacy-section-title font-title">governing law &amp; getting in touch</h2>
+          </header>
+          <div class="privacy-section-body font-body">
+            <p>
+              Adopt A Run operates from Hong Kong and complies with the <strong>Personal Data (Privacy) Ordinance (Cap. 486)</strong> of the Hong Kong Special Administrative Region.
+            </p>
+            <p>
+              If you have any questions, wish to exercise your data rights, or want your records removed, please reach out directly.
+            </p>
+            <p class="privacy-contact-note">
+              Have questions, feedback, or data requests? We would love to hear from you — drop us a line at <a href={`mailto:${contactEmail}`} class="privacy-inline-link">{contactEmail}</a>.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .privacy-page {
+    width: 100%;
+    min-height: calc(100vh - var(--header-height));
+    background-color: var(--color-canvas-black);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .privacy-hero {
+    width: 100%;
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-08);
+    border-bottom: var(--border-width-hairline) solid var(--border-hairline);
+    background-color: var(--color-canvas-black);
+  }
+
+  .privacy-hero-inner {
+    width: 100%;
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding-inline: var(--space-06);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+  }
+
+  .privacy-title {
+    margin: 0;
+    font-size: var(--font-size-title);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    letter-spacing: normal;
+  }
+
+  .privacy-meta {
+    margin: 0;
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-body);
+    color: var(--color-text-secondary);
+    letter-spacing: normal;
+  }
+
+  .privacy-content {
+    width: 100%;
+    background-color: var(--color-canvas-black);
+    padding-block: var(--space-10) var(--space-13);
+  }
+
+  .privacy-container {
+    width: 100%;
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding-inline: var(--space-06);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+  }
+
+  .privacy-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+    padding-bottom: var(--space-08);
+    border-bottom: var(--border-width-hairline) solid var(--border-hairline);
+  }
+
+  .privacy-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .privacy-section-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-04);
+  }
+
+  .privacy-section-num {
+    color: var(--color-accent);
+    font-weight: 500;
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    flex-shrink: 0;
+  }
+
+  .privacy-section-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--font-size-metric);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    letter-spacing: normal;
+  }
+
+  .privacy-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-body);
+    line-height: var(--leading-body);
+    max-width: 80ch;
+  }
+
+  .privacy-section-body p {
+    margin: 0;
+  }
+
+  .privacy-section-body code {
+    font-family: monospace;
+    font-size: 0.9em;
+    padding: var(--space-01) var(--space-02);
+    background-color: var(--color-border-hairline);
+    color: var(--color-accent);
+  }
+
+  .privacy-list {
+    margin: 0;
+    padding-left: var(--space-06);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-03);
+    list-style-type: disc;
+  }
+
+  .privacy-list li {
+    padding-left: var(--space-01);
+    line-height: var(--leading-body);
+  }
+
+  .privacy-list strong {
+    color: var(--color-canvas-white);
+    font-weight: 500;
+  }
+
+  .privacy-inline-link {
+    color: var(--color-canvas-white);
+    text-decoration: underline;
+    text-decoration-thickness: var(--border-width-hairline);
+    text-underline-offset: var(--space-02);
+    transition: color 0.15s ease;
+  }
+
+  .privacy-inline-link:hover {
+    color: var(--color-accent);
+  }
+
+  .privacy-contact-note {
+    margin-top: var(--space-02);
+    font-size: var(--font-size-label);
+    color: var(--color-text-secondary);
+  }
+
+  @media (min-width: 768px) {
+    .privacy-section {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
+      gap: var(--space-08);
+      align-items: start;
+    }
+
+    .privacy-section-header {
+      flex-direction: column;
+      gap: var(--space-02);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .privacy-title {
+      font-size: var(--font-size-headline);
+    }
+
+    .privacy-section {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.75fr);
+      gap: var(--space-10);
+    }
+  }
+</style>

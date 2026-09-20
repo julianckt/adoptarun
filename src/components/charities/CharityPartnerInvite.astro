@@ -1,0 +1,159 @@
+---
+/**
+ * CharityPartnerInvite.astro
+ *
+ * Quiet editorial invitation block at the bottom of /charities:
+ * Invites prospective non-profits and registered charities to partner with Adopt A Run.
+ * Fully compliant with DESIGN.md zero-radius and Lumos token standards.
+ */
+export interface Props {
+  contactEmail?: string;
+  class?: string;
+}
+
+const { contactEmail = 'hello@adoptarun.org', class: className } = Astro.props;
+const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent('Adopt A Run - Charity Partnership Inquiry')}`;
+---
+
+<section class:list={['charity-invite', className]} aria-labelledby="charity-invite-heading">
+  <div class="charity-invite-container">
+    <div class="charity-invite-content">
+      <span class="charity-invite-tagline font-body">champion a kinder city</span>
+      <h2 id="charity-invite-heading" class="charity-invite-title font-display">
+        partner with adopt a run
+      </h2>
+      <p class="charity-invite-body font-body">
+        are you a registered charity or non-profit? connect your cause with our GPS-art running community
+        to turn training kilometers into verified, direct impact.
+      </p>
+    </div>
+
+    <div class="charity-invite-action">
+      <a href={mailtoHref} class="charity-invite-link font-body">
+        <span>get in touch with our team</span>
+        <svg
+          class="charity-invite-arrow"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="2" y1="8" x2="14" y2="8"></line>
+          <polyline points="9 3 14 8 9 13"></polyline>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .charity-invite {
+    width: 100%;
+    background-color: var(--color-canvas-black);
+    border-top: var(--border-hairline);
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-10);
+    box-sizing: border-box;
+  }
+
+  .charity-invite-container {
+    max-width: var(--container-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-06);
+    box-sizing: border-box;
+  }
+
+  @media (width >= 768px) {
+    .charity-invite-container {
+      flex-direction: row;
+      align-items: flex-end;
+    }
+  }
+
+  .charity-invite-content {
+    max-width: var(--hero-mission-max-width);
+  }
+
+  .charity-invite-tagline {
+    display: block;
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+    font-weight: 500;
+    color: var(--color-accent);
+    margin-bottom: var(--space-03);
+    text-transform: lowercase;
+  }
+
+  .charity-invite-title {
+    font-size: var(--font-fluid-title);
+    line-height: var(--leading-compressed);
+    font-weight: 500;
+    color: var(--color-canvas-white);
+    margin: 0 0 var(--space-04) 0;
+    text-transform: lowercase;
+  }
+
+  .charity-invite-body {
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    margin: 0;
+    max-width: var(--hero-header-max-width);
+    text-transform: lowercase;
+  }
+
+  .charity-invite-action {
+    flex-shrink: 0;
+  }
+
+  .charity-invite-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-03);
+    background-color: transparent;
+    color: var(--color-canvas-white);
+    border: var(--border-hairline);
+    padding: var(--space-04) var(--space-06);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+    font-weight: 500;
+    text-decoration: none;
+    text-transform: lowercase;
+    transition: background-color var(--duration-fast) var(--ease-out-expo),
+                color var(--duration-fast) var(--ease-out-expo),
+                border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .charity-invite-link:hover {
+    background-color: var(--color-canvas-white);
+    color: var(--color-canvas-black);
+    border-color: var(--color-pure-white);
+  }
+
+  .charity-invite-arrow {
+    flex-shrink: 0;
+    transition: transform var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .charity-invite-link:hover .charity-invite-arrow {
+    transform: translateX(var(--space-01));
+  }
+
+  .charity-invite-link:focus-visible {
+    outline: var(--space-01) solid var(--color-accent);
+    outline-offset: var(--space-01);
+  }
+</style>

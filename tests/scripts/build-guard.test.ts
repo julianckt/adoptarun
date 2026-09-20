@@ -72,7 +72,7 @@ describe('checkBuild', () => {
 describe('stub pages', () => {
   it('cover every internal destination the site navigation links to', () => {
     expect(STUB_PAGES.map((p) => p.slug).sort()).toEqual(
-      ['charities', 'donate', 'log', 'privacy', 'signup', 'terms']
+      ['donate', 'log', 'signup']
     );
   });
 });

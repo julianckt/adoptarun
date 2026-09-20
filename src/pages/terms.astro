@@ -1,0 +1,370 @@
+---
+/**
+ * terms.astro
+ *
+ * Standalone Terms & Conditions Page (/terms).
+ * Plain-language, personable terms for GPS art route adoption, runner discretion,
+ * community guidelines, direct charity donations, and intellectual property.
+ * Fully compliant with DESIGN.md and Lumos tokens.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getSettings } from '@/sanity/queries';
+
+const settings = await getSettings().catch(() => null);
+const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
+---
+
+<BaseLayout
+  title="terms & conditions — adopt a run"
+  description="Simple, clear terms and conditions for adopting GPS-art routes, physical safety advisories, and community guidelines for Adopt A Run."
+  footerVariant="full"
+  settings={settings}
+>
+  <main class="terms-page page-frame">
+    <!-- Hero Header -->
+    <header class="terms-hero">
+      <div class="terms-hero-inner">
+        <h1 class="terms-title font-display">terms &amp; conditions</h1>
+        <p class="terms-meta font-label">last updated: september 2026</p>
+      </div>
+    </header>
+
+    <!-- Content Sections -->
+    <section class="terms-content" aria-label="Terms and Conditions Content">
+      <div class="terms-container">
+        <!-- Section 1 -->
+        <article class="terms-section">
+          <header class="terms-section-header">
+            <span class="terms-section-num font-label" aria-hidden="true">01</span>
+            <h2 class="terms-section-title font-title">welcome to the movement</h2>
+          </header>
+          <div class="terms-section-body font-body">
+            <p>
+              Adopt A Run is an open, grassroots community movement in Hong Kong. We bring people
+              together through running, jogging, and walking to create large-scale digital GPS art while
+              championing local charity causes.
+            </p>
+            <p>
+              By browsing our routes, adopting an artwork, logging a run, or using this website, you agree to
+              these simple and friendly terms.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 2 -->
+        <article class="terms-section">
+          <header class="terms-section-header">
+            <span class="terms-section-num font-label" aria-hidden="true">02</span>
+            <h2 class="terms-section-title font-title">your safety comes first</h2>
+          </header>
+          <div class="terms-section-body font-body">
+            <p>
+              Taking part in Adopt A Run is entirely voluntary and done at your own pace, discretion, and risk:
+            </p>
+            <ul class="terms-list">
+              <li>
+                <strong>listen to your body:</strong> You know your own health and fitness best. If you have any medical concerns or aren't feeling well, please consult a healthcare professional before heading out.
+              </li>
+              <li>
+                <strong>street &amp; trail awareness:</strong> Our GPS art routes are creative guides across Hong Kong's streets and country parks — they are not closed racecourses. You are responsible for navigating safely, obeying traffic lights and pedestrian laws, watching your step on uneven paths, and checking the weather (especially Hong Kong's heat, heavy rain, and typhoon warnings).
+              </li>
+              <li>
+                <strong>personal responsibility:</strong> You decide when, where, and how you complete a route. While we design the art and share the map traces, Adopt A Run cannot be held responsible for any trips, falls, injuries, accidents, illness, or personal loss along the way.
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Section 3 -->
+        <article class="terms-section">
+          <header class="terms-section-header">
+            <span class="terms-section-num font-label" aria-hidden="true">03</span>
+            <h2 class="terms-section-title font-title">adopting a route &amp; your adopter id</h2>
+          </header>
+          <div class="terms-section-body font-body">
+            <p>
+              Adopting a route is a personal commitment to run or walk an artwork and care for its paired charity cause. It is completely free, open to everyone, and comes with no strict deadlines — you can take on your route whenever you are ready.
+            </p>
+            <p>
+              When you complete the adoption flow, you receive a unique 6-character <strong>Adopter ID</strong> (like <code>1204-JC</code>). This identifier connects your run log, generates your permanent digital certificate, and lets you follow your progress across the community.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 4 -->
+        <article class="terms-section">
+          <header class="terms-section-header">
+            <span class="terms-section-num font-label" aria-hidden="true">04</span>
+            <h2 class="terms-section-title font-title">artwork &amp; brand rights</h2>
+          </header>
+          <div class="terms-section-body font-body">
+            <p>
+              All GPS route designs, illustrations, brand graphics, and site materials are created with love for the Adopt A Run community.
+            </p>
+            <p>
+              They are freely available for your personal, non-commercial enjoyment — run them, walk them, and share your completed map drawings. However, copying, selling, re-packaging, or using these routes and brand assets for commercial purposes without our written consent is not allowed.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 5 -->
+        <article class="terms-section">
+          <header class="terms-section-header">
+            <span class="terms-section-num font-label" aria-hidden="true">05</span>
+            <h2 class="terms-section-title font-title">strava &amp; third-party platforms</h2>
+          </header>
+          <div class="terms-section-body font-body">
+            <p>
+              Adopt A Run is an independent community initiative and is not officially affiliated with, sponsored by, or endorsed by Strava, Mapbox, or OpenStreetMap.
+            </p>
+            <p>
+              When you submit a Strava activity link or GPX file to log a run, your data is used solely to verify your artwork completion and render your personal digital certificate. In line with Strava API rules, your activity data is accessible only via your Adopter ID, is never sold or monetized, and is never bundled into commercial aggregate data pools.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 6 -->
+        <article class="terms-section">
+          <header class="terms-section-header">
+            <span class="terms-section-num font-label" aria-hidden="true">06</span>
+            <h2 class="terms-section-title font-title">direct charity donations</h2>
+          </header>
+          <div class="terms-section-body font-body">
+            <p>
+              All donations are processed directly by our partner charities via trusted external platforms (like Raisely and secure payment gateways); Adopt A Run does not collect, hold, or manage donated funds.
+            </p>
+            <p>
+              Because donations go straight to the non-profit organization, official tax receipts (such as Section 88 tax receipts in Hong Kong) and donation inquiries are handled directly by the recipient charity.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 7 -->
+        <article class="terms-section">
+          <header class="terms-section-header">
+            <span class="terms-section-num font-label" aria-hidden="true">07</span>
+            <h2 class="terms-section-title font-title">community spirit &amp; respect</h2>
+          </header>
+          <div class="terms-section-body font-body">
+            <p>
+              Adopt A Run exists to champion a kinder city:
+            </p>
+            <ul class="terms-list">
+              <li>
+                <strong>respect our city:</strong> Always share footpaths graciously, give way to pedestrians and elderly citizens, follow trail etiquette, and leave no trace behind.
+              </li>
+              <li>
+                <strong>companion names &amp; notes:</strong> When naming your route animal companion or writing a note with your run, please keep the words kind, respectful, and family-friendly. We reserve the right to tidy up or reset any names that are hateful, offensive, or contrary to community values.
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Section 8 -->
+        <article class="terms-section">
+          <header class="terms-section-header">
+            <span class="terms-section-num font-label" aria-hidden="true">08</span>
+            <h2 class="terms-section-title font-title">updates &amp; getting in touch</h2>
+          </header>
+          <div class="terms-section-body font-body">
+            <p>
+              We do our best to keep this website and all route information accurate and up to date, but everything is provided on an "as is" community basis. As our movement grows, we may occasionally update these terms to reflect new features or partner initiatives.
+            </p>
+            <p>
+              These terms are governed by the laws of Hong Kong.
+            </p>
+            <p class="terms-contact-note">
+              Have questions, feedback, or ideas? We would love to hear from you — drop us a line at <a href={`mailto:${contactEmail}`} class="terms-inline-link">{contactEmail}</a>.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .terms-page {
+    width: 100%;
+    min-height: calc(100vh - var(--header-height));
+    background-color: var(--color-canvas-black);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .terms-hero {
+    width: 100%;
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-08);
+    border-bottom: var(--border-width-hairline) solid var(--border-hairline);
+    background-color: var(--color-canvas-black);
+  }
+
+  .terms-hero-inner {
+    width: 100%;
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding-inline: var(--space-06);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+  }
+
+  .terms-title {
+    margin: 0;
+    font-size: var(--font-size-title);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    letter-spacing: normal;
+  }
+
+  .terms-meta {
+    margin: 0;
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-body);
+    color: var(--color-text-secondary);
+    letter-spacing: normal;
+  }
+
+  .terms-content {
+    width: 100%;
+    background-color: var(--color-canvas-black);
+    padding-block: var(--space-10) var(--space-13);
+  }
+
+  .terms-container {
+    width: 100%;
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding-inline: var(--space-06);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+  }
+
+  .terms-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+    padding-bottom: var(--space-08);
+    border-bottom: var(--border-width-hairline) solid var(--border-hairline);
+  }
+
+  .terms-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .terms-section-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-04);
+  }
+
+  .terms-section-num {
+    color: var(--color-accent);
+    font-weight: 500;
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    flex-shrink: 0;
+  }
+
+  .terms-section-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--font-size-metric);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    letter-spacing: normal;
+  }
+
+  .terms-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-body);
+    line-height: var(--leading-body);
+    max-width: 80ch;
+  }
+
+  .terms-section-body p {
+    margin: 0;
+  }
+
+  .terms-section-body code {
+    font-family: monospace;
+    font-size: 0.9em;
+    padding: var(--space-01) var(--space-02);
+    background-color: var(--color-border-hairline);
+    color: var(--color-accent);
+  }
+
+  .terms-list {
+    margin: 0;
+    padding-left: var(--space-06);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-03);
+    list-style-type: disc;
+  }
+
+  .terms-list li {
+    padding-left: var(--space-01);
+    line-height: var(--leading-body);
+  }
+
+  .terms-list strong {
+    color: var(--color-canvas-white);
+    font-weight: 500;
+  }
+
+  .terms-inline-link {
+    color: var(--color-canvas-white);
+    text-decoration: underline;
+    text-decoration-thickness: var(--border-width-hairline);
+    text-underline-offset: var(--space-02);
+    transition: color 0.15s ease;
+  }
+
+  .terms-inline-link:hover {
+    color: var(--color-accent);
+  }
+
+  .terms-contact-note {
+    margin-top: var(--space-02);
+    font-size: var(--font-size-label);
+    color: var(--color-text-secondary);
+  }
+
+  @media (min-width: 768px) {
+    .terms-section {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
+      gap: var(--space-08);
+      align-items: start;
+    }
+
+    .terms-section-header {
+      flex-direction: column;
+      gap: var(--space-02);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .terms-title {
+      font-size: var(--font-size-headline);
+    }
+
+    .terms-section {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.75fr);
+      gap: var(--space-10);
+    }
+  }
+</style>

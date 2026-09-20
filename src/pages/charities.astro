@@ -1,0 +1,142 @@
+---
+/**
+ * charities.astro
+ *
+ * Standalone Partner Charities Page (/charities) (Issue #8).
+ * Displays verified partner non-profits in an architectural dossier grid,
+ * featuring launch partner SPCA with dynamic impact simulation and route adoption triggers.
+ * Fully compliant with DESIGN.md and Lumos tokens.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CharityCard from '@/components/charities/CharityCard.astro';
+import CharityPartnerInvite from '@/components/charities/CharityPartnerInvite.astro';
+import { getCharities, getSettings } from '@/sanity/queries';
+
+const [charities, settings] = await Promise.all([
+  getCharities().catch(() => []),
+  getSettings().catch(() => null),
+]);
+
+const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
+const hasCharities = Array.isArray(charities) && charities.length > 0;
+---
+
+<BaseLayout
+  title="partner charities — adopt a run"
+  description="Discover our verified partner charities. Run GPS-art routes and turn your miles into direct donations for rescue animals and wildlife welfare."
+  footerVariant="full"
+  settings={settings}
+>
+  <main class="charities-page">
+    <!-- Ultra-Minimal Editorial Hero -->
+    <header class="charities-hero">
+      <div class="charities-hero-container">
+        <h1 class="charities-title font-display">partner charities</h1>
+      </div>
+    </header>
+
+    <!-- Architectural Charity Cards Grid -->
+    <section class="charities-section" aria-label="Partner non-profit organizations">
+      <div class="charities-grid-container">
+        {hasCharities ? (
+          <div class="charities-grid">
+            {charities.map((charity) => (
+              <CharityCard charity={charity} />
+            ))}
+          </div>
+        ) : (
+          <div class="charities-empty">
+            <p class="charities-empty-text font-body">
+              partner charity profiles are on their way. check back soon.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+
+    <!-- Quiet Editorial Partner Onboarding Invitation -->
+    <CharityPartnerInvite contactEmail={contactEmail} />
+  </main>
+</BaseLayout>
+
+<style>
+  .charities-page {
+    width: 100%;
+    min-height: calc(100vh - var(--header-height));
+    background-color: var(--color-canvas-black);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* Ultra-Minimal Hero */
+  .charities-hero {
+    width: 100%;
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-08);
+    border-bottom: var(--border-hairline);
+    background-color: var(--color-canvas-black);
+  }
+
+  .charities-hero-container {
+    max-width: var(--container-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
+    box-sizing: border-box;
+  }
+
+  .charities-title {
+    font-size: var(--font-fluid-title);
+    line-height: var(--leading-compressed);
+    font-weight: 500;
+    color: var(--color-canvas-white);
+    margin: 0;
+    text-transform: lowercase;
+    letter-spacing: normal;
+  }
+
+  /* Grid Section */
+  .charities-section {
+    width: 100%;
+    flex-grow: 1;
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-12);
+  }
+
+  .charities-grid-container {
+    max-width: var(--container-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
+    box-sizing: border-box;
+  }
+
+  .charities-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-08);
+  }
+
+  @media (width >= 900px) {
+    .charities-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .charities-empty {
+    padding: var(--space-12) var(--space-06);
+    text-align: center;
+    border: var(--border-hairline);
+  }
+
+  .charities-empty-text {
+    font-size: var(--font-size-body);
+    line-height: var(--leading-body);
+    color: var(--color-text-secondary);
+    margin: 0;
+    text-transform: lowercase;
+  }
+</style>
