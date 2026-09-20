@@ -150,6 +150,9 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     }
 
     // 2. Active Section Highlighting (Scroll-Spy)
+    let isClickScrolling = false;
+    let clickTimeout: ReturnType<typeof setTimeout> | null = null;
+
     const setActiveCategory = (activeId: string) => {
       railLinks.forEach((link) => {
         const target = link.dataset.target;
@@ -169,6 +172,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     if ('IntersectionObserver' in window && sections.length > 0) {
       const observer = new IntersectionObserver(
         (entries) => {
+          if (isClickScrolling) return;
           for (const entry of entries) {
             if (entry.isIntersecting) {
               const id = entry.target.id;
@@ -180,12 +184,25 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
           }
         },
         {
-          rootMargin: '-20% 0px -60% 0px',
+          rootMargin: '-15% 0px -65% 0px',
           threshold: 0,
         }
       );
 
       sections.forEach((sec) => observer.observe(sec));
+
+      // Bottom-of-page fallback so the last category highlights when scrolled to footer
+      const handleBottomScroll = () => {
+        if (isClickScrolling) return;
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80) {
+          const lastSection = sections[sections.length - 1];
+          if (lastSection?.id) {
+            setActiveCategory(lastSection.id);
+          }
+        }
+      };
+
+      window.addEventListener('scroll', handleBottomScroll, { passive: true });
     }
 
     // 3. Smooth Anchor Scroll with Header Offset
@@ -194,9 +211,15 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
       const targetEl = document.getElementById(targetId);
       if (!targetEl) return;
 
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      isClickScrolling = true;
       setActiveCategory(targetId);
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       history.replaceState(null, '', `#${targetId}`);
+
+      if (clickTimeout) clearTimeout(clickTimeout);
+      clickTimeout = setTimeout(() => {
+        isClickScrolling = false;
+      }, 800);
     };
 
     railLinks.forEach((link) => {
@@ -488,7 +511,28 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     display: none;
   }
 
-  .faq-question:hover .faq-question-text {
+  .faq-page ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-canvas-black);
+  }
+
+  .faq-rail-link:focus-visible {
+    outline: var(--border-width-hairline) solid var(--color-accent);
+    outline-offset: var(--space-01);
+  }
+
+  .faq-mobile-tab:focus-visible {
+    outline: var(--border-width-hairline) solid var(--color-accent);
+    outline-offset: var(--space-01);
+  }
+
+  .faq-expand-all-btn:focus-visible {
+    outline: var(--border-width-hairline) solid var(--color-accent);
+    outline-offset: var(--space-01);
+  }
+
+  .faq-question:hover .faq-question-text,
+  .faq-question:hover .faq-toggle {
     color: var(--color-accent);
   }
 
@@ -503,6 +547,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     line-height: var(--leading-compressed);
     color: var(--color-canvas-white);
     letter-spacing: normal;
+    text-wrap: balance;
     transition: color var(--duration-fast) var(--ease-out-expo);
   }
 
@@ -530,6 +575,21 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     padding-inline: 0px;
   }
 
+  .faq-item[open] .faq-answer {
+    animation: faq-reveal var(--duration-fast) var(--ease-out-expo);
+  }
+
+  @keyframes faq-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(calc(-1 * var(--space-02)));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(var(--space-00));
+    }
+  }
+
   .faq-answer-text {
     margin: 0;
     font-family: var(--font-body);
@@ -541,6 +601,21 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
 
   .faq-section-empty {
     min-height: var(--space-00);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-item[open] .faq-answer {
+      animation: none;
+    }
+
+    .faq-toggle,
+    .faq-question-text,
+    .faq-question,
+    .faq-rail-link,
+    .faq-mobile-tab,
+    .faq-expand-all-btn {
+      transition: none;
+    }
   }
 
   @media (width <= 768px) {
