@@ -221,7 +221,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
 
 <style>
   .faq-page {
-    padding-block: var(--space-13) var(--space-14);
+    padding-block: var(--space-09) var(--space-10);
     min-height: 80vh;
     color: var(--color-canvas-white);
   }
@@ -230,7 +230,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
      Hero Section
      ------------------------------------------------------------- */
   .faq-hero {
-    margin-bottom: var(--space-10);
+    margin-bottom: var(--space-06);
   }
 
   .faq-title {
@@ -312,7 +312,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
   .faq-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
-    gap: var(--space-12);
+    gap: var(--space-08);
     align-items: flex-start;
   }
 
@@ -391,7 +391,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
   .faq-content {
     display: flex;
     flex-direction: column;
-    gap: var(--space-12);
+    gap: var(--space-08);
   }
 
   /* Expand All Utility Button */
@@ -434,7 +434,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     scroll-margin-top: calc(var(--header-height) + var(--space-08));
     display: flex;
     flex-direction: column;
-    gap: var(--space-06);
+    gap: var(--space-03);
   }
 
   @media (width <= 1024px) {
@@ -445,7 +445,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
 
   .faq-section-header {
     border-bottom: var(--border-hairline);
-    padding-bottom: var(--space-03);
+    padding-bottom: var(--space-02);
   }
 
   .faq-section-title {
@@ -473,9 +473,9 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-06);
-    min-height: var(--space-12);
-    padding-block: var(--space-06);
+    gap: var(--space-04);
+    min-height: var(--space-09);
+    padding-block: var(--space-04);
     padding-inline: 0px;
     cursor: pointer;
     list-style: none;
@@ -508,7 +508,8 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
 
   .faq-toggle {
     font-family: var(--font-body);
-    font-size: var(--font-size-tagline);
+    font-size: var(--font-size-body);
+    font-weight: 200;
     line-height: 1;
     color: var(--color-text-secondary);
     transition: transform var(--duration-fast) var(--ease-out-expo), color var(--duration-fast) var(--ease-out-expo);
@@ -525,7 +526,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
   }
 
   .faq-answer {
-    padding-block: var(--space-02) var(--space-06);
+    padding-block: var(--space-02) var(--space-04);
     padding-inline: 0px;
   }
 
@@ -539,7 +540,7 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
   }
 
   .faq-section-empty {
-    min-height: var(--space-06);
+    min-height: var(--space-00);
   }
 
   @media (width <= 768px) {
@@ -548,7 +549,8 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
     }
 
     .faq-toggle {
-      font-size: var(--font-size-metric);
+      font-size: var(--font-size-label);
+      font-weight: 200;
     }
 
     .faq-answer-text {
