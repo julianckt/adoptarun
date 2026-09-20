@@ -1,0 +1,543 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getSiteCopy, getSettings } from '@/sanity/queries';
+import { groupFaqsByCategory } from '@/utils/faq-utils';
+
+const [siteCopy, settings] = await Promise.all([
+  getSiteCopy().catch(() => null),
+  getSettings().catch(() => null),
+]);
+
+const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
+---
+
+<BaseLayout
+  title="frequently asked questions — adopt a run"
+  description="Answers to common questions about route adoption, GPS art tracking, direct charity donations, and the Adopt A Run community movement."
+  footerVariant="full"
+  settings={settings}
+>
+  <main class="faq-page page-frame">
+    <!-- Hero Section: Ultra-minimal -->
+    <header class="faq-hero">
+      <h1 class="faq-title font-display">frequently asked questions</h1>
+    </header>
+
+    <!-- Mobile Sticky Horizontal Subheader -->
+    <nav class="faq-mobile-nav" aria-label="FAQ Categories (Mobile)">
+      <div class="faq-mobile-nav-track" id="faq-mobile-track">
+        {faqGroups.map(({ category }, index) => (
+          <a
+            href={`#${category.anchorId}`}
+            class:list={['faq-mobile-tab', { 'is-active': index === 0 }]}
+            data-target={category.anchorId}
+          >
+            {category.label}
+          </a>
+        ))}
+      </div>
+    </nav>
+
+    <!-- Two-Column Layout -->
+    <div class="faq-grid">
+      <!-- Left Column: Sticky Rail (Desktop) -->
+      <aside class="faq-sidebar">
+        <nav class="faq-rail" aria-label="FAQ Categories">
+          <ul class="faq-rail-list">
+            {faqGroups.map(({ category }, index) => (
+              <li class="faq-rail-item">
+                <a
+                  href={`#${category.anchorId}`}
+                  class:list={['faq-rail-link', { 'is-active': index === 0 }]}
+                  data-target={category.anchorId}
+                >
+                  <span class="faq-rail-dot" aria-hidden="true">·</span>
+                  <span class="faq-rail-label">{category.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Right Column: Flowing Q&As -->
+      <section class="faq-content" aria-label="Questions and Answers">
+        <!-- Global Expand/Collapse Utility -->
+        <div class="faq-utility">
+          <button
+            type="button"
+            class="faq-expand-all-btn"
+            id="faq-expand-all-btn"
+            aria-expanded="false"
+          >
+            <span class="faq-expand-icon" aria-hidden="true">+</span>
+            <span class="faq-expand-label">expand all</span>
+          </button>
+        </div>
+
+        {faqGroups.map(({ category, items }) => (
+          <div class="faq-section" id={category.anchorId}>
+            <header class="faq-section-header">
+              <h2 class="faq-section-title font-display">{category.label}</h2>
+            </header>
+
+            {items.length > 0 ? (
+              <div class="faq-section-items">
+                {items.map((item) => (
+                  <details class="faq-item">
+                    <summary class="faq-question">
+                      <span class="faq-question-text font-display">{item.question}</span>
+                      <span class="faq-toggle" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                      <p class="faq-answer-text">{item.answer}</p>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            ) : (
+              <div class="faq-section-empty" aria-hidden="true"></div>
+            )}
+          </div>
+        ))}
+      </section>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  function initFaqInteractions() {
+    const expandAllBtn = document.getElementById('faq-expand-all-btn');
+    const allDetails = Array.from(document.querySelectorAll<HTMLDetailsElement>('.faq-item'));
+    const railLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.faq-rail-link'));
+    const mobileTabs = Array.from(document.querySelectorAll<HTMLAnchorElement>('.faq-mobile-tab'));
+    const mobileTrack = document.getElementById('faq-mobile-track');
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('.faq-section[id]'));
+
+    // 1. Expand / Collapse All Toggle
+    if (expandAllBtn && allDetails.length > 0) {
+      let isAllExpanded = false;
+
+      const updateExpandBtnState = (expanded: boolean) => {
+        isAllExpanded = expanded;
+        expandAllBtn.setAttribute('aria-expanded', String(expanded));
+        const icon = expandAllBtn.querySelector('.faq-expand-icon');
+        const label = expandAllBtn.querySelector('.faq-expand-label');
+        if (icon) icon.textContent = expanded ? '−' : '+';
+        if (label) label.textContent = expanded ? 'collapse all' : 'expand all';
+      };
+
+      expandAllBtn.addEventListener('click', () => {
+        const nextState = !isAllExpanded;
+        allDetails.forEach((detail) => {
+          detail.open = nextState;
+        });
+        updateExpandBtnState(nextState);
+      });
+
+      // Synchronize toggle if user manually toggles details
+      allDetails.forEach((detail) => {
+        detail.addEventListener('toggle', () => {
+          const everyOpen = allDetails.every((d) => d.open);
+          const someClosed = allDetails.some((d) => !d.open);
+          if (everyOpen && !isAllExpanded) {
+            updateExpandBtnState(true);
+          } else if (someClosed && isAllExpanded) {
+            updateExpandBtnState(false);
+          }
+        });
+      });
+    }
+
+    // 2. Active Section Highlighting (Scroll-Spy)
+    const setActiveCategory = (activeId: string) => {
+      railLinks.forEach((link) => {
+        const target = link.dataset.target;
+        link.classList.toggle('is-active', target === activeId);
+      });
+
+      mobileTabs.forEach((tab) => {
+        const target = tab.dataset.target;
+        const isActive = target === activeId;
+        tab.classList.toggle('is-active', isActive);
+        if (isActive && mobileTrack) {
+          tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+      });
+    };
+
+    if ('IntersectionObserver' in window && sections.length > 0) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const id = entry.target.id;
+              if (id) {
+                setActiveCategory(id);
+                break;
+              }
+            }
+          }
+        },
+        {
+          rootMargin: '-20% 0px -60% 0px',
+          threshold: 0,
+        }
+      );
+
+      sections.forEach((sec) => observer.observe(sec));
+    }
+
+    // 3. Smooth Anchor Scroll with Header Offset
+    const handleAnchorClick = (e: MouseEvent, targetId: string) => {
+      e.preventDefault();
+      const targetEl = document.getElementById(targetId);
+      if (!targetEl) return;
+
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveCategory(targetId);
+      history.replaceState(null, '', `#${targetId}`);
+    };
+
+    railLinks.forEach((link) => {
+      const target = link.dataset.target;
+      if (target) {
+        link.addEventListener('click', (e) => handleAnchorClick(e, target));
+      }
+    });
+
+    mobileTabs.forEach((tab) => {
+      const target = tab.dataset.target;
+      if (target) {
+        tab.addEventListener('click', (e) => handleAnchorClick(e, target));
+      }
+    });
+  }
+
+  // Run on initial load and View Transitions navigation
+  initFaqInteractions();
+  document.addEventListener('astro:page-load', initFaqInteractions);
+</script>
+
+<style>
+  .faq-page {
+    padding-block: var(--space-13) var(--space-14);
+    min-height: 80vh;
+    color: var(--color-canvas-white);
+  }
+
+  /* -------------------------------------------------------------
+     Hero Section
+     ------------------------------------------------------------- */
+  .faq-hero {
+    margin-bottom: var(--space-10);
+  }
+
+  .faq-title {
+    margin: 0;
+    font-size: var(--font-fluid-headline);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    letter-spacing: normal;
+    text-transform: lowercase;
+  }
+
+  /* -------------------------------------------------------------
+     Mobile Sticky Subheader
+     ------------------------------------------------------------- */
+  .faq-mobile-nav {
+    display: none;
+  }
+
+  @media (width <= 1024px) {
+    .faq-mobile-nav {
+      display: block;
+      position: sticky;
+      top: var(--header-height);
+      z-index: var(--z-sticky);
+      background-color: var(--color-header-veil-top);
+      -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+      backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+      border-bottom: var(--border-hairline);
+      margin-inline: calc(var(--page-gutter) * -1);
+      padding-inline: var(--page-gutter);
+      margin-bottom: var(--space-06);
+    }
+
+    .faq-mobile-nav-track {
+      display: flex;
+      align-items: center;
+      gap: var(--space-06);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      mask-image: linear-gradient(to right, black 85%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+      padding-block: var(--space-03);
+    }
+
+    .faq-mobile-nav-track::-webkit-scrollbar {
+      display: none;
+    }
+
+    .faq-mobile-tab {
+      flex-shrink: 0;
+      font-family: var(--font-body);
+      font-size: var(--font-size-label);
+      line-height: var(--leading-action);
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      text-transform: lowercase;
+      padding-bottom: var(--space-02);
+      border-bottom: var(--border-width-hairline) solid transparent;
+      transition: color var(--duration-fast) var(--ease-out-expo), border-color var(--duration-fast) var(--ease-out-expo);
+      cursor: pointer;
+    }
+
+    .faq-mobile-tab:hover {
+      color: var(--color-canvas-white);
+    }
+
+    .faq-mobile-tab.is-active {
+      color: var(--color-canvas-white);
+      border-bottom-color: var(--color-accent);
+      font-weight: 500;
+    }
+  }
+
+  /* -------------------------------------------------------------
+     Two-Column Grid Layout
+     ------------------------------------------------------------- */
+  .faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
+    gap: var(--space-12);
+    align-items: flex-start;
+  }
+
+  @media (width <= 1024px) {
+    .faq-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-06);
+    }
+
+    .faq-sidebar {
+      display: none;
+    }
+  }
+
+  /* -------------------------------------------------------------
+     Left Column: Sticky Rail (Desktop)
+     ------------------------------------------------------------- */
+  .faq-sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-06));
+    align-self: flex-start;
+  }
+
+  .faq-rail-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+  }
+
+  .faq-rail-item {
+    margin: 0;
+    padding: 0;
+  }
+
+  .faq-rail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-02);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    text-transform: lowercase;
+    transition: color var(--duration-fast) var(--ease-out-expo);
+    cursor: pointer;
+  }
+
+  .faq-rail-dot {
+    display: inline-block;
+    color: transparent;
+    transition: color var(--duration-fast) var(--ease-out-expo);
+    user-select: none;
+    line-height: 1;
+  }
+
+  .faq-rail-link:hover {
+    color: var(--color-canvas-white);
+  }
+
+  .faq-rail-link.is-active {
+    color: var(--color-canvas-white);
+    font-weight: 500;
+  }
+
+  .faq-rail-link.is-active .faq-rail-dot {
+    color: var(--color-accent);
+  }
+
+  /* -------------------------------------------------------------
+     Right Column: Flowing Q&As
+     ------------------------------------------------------------- */
+  .faq-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+
+  /* Expand All Utility Button */
+  .faq-utility {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--space-02);
+  }
+
+  .faq-expand-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-02);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-none);
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+    text-transform: lowercase;
+    padding: var(--space-02) 0px;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .faq-expand-all-btn:hover {
+    color: var(--color-canvas-white);
+  }
+
+  .faq-expand-icon {
+    font-family: var(--font-body);
+    color: var(--color-accent);
+    user-select: none;
+    line-height: 1;
+  }
+
+  /* Category Section */
+  .faq-section {
+    scroll-margin-top: calc(var(--header-height) + var(--space-08));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-06);
+  }
+
+  @media (width <= 1024px) {
+    .faq-section {
+      scroll-margin-top: calc(var(--header-height) + var(--space-12));
+    }
+  }
+
+  .faq-section-header {
+    border-bottom: var(--border-hairline);
+    padding-bottom: var(--space-03);
+  }
+
+  .faq-section-title {
+    margin: 0;
+    font-size: var(--font-size-h3);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    letter-spacing: normal;
+    text-transform: lowercase;
+  }
+
+  .faq-section-items {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Accordion Item */
+  .faq-item {
+    border-bottom: var(--border-hairline);
+  }
+
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-04);
+    min-height: var(--space-12);
+    padding-block: var(--space-05);
+    padding-inline: 0px;
+    cursor: pointer;
+    list-style: none;
+    background: transparent;
+    user-select: none;
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-question:hover .faq-question-text {
+    color: var(--color-accent);
+  }
+
+  .faq-question:focus-visible {
+    outline: var(--border-width-hairline) solid var(--color-accent);
+    outline-offset: var(--space-01);
+  }
+
+  .faq-question-text {
+    font-size: var(--font-size-h3);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    letter-spacing: normal;
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .faq-toggle {
+    font-family: var(--font-body);
+    font-size: var(--font-size-h3);
+    line-height: 1;
+    color: var(--color-text-secondary);
+    transition: transform var(--duration-fast) var(--ease-out-expo), color var(--duration-fast) var(--ease-out-expo);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .faq-item[open] .faq-toggle {
+    transform: rotate(45deg);
+    color: var(--color-accent);
+  }
+
+  .faq-answer {
+    padding-block: var(--space-02) var(--space-06);
+    padding-inline: 0px;
+  }
+
+  .faq-answer-text {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: var(--leading-body);
+    color: var(--color-text-secondary);
+    white-space: pre-line;
+  }
+
+  .faq-section-empty {
+    min-height: var(--space-06);
+  }
+</style>
