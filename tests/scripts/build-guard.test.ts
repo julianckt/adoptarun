@@ -70,9 +70,11 @@ describe('checkBuild', () => {
 });
 
 describe('stub pages', () => {
-  it('cover every internal destination the site navigation links to', () => {
-    expect(STUB_PAGES.map((p) => p.slug).sort()).toEqual(
-      ['donate', 'log', 'signup']
-    );
+  it('cover every internal destination that has no real page yet', () => {
+    expect(STUB_PAGES.map((p) => p.slug).sort()).toEqual(['donate', 'log']);
+  });
+
+  it('does not shadow the Adoption Portal, which is a real page', () => {
+    expect(STUB_PAGES.map((p) => p.slug)).not.toContain('signup');
   });
 });

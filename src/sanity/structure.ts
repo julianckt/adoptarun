@@ -3,6 +3,7 @@ import { CogIcon } from '@sanity/icons/Cog';
 import { DocumentTextIcon } from '@sanity/icons/DocumentText';
 import { PinIcon } from '@sanity/icons/Pin';
 import { HeartIcon } from '@sanity/icons/Heart';
+import { EnvelopeIcon } from '@sanity/icons/Envelope';
 
 export const structure: StructureResolver = (S) =>
   S.list()
@@ -29,6 +30,17 @@ export const structure: StructureResolver = (S) =>
             .schemaType('siteCopy')
             .documentId('siteCopy')
             .title('Site Copy')
+        ),
+
+      S.listItem()
+        .title('Email Copy')
+        .id('emailCopySingleton')
+        .icon(EnvelopeIcon)
+        .child(
+          S.document()
+            .schemaType('emailCopy')
+            .documentId('emailCopy')
+            .title('Email Copy')
         ),
 
       S.divider(),

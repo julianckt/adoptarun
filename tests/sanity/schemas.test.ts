@@ -16,13 +16,14 @@ import sanityConfig from '../../sanity.config';
 
 describe('Sanity CMS Schemas & Configuration', () => {
   describe('Schema Registry', () => {
-    it('exports all 4 content schemas', () => {
+    it('exports all 5 content schemas', () => {
       const typeNames = schemaTypes.map((t) => t.name);
       expect(typeNames).toContain('route');
       expect(typeNames).toContain('charity');
       expect(typeNames).toContain('settings');
       expect(typeNames).toContain('siteCopy');
-      expect(schemaTypes.length).toBe(4);
+      expect(typeNames).toContain('emailCopy');
+      expect(schemaTypes.length).toBe(5);
     });
   });
 

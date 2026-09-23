@@ -1,0 +1,448 @@
+---
+/**
+ * Modal shell for the expanded route card.
+ *
+ * Renders every route's expanded card once into an offscreen cache at build
+ * time, exactly as RoutesMap already does for standard cards. Opening clones
+ * the matching node into a native <dialog>, so focus trapping, Escape,
+ * background inertness and top-layer stacking all come from the browser.
+ *
+ * One Leaflet instance is created lazily on first open and re-targeted on
+ * every subsequent one; cards opened over the interactive map render their
+ * stored minimap instead, so a map never sits on top of a map.
+ */
+import type { SanityRoute } from '@/sanity/types';
+import RouteCardExpanded from './RouteCardExpanded.astro';
+
+export interface Props {
+  routes: SanityRoute[] | null;
+}
+
+const { routes = [] } = Astro.props;
+
+// Same rotation the catalogue, map and featured grid use, so a route keeps
+// its colour identity wherever it is opened from.
+const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
+  'route-orange',
+  'route-coral',
+  'route-blush',
+];
+
+const cards = (routes || []).filter((route) => route.slug?.current);
+
+const isDev = import.meta.env.DEV;
+const cartoApiKey = (
+  isDev
+    ? (import.meta.env.PUBLIC_CARTO_API_KEY_DEV || import.meta.env.PUBLIC_CARTO_API_KEY_PROD || '')
+    : (import.meta.env.PUBLIC_CARTO_API_KEY_PROD || import.meta.env.PUBLIC_CARTO_API_KEY_DEV || '')
+).trim();
+
+const tileUrl = cartoApiKey
+  ? `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoApiKey)}`
+  : 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png';
+---
+
+<!-- Offscreen SSR cache: one expanded card per route; map mode is set on open -->
+<div id="route-expanded-cache" class="u-visually-hidden" hidden aria-hidden="true">
+  {
+    cards.map((route, idx) => {
+      const theme = themeCycles[idx % themeCycles.length];
+      return (
+        <div class="route-expanded-template" data-slug={route.slug.current}>
+          <RouteCardExpanded route={route} colorTheme={theme} />
+        </div>
+      );
+    })
+  }
+</div>
+
+<dialog id="route-modal" class="route-modal" aria-label="Route details" data-tile-url={tileUrl}>
+  <button type="button" class="route-modal-close" data-route-modal-close aria-label="Close route details">
+    <span aria-hidden="true">&#215;</span>
+  </button>
+  <div class="route-modal-content" id="route-modal-content"></div>
+</dialog>
+
+<style>
+  .route-modal {
+    width: min(var(--route-modal-max-width), 92vw);
+    max-width: min(var(--route-modal-max-width), 92vw);
+    max-height: 90vh;
+    padding: var(--space-00);
+    border: var(--border-hairline);
+    border-radius: var(--radius-none);
+    background-color: var(--color-canvas-black);
+    color: var(--color-text-primary);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Belt-and-suspenders centering: native dialog:modal UA centering has
+     proven inconsistent between Safari and Chrome, so it is pinned here
+     explicitly rather than trusted to browser defaults. */
+  .route-modal[open] {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+  }
+
+  .route-modal::backdrop {
+    background-color: color-mix(in srgb, var(--color-canvas-black) 82%, transparent);
+  }
+
+  .route-modal-close {
+    position: absolute;
+    top: var(--space-00);
+    right: var(--space-00);
+    z-index: 5;
+    min-width: var(--min-tap-target);
+    min-height: var(--min-tap-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-00);
+    border: none;
+    border-radius: var(--radius-none);
+    background: none;
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-weight: 300;
+    font-size: var(--font-size-body);
+    line-height: var(--leading-action);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .route-modal-close:hover {
+    color: var(--color-accent);
+  }
+
+  .route-modal-close:focus-visible {
+    color: var(--color-accent);
+  }
+
+  .route-modal-content:empty {
+    display: none;
+  }
+
+  /* Leaflet fills the card's map slot once adopted into the open dialog. */
+  .route-modal :global(.route-modal-map) {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-canvas-black);
+  }
+
+  .route-modal :global(.leaflet-container) {
+    background-color: var(--color-canvas-black);
+    font-family: var(--font-body);
+  }
+
+  .route-modal :global(.leaflet-control-attribution) {
+    background-color: color-mix(in srgb, var(--color-canvas-black) 70%, transparent);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-micro);
+  }
+
+  .route-modal :global(.leaflet-control-attribution a) {
+    color: var(--color-text-secondary);
+  }
+</style>
+
+<!-- Leaflet's own map element, adopted by whichever card is open -->
+<div id="route-modal-map-host" class="u-visually-hidden" hidden aria-hidden="true">
+  <div id="route-modal-map" class="route-modal-map"></div>
+</div>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+  import { decodePolyline } from '@/geo/gpx-parser';
+  import type { ElevationPoint } from '@/utils/elevation-profile';
+  import {
+    pickElevationIndex,
+    setRouteParam,
+    clearRouteParam,
+    getRouteParam,
+  } from '@/utils/route-modal-state';
+
+  /** An ElevationPoint carried into the card, plus its minimap position. */
+  type ElevSample = Omit<ElevationPoint, 'y'> & { mx: number; my: number };
+
+  let sharedMap: L.Map | null = null;
+  let tileLayer: L.TileLayer | null = null;
+  let activeTrace: L.Polyline | null = null;
+  let activeMarker: L.CircleMarker | null = null;
+  let openSlug: string | null = null;
+  let openMode: 'leaflet' | 'minimap' = 'leaflet';
+  /** Document/window listeners are attached once, not once per dialog element. */
+  let listenersWired = false;
+
+  /** Colours come from the design tokens, never from literals in script. */
+  function token(name: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function accentOf(card: HTMLElement): string {
+    return getComputedStyle(card).getPropertyValue('--route-card-accent').trim();
+  }
+
+  function ensureMap(host: HTMLElement, tileUrl: string): L.Map {
+    if (sharedMap) return sharedMap;
+
+    sharedMap = L.map(host, {
+      zoomControl: true,
+      scrollWheelZoom: false,
+      attributionControl: true,
+    });
+
+    tileLayer = L.tileLayer(tileUrl, {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 20,
+    });
+    tileLayer.addTo(sharedMap);
+
+    return sharedMap;
+  }
+
+  /** Point the one shared map at a different route. */
+  function retargetMap(map: L.Map, polyline: string, accent: string) {
+    const coordinates = decodePolyline(polyline);
+    if (coordinates.length === 0) return;
+
+    if (activeTrace) {
+      activeTrace.remove();
+      activeTrace = null;
+    }
+    if (activeMarker) {
+      activeMarker.remove();
+      activeMarker = null;
+    }
+
+    activeTrace = L.polyline(coordinates, {
+      color: accent,
+      weight: 3,
+      opacity: 1,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(map);
+
+    map.fitBounds(activeTrace.getBounds(), { padding: [32, 32] });
+  }
+
+  function markOnMap(sample: ElevSample, accent: string) {
+    if (!sharedMap) return;
+    if (!activeMarker) {
+      activeMarker = L.circleMarker([sample.lat, sample.lng], {
+        radius: 5,
+        color: accent,
+        weight: 2,
+        fillColor: token('--color-canvas-white'),
+        fillOpacity: 1,
+      }).addTo(sharedMap);
+    } else {
+      activeMarker.setLatLng([sample.lat, sample.lng]);
+    }
+  }
+
+  /** Wire the elevation strip to whichever map the open card is showing. */
+  function wireElevation(card: HTMLElement) {
+    const figure = card.querySelector<HTMLElement>('[data-elev-figure]');
+    const raw = card.dataset.elev;
+    if (!figure || !raw) return;
+
+    let samples: ElevSample[] = [];
+    try {
+      samples = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    if (samples.length === 0) return;
+
+    const readout = figure.querySelector<HTMLElement>('[data-elev-readout]');
+    const cursor = figure.querySelector<SVGLineElement>('[data-elev-cursor]');
+    const markerSvg = card.querySelector<SVGElement>('[data-elev-marker]');
+    const dot = card.querySelector<SVGCircleElement>('[data-elev-dot]');
+    const isMinimap = card.dataset.mapMode === 'minimap';
+    const accent = accentOf(card);
+
+    function track(clientX: number) {
+      const rect = figure!.getBoundingClientRect();
+      if (rect.width === 0) return;
+      const ratio = (clientX - rect.left) / rect.width;
+      const index = pickElevationIndex(ratio, samples);
+      if (index < 0) return;
+
+      const sample = samples[index];
+      figure!.classList.add('is-tracking');
+      if (readout) readout.textContent = `${sample.km}km · ${sample.m}m`;
+      if (cursor) {
+        cursor.setAttribute('x1', String(sample.x));
+        cursor.setAttribute('x2', String(sample.x));
+      }
+
+      if (isMinimap) {
+        markerSvg?.classList.add('is-visible');
+        dot?.setAttribute('cx', String(sample.mx));
+        dot?.setAttribute('cy', String(sample.my));
+      } else {
+        markOnMap(sample, accent);
+      }
+    }
+
+    function release() {
+      figure!.classList.remove('is-tracking');
+      if (readout) readout.textContent = '';
+      markerSvg?.classList.remove('is-visible');
+      if (activeMarker) {
+        activeMarker.remove();
+        activeMarker = null;
+      }
+    }
+
+    figure.addEventListener('pointermove', (event) => track(event.clientX));
+    figure.addEventListener('pointerleave', release);
+    figure.addEventListener('pointercancel', release);
+  }
+
+  /** One cached template per route; the shell is the template's only child. */
+  function cacheNodeFor(slug: string): HTMLElement | null {
+    const cache = document.getElementById('route-expanded-cache');
+    const template = cache?.querySelector<HTMLElement>(
+      `.route-expanded-template[data-slug="${CSS.escape(slug)}"]`
+    );
+    return (template?.firstElementChild?.cloneNode(true) as HTMLElement) || null;
+  }
+
+  function closeModal() {
+    const dialog = document.getElementById('route-modal') as HTMLDialogElement | null;
+    if (dialog?.open) dialog.close();
+  }
+
+  function parkMap() {
+    const mapEl = document.getElementById('route-modal-map');
+    const host = document.getElementById('route-modal-map-host');
+    if (mapEl && host && mapEl.parentElement !== host) {
+      host.appendChild(mapEl);
+    }
+  }
+
+  function openModal(slug: string, mode: 'leaflet' | 'minimap', pushUrl = true) {
+    const dialog = document.getElementById('route-modal') as HTMLDialogElement | null;
+    const content = document.getElementById('route-modal-content');
+    if (!dialog || !content) return;
+
+    const shell = cacheNodeFor(slug);
+    const card = shell?.querySelector<HTMLElement>('[data-route-expanded]');
+    if (!shell || !card) return;
+
+    card.dataset.mapMode = mode;
+
+    // Rescue Leaflet's element before the previous clone is discarded with it.
+    parkMap();
+    content.replaceChildren(shell);
+    if (!dialog.open) dialog.showModal();
+    openSlug = slug;
+    openMode = mode;
+
+    if (pushUrl) {
+      history.pushState({ routeModal: slug, mapMode: mode }, '', setRouteParam(location.search, slug));
+    }
+
+    if (mode === 'leaflet') {
+      const slot = card.querySelector<HTMLElement>('[data-route-map]');
+      const mapEl = document.getElementById('route-modal-map');
+      const polyline = card.dataset.polyline;
+      if (slot && mapEl && polyline) {
+        slot.appendChild(mapEl);
+        const map = ensureMap(mapEl, dialog.dataset.tileUrl || '');
+        // The dialog measured zero while closed; re-measure now it is open.
+        map.invalidateSize();
+        retargetMap(map, polyline, accentOf(card));
+        requestAnimationFrame(() => map.invalidateSize());
+      }
+    }
+
+    wireElevation(card);
+  }
+
+  function initRouteModal() {
+    const dialog = document.getElementById('route-modal') as HTMLDialogElement | null;
+    const content = document.getElementById('route-modal-content');
+    if (!dialog || !content) return;
+    if (dialog.dataset.wired === 'true') return;
+    dialog.dataset.wired = 'true';
+
+    dialog
+      .querySelector<HTMLButtonElement>('[data-route-modal-close]')
+      ?.addEventListener('click', () => closeModal());
+
+    // Clicking the backdrop dismisses: the dialog element itself is the
+    // only thing behind the card, so a hit on it is a hit outside.
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) closeModal();
+    });
+
+    dialog.addEventListener('close', () => {
+      // Return Leaflet to its host before the clone is discarded, or the
+      // map element is destroyed along with it.
+      parkMap();
+      if (activeMarker) {
+        activeMarker.remove();
+        activeMarker = null;
+      }
+      content.replaceChildren();
+      const closed = openSlug;
+      openSlug = null;
+      openMode = 'leaflet';
+      // Replace rather than push: the open pushed one entry, so replacing it
+      // leaves Back pointing at where the visitor was before they opened it.
+      if (closed && getRouteParam(location.search)) {
+        history.replaceState({}, '', clearRouteParam(location.search) || location.pathname);
+      }
+    });
+
+    // Document- and window-level listeners outlive any single dialog element,
+    // so they are guarded separately from the per-element wiring above.
+    if (!listenersWired) {
+      listenersWired = true;
+
+      // Delegated: works for grid cards and for cards cloned into map popups.
+      document.addEventListener('click', (event) => {
+        const trigger = (event.target as HTMLElement | null)?.closest<HTMLElement>(
+          '[data-route-expand]'
+        );
+        if (!trigger) return;
+        const slug = trigger.dataset.routeSlug;
+        if (!slug) return;
+        event.preventDefault();
+        openModal(slug, trigger.dataset.mapMode === 'minimap' ? 'minimap' : 'leaflet');
+      });
+
+      window.addEventListener('popstate', (event) => {
+        const slug = getRouteParam(location.search);
+        if (slug) {
+          // The mode the card was opened in rides in the history entry, so
+          // returning to a map-opened card does not resurrect it as a map.
+          const stored = (event.state as { mapMode?: string } | null)?.mapMode;
+          const mode = stored === 'minimap' ? 'minimap' : 'leaflet';
+          if (slug !== openSlug || mode !== openMode) openModal(slug, mode, false);
+        } else {
+          closeModal();
+        }
+      });
+    }
+
+    // Deep link: ?route=<slug> on load opens that card straight away. A shared
+    // link carries no mode, and the interactive map is not its context.
+    const initialSlug = getRouteParam(location.search);
+    if (initialSlug) openModal(initialSlug, 'leaflet', false);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRouteModal);
+  } else {
+    initRouteModal();
+  }
+  document.addEventListener('astro:page-load', initRouteModal);
+</script>

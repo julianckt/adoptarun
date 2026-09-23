@@ -9,7 +9,7 @@ describe('D1 SQLite Database Migrations (0001_initial.sql)', () => {
     db = await createTestDb();
   });
 
-  it('initializes counters table with seed 1200', async () => {
+  it('initializes counters table with seed 1100', async () => {
     const row = await db
       .prepare('SELECT * FROM counters WHERE id = ?')
       .bind('adopter_seq')
@@ -17,7 +17,7 @@ describe('D1 SQLite Database Migrations (0001_initial.sql)', () => {
 
     expect(row).not.toBeNull();
     expect(row?.id).toBe('adopter_seq');
-    expect(row?.current_val).toBe(1200);
+    expect(row?.current_val).toBe(1100);
   });
 
   it('creates adoptions table with correct schema and defaults', async () => {

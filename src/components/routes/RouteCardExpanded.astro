@@ -1,0 +1,313 @@
+---
+/**
+ * DIRECTION CONTRACT — "The Long Trace"  (seed d02d3113 / surface / persuade)
+ *
+ * THESIS: The expanded route card refuses the cell-grid dossier every route
+ *   detail view becomes. One dominant map, one uninterrupted column of type,
+ *   one photograph held back behind a scrim. Hierarchy is map, then info,
+ *   then image — unbalanced on purpose.
+ * OWN-WORLD: The Night Plate world unchanged — Canvas Black ground, one
+ *   sanctioned route colour carrying the banner, zero radius everywhere,
+ *   Degular Display at 0.8 for the district, Runda capped at Medium for
+ *   everything else, hairline seams, no icons.
+ * STORY: The visitor sees the drawing they would run, reads what it is in a
+ *   single paragraph rather than a spec table, learns where to start, and
+ *   adopts it.
+ * FIRST VIEWPORT: Left column, the trace bleeding top and bottom with the
+ *   elevation profile welded to its foot. Middle column opens on a heavier
+ *   route-colour banner — difficulty and district stacked left, the distance
+ *   numeral sized to the banner's own height, hard right — then tags against
+ *   telemetry, group-run notes in green ink, the description, and the foot
+ *   carrying recommended start point beside strava, with adopt promoted to
+ *   a full-bleed tinted bar beneath. Right column is the cover photograph,
+ *   widened, carrying the group-run bookmark top-left, under a heavy fading
+ *   scrim.
+ * FORM: Position 4 of 7 on the resonance list, dealt by the roll at
+ *   re-roll 2, then refined by the user into the unbalanced tricolour.
+ */
+import type { SanityRoute } from '@/sanity/types';
+import { hasImageAsset, urlForImage } from '@/sanity/image';
+import { decodePolyline, calculateAspectBoundingBox, projectLatLngToSvg } from '@/geo/gpx-parser';
+import { buildElevationProfile } from '@/utils/elevation-profile';
+import {
+  formatRouteDistance,
+  formatRouteDuration,
+  formatRouteElevation,
+  formatRouteDifficulty,
+  formatRouteTags,
+} from '@/utils/formatters';
+
+export interface Props {
+  class?: string;
+  route: SanityRoute;
+  colorTheme?: 'route-orange' | 'route-coral' | 'route-blush';
+  /**
+   * 'leaflet' mounts an interactive map into the trace slot.
+   * 'minimap' renders the stored static trace instead — used when the card
+   * opens over the /routes interactive map, where a map inside a map is noise.
+   */
+  mapMode?: 'leaflet' | 'minimap';
+  [key: string]: any;
+}
+
+const {
+  class: className,
+  route,
+  colorTheme = 'route-orange',
+  mapMode = 'leaflet',
+  ...restProps
+} = Astro.props;
+
+const {
+  district,
+  title,
+  slug,
+  tags,
+  distanceKm,
+  estimatedDurationMin,
+  elevationGain,
+  difficulty = 'beginner',
+  description,
+  startPointDescription,
+  stravaRouteUrl,
+  coverImage,
+  routePolyline,
+  elevationProfile,
+  isGroupRun = false,
+  groupRunDateTime,
+  groupRunMeetupPoint,
+  groupRunNotes,
+  groupRunSignupCount,
+} = route;
+
+const themeClass =
+  colorTheme === 'route-coral'
+    ? 'route-expanded--coral'
+    : colorTheme === 'route-blush'
+      ? 'route-expanded--blush'
+      : 'route-expanded--orange';
+
+const routeSlug = slug?.current ?? '';
+const miniMapSvg = route.miniMapSvg || (route as any).gpxFile?.miniMapSvg;
+
+const formattedDistance = formatRouteDistance(distanceKm);
+const formattedDuration = formatRouteDuration(estimatedDurationMin);
+const formattedElevation = formatRouteElevation(elevationGain);
+const formattedDifficulty = formatRouteDifficulty(difficulty);
+const displayTags = formatRouteTags(tags);
+
+/* ---- Elevation profile -------------------------------------------------
+   Drawn at build time into its own 356 x 72 box, then each sample is also
+   projected into the minimap's 356 x 216 space so the hover dot can be
+   placed identically whichever map the card is showing. */
+const PROFILE_WIDTH = 356;
+const PROFILE_HEIGHT = 72;
+const MINIMAP_WIDTH = 356;
+const MINIMAP_HEIGHT = 216;
+
+const profile = buildElevationProfile(elevationProfile, {
+  width: PROFILE_WIDTH,
+  height: PROFILE_HEIGHT,
+});
+
+const coordinates = routePolyline ? decodePolyline(routePolyline) : [];
+const minimapBbox =
+  coordinates.length > 0
+    ? calculateAspectBoundingBox(coordinates, MINIMAP_WIDTH / MINIMAP_HEIGHT, 0.12)
+    : null;
+
+/** Per-sample payload shared by both map modes; read by the hover handler. */
+const elevationPayload = profile
+  ? profile.points.map((point) => {
+      const [mx, my] = minimapBbox
+        ? projectLatLngToSvg(point.lat, point.lng, minimapBbox, MINIMAP_WIDTH, MINIMAP_HEIGHT)
+        : [0, 0];
+      return { km: point.km, m: point.m, lat: point.lat, lng: point.lng, x: point.x, mx, my };
+    })
+    : [];
+
+/* ---- Group run ---------------------------------------------------------
+   The bookmark carries date and start time, exactly as on the standard card.
+   Everything else reads as notes in Group Run Green rather than a panel. */
+const groupRunAt = groupRunDateTime ? new Date(groupRunDateTime) : null;
+const hk = { timeZone: 'Asia/Hong_Kong' } as const;
+const groupRunStart =
+  groupRunAt && !Number.isNaN(groupRunAt.getTime())
+    ? (() => {
+        const [clock, period] = groupRunAt
+          .toLocaleTimeString('en-US', { ...hk, hour: 'numeric', minute: '2-digit', hour12: true })
+          .split(/\s/);
+        return {
+          iso: groupRunAt.toISOString(),
+          weekday: groupRunAt.toLocaleDateString('en-GB', { ...hk, weekday: 'short' }),
+          day: groupRunAt.toLocaleDateString('en-GB', { ...hk, day: '2-digit' }),
+          month: groupRunAt.toLocaleDateString('en-GB', { ...hk, month: 'short' }),
+          clock,
+          period,
+        };
+      })()
+    : null;
+const showSignups = isGroupRun && typeof groupRunSignupCount === 'number';
+
+/* ---- Cover photograph --------------------------------------------------
+   Vibrance, never a surface: it sits under a heavy scrim. With no asset the
+   column falls back to a flat field of the card's own route colour. */
+const cover = hasImageAsset(coverImage)
+  ? {
+      src: urlForImage(coverImage!).width(720).height(1200).fit('crop').auto('format').url(),
+      alt: (coverImage as any)?.alt || `${title || district} route scenery`,
+    }
+  : null;
+
+const adoptHref = routeSlug ? `/signup?route=${encodeURIComponent(routeSlug)}` : '/signup';
+---
+
+<div class="route-expanded-shell">
+<article
+  class:list={[
+    'route-expanded',
+    themeClass,
+    { 'route-expanded--group-run': isGroupRun },
+    className,
+  ]}
+  data-route-expanded
+  data-slug={routeSlug}
+  data-map-mode={mapMode}
+  data-polyline={routePolyline || ''}
+  data-elev={elevationPayload.length > 0 ? JSON.stringify(elevationPayload) : ''}
+  aria-labelledby={`route-expanded-title-${routeSlug}`}
+  {...restProps}
+>
+  <!-- ---- Left: the trace, bleeding top and bottom ---- -->
+  <div class="route-expanded-trace">
+    <div class="route-expanded-map" data-route-map>
+      {miniMapSvg && (
+        <div class="route-expanded-minimap">
+          <div class="route-expanded-minimap-svg" set:html={miniMapSvg} />
+          <svg
+            class="route-expanded-minimap-marker"
+            viewBox={`0 0 ${MINIMAP_WIDTH} ${MINIMAP_HEIGHT}`}
+            aria-hidden="true"
+            data-elev-marker
+          >
+            <circle r="5" cx="0" cy="0" data-elev-dot></circle>
+          </svg>
+        </div>
+      )}
+    </div>
+
+    {profile && (
+      <figure
+        class="route-expanded-elevation"
+        data-elev-figure
+        aria-label={`Elevation profile: ${profile.minM} to ${profile.maxM} metres over ${profile.totalKm} kilometres`}
+      >
+        <svg
+          class="route-expanded-elevation-svg"
+          viewBox={`0 0 ${PROFILE_WIDTH} ${PROFILE_HEIGHT}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path class="route-expanded-elevation-area" d={profile.areaD} />
+          <path class="route-expanded-elevation-crest" d={profile.pathD} />
+          <line class="route-expanded-elevation-cursor" y1="0" y2={PROFILE_HEIGHT} data-elev-cursor />
+        </svg>
+        <figcaption class="route-expanded-elevation-scale">
+          <span class="route-expanded-elevation-edge">0km</span>
+          <output class="route-expanded-elevation-readout" data-elev-readout></output>
+          <span class="route-expanded-elevation-edge">{formattedDistance}</span>
+        </figcaption>
+      </figure>
+    )}
+  </div>
+
+  <!-- ---- Middle: the banner, then one column of type ---- -->
+  <div class="route-expanded-info">
+    <header class="route-expanded-banner">
+      <div class="route-expanded-banner-identity">
+        <p class="route-expanded-difficulty">{formattedDifficulty}</p>
+        <h2 class="route-expanded-district" id={`route-expanded-title-${routeSlug}`}>{district}</h2>
+      </div>
+      <p class="route-expanded-distance">{formattedDistance}</p>
+    </header>
+
+    <div class="route-expanded-meta">
+      {displayTags && <p class="route-expanded-tags">{displayTags}</p>}
+      {(formattedDuration || formattedElevation) && (
+        <dl class="route-expanded-telemetry">
+          {formattedDuration && (
+            <div class="route-expanded-metric"><dt>est.</dt><dd>{formattedDuration}</dd></div>
+          )}
+          {formattedElevation && (
+            <div class="route-expanded-metric"><dt>elev.</dt><dd>{formattedElevation}</dd></div>
+          )}
+        </dl>
+      )}
+    </div>
+
+    {isGroupRun && (
+      <div class="route-expanded-groupnotes">
+        <p class="route-expanded-groupnote">a group run is scheduled on this route.</p>
+        {showSignups && (
+          <p class="route-expanded-groupnote">{groupRunSignupCount} signed up so far.</p>
+        )}
+        {groupRunMeetupPoint && (
+          <p class="route-expanded-groupnote">we meet at {groupRunMeetupPoint}.</p>
+        )}
+        {groupRunNotes && <p class="route-expanded-groupnote">{groupRunNotes}</p>}
+      </div>
+    )}
+
+    {description && <p class="route-expanded-description">{description}</p>}
+
+    <footer class="route-expanded-foot">
+      <div class="route-expanded-foot-row">
+        {startPointDescription && (
+          <p class="route-expanded-start">
+            <span class="route-expanded-start-label">recommended start point</span>
+            <span class="route-expanded-start-value">{startPointDescription}</span>
+          </p>
+        )}
+        {stravaRouteUrl && (
+          <a
+            class="route-expanded-strava"
+            href={stravaRouteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >open in strava &#8599;</a>
+        )}
+      </div>
+      <a class="route-expanded-adopt" href={adoptHref}>adopt this route &#8594;</a>
+    </footer>
+  </div>
+
+  <!-- ---- Right: the photograph, held back ---- -->
+  <div class="route-expanded-cover">
+    {cover ? (
+      <img
+        class="route-expanded-cover-img"
+        src={cover.src}
+        alt={cover.alt}
+        loading="lazy"
+        decoding="async"
+        width="720"
+        height="1200"
+      />
+    ) : (
+      <div class="route-expanded-cover-field" aria-hidden="true"></div>
+    )}
+    <div class="route-expanded-cover-scrim" aria-hidden="true"></div>
+    {isGroupRun && groupRunStart && (
+      <time class="route-card-bookmark" datetime={groupRunStart.iso}>
+        <span class="route-card-bookmark-flag">group run</span>
+        <span class="route-card-bookmark-weekday">{groupRunStart.weekday}</span>
+        <span class="route-card-bookmark-day">{groupRunStart.day}</span>
+        <span class="route-card-bookmark-month">{groupRunStart.month}</span>
+        <span class="route-card-bookmark-time">
+          {groupRunStart.clock}<span class="route-card-bookmark-period">{groupRunStart.period}</span>
+        </span>
+      </time>
+    )}
+  </div>
+</article>
+</div>

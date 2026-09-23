@@ -1,0 +1,108 @@
+---
+/**
+ * Adoption confirmation (/signup/confirmed/:adopterId)
+ *
+ * One page, two arrivals: a milestone when the Adopter arrives straight from
+ * the portal, and a reference page every time they come back to it from the
+ * confirmation email. The layout is the same in both; only the motion and the
+ * email line differ.
+ *
+ * The URL is the Adopter ID, which makes it guessable — the sequence starts at
+ * a known seed and the trailing initials are a typo guard, not a secret. The
+ * guard is therefore not the URL but the payload: `toConfirmationRecord` drops
+ * the Runner's name and email, so a walked sequence reveals that an adoption
+ * exists and nothing about who made it. The name and email on a first arrival
+ * come from the sessionStorage receipt, which only the committing browser has.
+ * `noindex` keeps these out of search results.
+ *
+ * Rendered on demand rather than prerendered, because the Adopter ID is only
+ * known at request time. Every other page on the site stays static.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ShaderBackgroundWrapper from '@/components/ShaderBackground/ShaderBackgroundWrapper.astro';
+import RouteCardExpanded from '@/components/routes/RouteCardExpanded.astro';
+import ConfirmationView from '@/components/signup/ConfirmationView';
+import { getCharities, getRoutes, getSettings } from '@/sanity/queries';
+import { toPortalCharity, toPortalRoutes } from '@/utils/signup-view-model';
+import { toConfirmationRecord, canonicalAdopterId } from '@/utils/signup-confirmation';
+import { AdoptionsRepository } from '@/db/repositories/adoptions';
+import type { D1Database } from '@cloudflare/workers-types';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+// Cheap rejection before touching D1: anything that is not `NNNN-CC` cannot be
+// an Adopter ID, so a scan of the URL space costs no database reads.
+const adopterId = canonicalAdopterId(Astro.params.adopterId);
+if (!adopterId) {
+  return Astro.redirect('/signup', 302);
+}
+
+// One canonical URL per adoption, so a lower-cased or padded link from an email
+// client settles on the same address rather than quietly serving a duplicate.
+if (Astro.params.adopterId !== adopterId) {
+  return Astro.redirect(`/signup/confirmed/${adopterId}`, 302);
+}
+
+// Astro 7 removed `Astro.locals.runtime.env`; bindings come from `cloudflare:workers`.
+const db = env.DB as D1Database | undefined;
+if (!db) {
+  console.error('[confirmed] D1 binding "DB" is missing — cannot resolve adoption.');
+  return Astro.redirect('/signup', 302);
+}
+
+const adoption = await AdoptionsRepository.getById(db, adopterId);
+if (!adoption) {
+  return Astro.redirect('/signup', 302);
+}
+
+const [routes, charities, settings] = await Promise.all([
+  getRoutes().catch(() => null),
+  getCharities().catch(() => null),
+  getSettings().catch(() => null),
+]);
+
+const portalRoutes = toPortalRoutes(routes);
+const portalCharity = charities?.[0] ? toPortalCharity(charities[0]) : null;
+
+// The adopted artwork, which may since have been renamed or unpublished.
+const adoptedRoute = portalRoutes.find((candidate) => candidate.slug === adoption.route_slug) ?? null;
+
+const record = toConfirmationRecord(adoption, adoptedRoute);
+
+const sanityRoute = (routes ?? []).find(
+  (candidate) => candidate.slug?.current === record.routeSlug
+);
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://adoptarun.org').toString();
+---
+
+<BaseLayout
+  title={`${record.companionName} adopted — adopt a run`}
+  description="Your adoption commitment, route details, and calendar export."
+  noindex={true}
+  class="confirmed-shell has-shader-bg"
+  settings={settings}
+>
+  <!-- Mounted immediately: a hole where the sphere should be would land exactly
+       where the arrival from the portal is meant to feel continuous. -->
+  <ShaderBackgroundWrapper
+    flow="signup"
+    mountMode="immediate"
+    initialPanel="commit"
+    forcedPreset="presetC"
+  />
+
+  <main class="confirmed-main-region">
+    <ConfirmationView
+      client:load
+      adopterId={adopterId}
+      record={record}
+      routes={portalRoutes}
+      charity={portalCharity}
+      pageUrl={pageUrl}
+    >
+      {sanityRoute && <RouteCardExpanded route={sanityRoute} mapMode="minimap" />}
+    </ConfirmationView>
+  </main>
+</BaseLayout>

@@ -1,11 +1,11 @@
 -- 1. COUNTERS TABLE (Atomic sequence generator for Adopter IDs)
 CREATE TABLE IF NOT EXISTS counters (
   id TEXT PRIMARY KEY,
-  current_val INTEGER NOT NULL DEFAULT 1200
+  current_val INTEGER NOT NULL DEFAULT 1100
 );
 
--- Seed initial row at 1200
-INSERT OR IGNORE INTO counters (id, current_val) VALUES ('adopter_seq', 1200);
+-- Seed initial row at 1100
+INSERT OR IGNORE INTO counters (id, current_val) VALUES ('adopter_seq', 1100);
 
 -- 2. ADOPTIONS TABLE (Runner adoption portal commitments & upfront walk-ins)
 CREATE TABLE IF NOT EXISTS adoptions (

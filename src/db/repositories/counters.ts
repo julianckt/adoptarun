@@ -3,11 +3,11 @@ import { getRandomJump } from '../adopter-id';
 
 export class CountersRepository {
   /**
-   * Initializes sequence counter row at specified seed (default 1200).
+   * Initializes sequence counter row at specified seed (default 1100).
    */
   static async initialize(
     db: D1Database,
-    initialSeed = 1200,
+    initialSeed = 1100,
     counterId = 'adopter_seq'
   ): Promise<void> {
     await db
@@ -30,8 +30,8 @@ export class CountersRepository {
       .bind(counterId)
       .first<{ current_val: number }>();
     if (!row) {
-      await this.initialize(db, 1200, counterId);
-      return 1200;
+      await this.initialize(db, 1100, counterId);
+      return 1100;
     }
     return row.current_val;
   }
@@ -60,7 +60,7 @@ export class CountersRepository {
     }
 
     // Row did not exist: initialize and increment
-    await this.initialize(db, 1200, counterId);
+    await this.initialize(db, 1100, counterId);
     const retry = await db
       .prepare(
         'UPDATE counters SET current_val = current_val + ? WHERE id = ? RETURNING current_val'
@@ -68,6 +68,6 @@ export class CountersRepository {
       .bind(delta, counterId)
       .first<{ current_val: number }>();
 
-    return retry?.current_val ?? 1200 + delta;
+    return retry?.current_val ?? 1100 + delta;
   }
 }

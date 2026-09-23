@@ -11,11 +11,6 @@ export interface StubPage {
 
 export const STUB_PAGES: readonly StubPage[] = [
   {
-    slug: 'signup',
-    title: 'adopt a route',
-    description: 'route adoption opens soon. check back to claim your first route.',
-  },
-  {
     slug: 'donate',
     title: 'donate',
     description: 'online donations open soon.',

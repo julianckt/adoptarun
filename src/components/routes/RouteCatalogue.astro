@@ -8,9 +8,27 @@ import {
 
 export interface Props {
   routes: SanityRoute[] | null;
+  /**
+   * What clicking a card does. '/routes' opens the expanded card; the Adoption
+   * Portal picks the Artwork instead.
+   */
+  cardAction?: 'expand' | 'select';
+  /** For cardAction="select": the slug of the Artwork currently chosen. */
+  selectedSlug?: string | null;
+  /**
+   * Whether filter state is mirrored into the address bar. The Adoption Portal
+   * owns its own URL (the panel lives in `?step=`), so it opts out rather than
+   * having the catalogue overwrite it on every filter change.
+   */
+  syncUrl?: boolean;
 }
 
-const { routes = [] } = Astro.props;
+const {
+  routes = [],
+  cardAction = 'expand',
+  selectedSlug = null,
+  syncUrl = true,
+} = Astro.props;
 
 // Default server-rendered route list
 const initialRoutes = filterAndSortRoutes(routes, DEFAULT_FILTER_STATE);
@@ -33,7 +51,7 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
 ];
 ---
 
-<div class="route-catalogue" id="route-catalogue">
+<div class="route-catalogue" id="route-catalogue" data-sync-url={syncUrl ? 'true' : 'false'}>
   <div class="catalogue-main page-frame">
     <!-- Left Filter Sidebar -->
     <aside
@@ -289,7 +307,12 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
                 data-featured={route.featured ? 'true' : 'false'}
                 data-tags={JSON.stringify(route.tags || [])}
               >
-                <RouteCard route={route} colorTheme={theme} />
+                <RouteCard
+                  route={route}
+                  colorTheme={theme}
+                  action={cardAction}
+                  selected={cardAction === 'select' && route.slug?.current === selectedSlug}
+                />
               </div>
             );
           })
@@ -314,7 +337,7 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
 <style>
   .route-catalogue {
     width: 100%;
-    background-color: var(--color-canvas-black);
+    background-color: transparent;
     color: var(--color-canvas-white);
     position: relative;
     padding-bottom: var(--space-12);
@@ -326,7 +349,7 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
     position: sticky;
     top: var(--header-height);
     z-index: 25;
-    background-color: var(--color-canvas-black);
+    background-color: transparent;
     border-bottom: var(--border-hairline);
     padding: var(--space-04) var(--space-05);
     align-items: center;
@@ -730,7 +753,10 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
         });
       }
 
-      // 5. Update URL query params without reloading
+      // 5. Update URL query params without reloading, unless the host surface
+      //    owns its own URL (the Adoption Portal keeps its panel in `?step=`).
+      if (root?.getAttribute('data-sync-url') === 'false') return;
+
       const url = new URL(window.location.href);
       const params = toFilterParams(currentState);
       // Preserve current view param if present

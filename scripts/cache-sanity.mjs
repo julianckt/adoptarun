@@ -114,6 +114,24 @@ const SITE_COPY_QUERY = `*[_type == "siteCopy" && _id in ["siteCopy", "drafts.si
   ctaDescription
 }`;
 
+// Adoption confirmation email copy. Baked into the bundle at build time so the
+// signup endpoint never makes a Sanity call on the Adopter's critical path.
+const EMAIL_COPY_QUERY = `*[_type == "emailCopy" && _id in ["emailCopy", "drafts.emailCopy"]][0] {
+  _id,
+  _type,
+  subject,
+  preheader,
+  greeting,
+  intro,
+  adopterIdLabel,
+  adopterIdNote,
+  ctaIntro,
+  ctaLabel,
+  closing,
+  signoff,
+  footerNote
+}`;
+
 async function syncSanityCache() {
   const client = createClient({
     projectId,
@@ -125,11 +143,12 @@ async function syncSanityCache() {
 
   try {
     console.log(`[sanity-cache] Fetching published data from Sanity (${projectId}/${dataset})...`);
-    const [routes, charities, settings, siteCopy] = await Promise.all([
+    const [routes, charities, settings, siteCopy, emailCopy] = await Promise.all([
       client.fetch(ROUTES_QUERY),
       client.fetch(CHARITIES_QUERY),
       client.fetch(SETTINGS_QUERY),
       client.fetch(SITE_COPY_QUERY),
+      client.fetch(EMAIL_COPY_QUERY),
     ]);
 
     // Read previous cache to preserve fallback routes or data if new query returned empty
@@ -147,6 +166,7 @@ async function syncSanityCache() {
         charities: Array.isArray(charities) && charities.length > 0 ? charities : (previousCache?.data?.charities || []),
         settings: settings || previousCache?.data?.settings || null,
         siteCopy: siteCopy || previousCache?.data?.siteCopy || null,
+        emailCopy: emailCopy || previousCache?.data?.emailCopy || null,
       },
     };
 

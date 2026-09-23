@@ -48,7 +48,7 @@ const displayRoutes = selectFeaturedRoutes(routes, 3);
       {
         displayRoutes.map((route) => (
           <div class="featured-routes-item">
-            <RouteCard route={route} />
+            <RouteCard route={route} action="link" href="/routes" />
           </div>
         ))
       }

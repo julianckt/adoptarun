@@ -13,21 +13,21 @@ describe('Domain Repositories Integration', () => {
   });
 
   describe('CountersRepository', () => {
-    it('retrieves initial current value of 1200', async () => {
+    it('retrieves initial current value of 1100', async () => {
       const val = await CountersRepository.getCurrentValue(db);
-      expect(val).toBe(1200);
+      expect(val).toBe(1100);
     });
 
     it('atomically increments sequence by random or custom jump', async () => {
       const seq1 = await CountersRepository.nextSequence(db, 3);
-      expect(seq1).toBe(1203);
+      expect(seq1).toBe(1103);
 
       const seq2 = await CountersRepository.nextSequence(db, 2);
-      expect(seq2).toBe(1205);
+      expect(seq2).toBe(1105);
 
       const seq3 = await CountersRepository.nextSequence(db);
-      expect(seq3).toBeGreaterThanOrEqual(1206);
-      expect(seq3).toBeLessThanOrEqual(1209);
+      expect(seq3).toBeGreaterThanOrEqual(1106);
+      expect(seq3).toBeLessThanOrEqual(1109);
     });
   });
 
@@ -46,8 +46,8 @@ describe('Domain Repositories Integration', () => {
         customJump: 4,
       });
 
-      expect(adoption.seq_num).toBe(1204);
-      expect(adoption.adopter_id).toBe('1204-JC');
+      expect(adoption.seq_num).toBe(1104);
+      expect(adoption.adopter_id).toBe('1104-JC');
       expect(adoption.status).toBe('committed');
       expect(adoption.animal_name).toBe('Sparky');
       expect(adoption.target_hkd).toBe(800);
@@ -63,8 +63,8 @@ describe('Domain Repositories Integration', () => {
         customJump: 1,
       });
 
-      expect(walkIn.seq_num).toBe(1201);
-      expect(walkIn.adopter_id).toBe('1201-CN');
+      expect(walkIn.seq_num).toBe(1101);
+      expect(walkIn.adopter_id).toBe('1101-CN');
       expect(walkIn.status).toBe('walk_in');
       expect(walkIn.commitment_days).toBe(0);
       expect(walkIn.target_hkd).toBeNull();
@@ -142,8 +142,8 @@ describe('Domain Repositories Integration', () => {
         elevationProfileJson: [{ distance_km: 0, elevation_m: 10, lat: 22.3, lng: 114.1 }],
       });
 
-      expect(log.run_id).toBe('1201-JC');
-      expect(log.adoption_ref_id).toBe('1201-JC');
+      expect(log.run_id).toBe('1101-JC');
+      expect(log.adoption_ref_id).toBe('1101-JC');
 
       // Check adoption status updated
       const parent = await AdoptionsRepository.getById(db, adoption.adopter_id);
@@ -171,7 +171,7 @@ describe('Domain Repositories Integration', () => {
         polylineJson: 'poly1',
         elevationProfileJson: '[]',
       });
-      expect(log1.run_id).toBe('1201-JC');
+      expect(log1.run_id).toBe('1101-JC');
 
       const log2 = await RunLogsRepository.create(db, {
         adoptionRefId: adoption.adopter_id,
@@ -183,7 +183,7 @@ describe('Domain Repositories Integration', () => {
         polylineJson: 'poly2',
         elevationProfileJson: '[]',
       });
-      expect(log2.run_id).toBe('1201-JC-2');
+      expect(log2.run_id).toBe('1101-JC-2');
 
       const log3 = await RunLogsRepository.create(db, {
         adoptionRefId: adoption.adopter_id,
@@ -195,7 +195,7 @@ describe('Domain Repositories Integration', () => {
         polylineJson: 'poly3',
         elevationProfileJson: '[]',
       });
-      expect(log3.run_id).toBe('1201-JC-3');
+      expect(log3.run_id).toBe('1101-JC-3');
 
       const allLogs = await RunLogsRepository.findByAdopterId(db, adoption.adopter_id);
       expect(allLogs.length).toBe(3);

@@ -21,7 +21,7 @@ Furthermore, non-profit charities struggle to engage modern urban demographics i
 
 The Adopt A Run web platform provides:
 1. **A Dynamic Visual Identity & Lumos Design System**: Built with Astro (Hybrid SSR), React islands, and the Lumos Framework for Astro (`@layer base, patterns, components, utilities` + fluid clamp design tokens), featuring dynamic typography, interactive route polyline animations, and a centralized responsive navigation header.
-2. **A 3-Page Discovery & Adoption Portal (`/routes`, `/charities`, `/signup`)**: A catalog for discovering and filtering Strava Art Routes, a dedicated partner charities showcase launching with SPCA, and a zero-login 4-step adoption wizard where runners match with an Artwork, select a Charity Cause, set dynamic commitment and fundraising target goals, name their route animal companion (strictly required), and receive a persistent 6-character **Adopter ID** (`NNNN-CC`, starting from seed `1200`).
+2. **A 3-Page Discovery & Adoption Portal (`/routes`, `/charities`, `/signup`)**: A catalog for discovering and filtering Strava Art Routes, a dedicated partner charities showcase launching with SPCA, and a zero-login 4-step adoption wizard where runners match with an Artwork, select a Charity Cause, set dynamic commitment and fundraising target goals, name their route animal companion (strictly required), and receive a persistent 6-character **Adopter ID** (`NNNN-CC`, starting from seed `1100`).
 3. **An Ephemeral Strava OAuth & Server-Side Verification Engine (`/api/strava-callback`, `/api/verify-gpx`, `/api/confirm-run`)**: A zero-password run verification pipeline executing securely inside Cloudflare Pages Functions using stateless signed tokens. It matches completed Strava runs for Adopters using a 3-layer spatial algorithm (activity type, 20-day window, ±40% distance, start radius, 10-point trajectory sample) with a 6-tier fallback hierarchy, handing candidate activities to `/log` via a signed URL parameter (`review_token`), or accepts raw `.gpx` file uploads parsed 100% server-side with spatial checks bypassed.
 4. **Interactive Digital Certificate System (`/log/:run_id`)**: Publicly accessible, independent run log dashboards displaying Leaflet GPX route traces synchronized with interactive elevation scrubbers, verified run telemetry metrics, Sanity CMS impact equivalencies, and clean "Pass the Torch" recruitment actions. Unlogged IDs render a clean 404 page. Printable physical certificates and social share graphics are retained for future deployment, presenting a sleek "Feature Coming Soon" modal in the MVP.
 5. **Decoupled Edge Data Infrastructure**: Serverless execution on Cloudflare Pages & Functions (Hybrid SSR), Sanity.io Headless CMS hosted at `adoptarun.sanity.studio` with `@sanity/visual-editing` (Stega) for in-context live visual editing and in-browser GPX route parsing, Cloudflare D1 SQLite for adoptions and run telemetry with atomic sequence counters and automatic multi-run suffix resolution (`1200-JC-2`), static SSG marketing pages with editable community movement counters managed via Sanity `siteCopy`, Nano Stores for zero-bundle cross-island state, synchronous Resend transactional emails with non-blocking error handling, and a blueprint for future Raisely P2P donations (`donate.adoptarun.hk`).
@@ -43,7 +43,7 @@ The Adopt A Run web platform provides:
 9. As an urban runner adopting a scheduled group run, I want my target date and commitment days to automatically derive from the event date, so that I do not have to manually configure timeframe sliders.
 10. As an urban runner, I want scheduled group run routes to retain their group status in the header ticker, catalog pinning, and wizard until 24 hours after the meetup time (`groupRunDateTime + 24h`), so that runners can still commit during the event day before the route automatically converts to standard solo adoption mode.
 11. As an urban runner, I want to give a custom name to my route's animal companion as a required step, so that I establish a personal caretaker connection with the artwork I am running.
-12. As an urban runner, I want to receive a unique 6-character Adopter ID (`NNNN-CC`, starting from seed `1200-JC`) upon committing, so that I have a persistent identifier to track, share, and log my run.
+12. As an urban runner, I want to receive a unique 6-character Adopter ID (`NNNN-CC`, starting from seed `1100-JC`) upon committing, so that I have a persistent identifier to track, share, and log my run.
 13. As an urban runner, I want to receive a transactional confirmation email containing my Adopter ID and commitment details, so that I have a reference link to return to whenever I am ready to complete my run.
 14. As an urban runner, I want to visit a dedicated run logging page (`/log`) to log my completed run via 1-click Strava OAuth, so that my activity is securely retrieved, spatially verified on the server against the artwork polyline (within 20 days lookback), and logged without manual metric entry.
 15. As an urban runner, I want a clear fallback hierarchy when Strava activities do not perfectly match (single match card, top 3 match cards, "Cannot find my run" raw table list, or catchall banner), so that I can always identify and confirm my activity.
@@ -79,7 +79,7 @@ The Adopt A Run web platform provides:
 - **Visual Code Authoring (Stacki)**: Astro components strictly follow clean-prop forwarding (`class:list`, `{...props}`, slots) so that the local desktop Stacki visual editor can cleanly parse and manipulate `.astro` files. Stacki owns local layout/template engineering; Sanity CMS owns live content.
 - **Cross-Island State Management**: Nano Stores (`nanostores` + `@nanostores/react`) for lightweight (~1 KB) atomic reactive state sharing between decoupled React islands (e.g., Adoption Wizard summary rail, Header ticker) and static Astro templates.
 - **Headless CMS & In-Browser GPX Processing**: Sanity.io Studio hosted on Sanity Cloud (`adoptarun.sanity.studio`), with `@sanity/visual-editing` and Stega content source maps for in-context live visual editing. Stega, drafts, and the Visual Editing island are confined to the on-demand `/preview` route (unlocked by Presentation's draft-mode handshake at `/api/draft-mode/enable` and a server-only `SANITY_API_READ_TOKEN`); every static public page is published-only with stega off, enforced by the post-build guard `scripts/check-build.mjs` (issue #20). A custom `GpxUploadInput` React component in Sanity Studio processes GPX files directly in the browser using the shared `gpx-parser.ts` utility to auto-calculate metrics, polylines, and elevation SVG paths. A dedicated string sanitization helper (`cleanStega()`) strips invisible Stega Unicode characters from numerical telemetry (distance, elevation) before math or mapping operations.
-- **Edge Database & Sequence Generator**: Cloudflare D1 (SQLite) executing via Cloudflare Pages Functions. Cloudflare R2 is eliminated; GPS polylines (Google Encoded Polyline format, ~2–4 KB) and elevation sample arrays are stored directly in D1 `run_logs` text columns. Sequence numbering uses plain integers initialized at seed `1200` with atomic mutations via a dedicated `counters` table with pseudo-jumps (+1 to +4).
+- **Edge Database & Sequence Generator**: Cloudflare D1 (SQLite) executing via Cloudflare Pages Functions. Cloudflare R2 is eliminated; GPS polylines (Google Encoded Polyline format, ~2–4 KB) and elevation sample arrays are stored directly in D1 `run_logs` text columns. Sequence numbering uses plain integers initialized at seed `1100` with atomic mutations via a dedicated `counters` table with pseudo-jumps (+1 to +4).
 - **Server-Side Verification Engine**: Strava OAuth token exchange, GPX file parsing, and 3-layer spatial matching execute securely 100% server-side on Cloudflare Pages Functions (`/api/strava-callback`, `/api/verify-gpx`) to protect `CLIENT_SECRET` and maintain metric calculation integrity.
 - **Authentication**: Zero-login architecture. Public identification handled via 6-character `adopter_id` (`NNNN-CC`).
 - **Scope**: Single-language English platform for Phase 1. All donation integrations (Raisely REST API v3 / `donate.adoptarun.hk`), live donor walls, physical certificate generator (`jsPDF`), dynamic social preview card generators, and email background cron daemons are deferred to Future Deployment.
@@ -121,7 +121,7 @@ The styling layer is implemented using the Lumos CSS Framework structured around
 -- 1. COUNTERS TABLE (Atomic sequence generator for Adopter IDs)
 CREATE TABLE counters (
   id TEXT PRIMARY KEY,                        -- 'adopter_seq'
-  current_val INTEGER NOT NULL DEFAULT 1200   -- Initialized at seed 1200
+  current_val INTEGER NOT NULL DEFAULT 1100   -- Initialized at seed 1100
 );
 
 -- 2. ADOPTIONS TABLE (Runner adoption portal commitments & upfront walk-ins)
@@ -243,7 +243,7 @@ CREATE INDEX idx_donations_adopter_created ON donations(adopter_id, created_at D
 ### 8. Adopter ID Generation, Walk-In Business Rules & Multi-Run Auto-Suffixing
 
 - **Adopter ID Format**: `NNNN-CC` (e.g. `1204-JC`).
-- **Sequence Generation**: `NNNN` derives from the `counters` table initialized at seed `1200`. Each new adoption executes an atomic transaction incrementing `current_val` by a random offset `floor(random() * 4) + 1` (+1 to +4) and formatting `NNNN = lpad(current_val, 4, '0')` (expanding to 5+ digits if sequence exceeds 9999).
+- **Sequence Generation**: `NNNN` derives from the `counters` table initialized at seed `1100`. Each new adoption executes an atomic transaction incrementing `current_val` by a random offset `floor(random() * 4) + 1` (+1 to +4) and formatting `NNNN = lpad(current_val, 4, '0')` (expanding to 5+ digits if sequence exceeds 9999).
 - **Initials Rule (`CC`)**: `(firstName[0] + (lastName[0] || firstName[1] || 'A')).toUpperCase()`. Form validation enforces ASCII alphabetic characters (A-Z).
 - **Walk-In Flow**: Walk-in runners complete a form (**First Name**, **Last Name**, **Email (required)**, **Charity Selection**, **Animal Companion Name**). An `adoptions` record is created upfront:
   - `status = 'walk_in'`
@@ -409,7 +409,7 @@ Testing is organized around **three high-level testing seams**:
 |  SEAM 3: Domain Algorithm & Parser Utility Seam                       |
 |  - Shared GPX XML parser & telemetry calculations (distance/pace)     |
 |  - Strava 3-layer spatial activity matcher (Haversine + sampling)     |
-|  - Atomic Adopter ID generator (`NNNN-CC` seed 1200 + random offsets) |
+|  - Atomic Adopter ID generator (`NNNN-CC` seed 1100 + random offsets) |
 |  - Multi-run auto-suffix generator (`1200-JC-2`)                      |
 +-----------------------------------------------------------------------+
 ```
@@ -420,7 +420,7 @@ Testing is organized around **three high-level testing seams**:
 
 ### 2. Modules to be Tested
 
-1. **Adopter ID Generator**: Unit tests verifying seed `1200` sequence generation, atomic counter mutations, pseudo-sequential offsets (+1 to +4), ASCII initials formatting, and multi-run auto-suffixing (`1200-JC-2`).
+1. **Adopter ID Generator**: Unit tests verifying seed `1100` sequence generation, atomic counter mutations, pseudo-sequential offsets (+1 to +4), ASCII initials formatting, and multi-run auto-suffixing (`1200-JC-2`).
 2. **Spatial Verification Engine**: Integration tests asserting pass/fail decisions for candidate Strava activities against catalog routes under distance, radius, and 10-point trajectory constraints, as well as spatial bypass for walk-in runs and GPX uploads.
 3. **Adoption API (`/api/signup`)**: API contract tests validating request payloads, D1 `adoptions` table inserts, required companion animal name validation, group run 24h auto-fallback date calculations, and Resend transactional email payload dispatching.
 4. **Run Verification & Ingestion APIs (`/api/strava-callback`, `/api/verify-gpx`, `/api/confirm-run`)**: Edge function tests validating signed `state` tokens, `review_token` redirection, Strava activity matching, server-side `.gpx` XML parsing (with 5MB cap and spatial bypass), Stega string sanitization, and `run_logs` D1 database writes.

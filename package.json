@@ -16,7 +16,7 @@
     "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro check && tsc --noEmit",
     "check:design": "node .agents/skills/impeccable/scripts/detect.mjs src/ && node scripts/check-design-tokens.mjs",
     "generate:favicons": "node scripts/generate-favicons.mjs",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "echo 'Deploys run from GitHub — push to trigger. Use npm run build to verify locally.' && exit 1",
     "studio:dev": "sanity dev",
     "studio:build": "sanity build",
     "studio:deploy": "sanity deploy",

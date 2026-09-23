@@ -2,8 +2,6 @@ import { defineConfig, envField } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 
-const isBuildOrPreview = process.argv.some((arg) => ['build', 'preview'].includes(arg));
-
 // https://astro.build/config
 export default defineConfig({
   site: 'https://adoptarun.org',
@@ -18,11 +16,13 @@ export default defineConfig({
       PUBLIC_CARTO_API_KEY_PROD: envField.string({ context: 'client', access: 'public', optional: true }),
     },
   },
-  adapter: isBuildOrPreview
-    ? cloudflare({
-        imageService: 'compile',
-      })
-    : undefined,
+  // Attached in dev as well as build: `POST /api/signup` and the confirmation
+  // page read D1 off `locals.runtime.env`, which only exists when the site runs
+  // inside workerd. Local bindings come from `wrangler.jsonc`, secrets from
+  // `.dev.vars`, so dev, preview, and production share one runtime.
+  adapter: cloudflare({
+    imageService: 'compile',
+  }),
   integrations: [
     react(),
   ],

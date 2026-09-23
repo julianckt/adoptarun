@@ -540,6 +540,544 @@
     margin-top: var(--space-00);
   }
 
+  /* Card trigger: a stretched overlay inside the card, not a wrapper around
+     it, so the card's own layout box and its heading/time semantics are
+     untouched. Its text is the accessible name and is visually hidden. */
+  .route-card-trigger {
+    position: absolute;
+    inset: var(--space-00);
+    z-index: 4;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: var(--space-00);
+    border: none;
+    border-radius: var(--radius-none) !important;
+    background: none;
+    color: transparent;
+    font: inherit;
+    font-size: var(--font-size-micro);
+    text-align: left;
+    text-decoration: none;
+    text-indent: -100vw;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .route-card-trigger:focus-visible {
+    outline: var(--space-01) solid var(--color-accent);
+    outline-offset: calc(-1 * var(--space-01));
+  }
+
+  /* Adoption Portal: the Artwork currently chosen. Marked with an inset rule
+     rather than a tint, so the card's own sanctioned fill still reads. */
+  .route-card--selected {
+    outline: var(--space-02) solid var(--color-canvas-white);
+    outline-offset: calc(-1 * var(--space-02));
+  }
+
+  /* -------------------------------------------------------------
+     Expanded Route Card: "The Long Trace"
+     An unbalanced tricolour — the trace bleeding top to bottom with the
+     elevation welded to its foot, one uninterrupted column of type, and
+     the cover photograph held back behind a scrim. Owns no width and no
+     height: the modal shell and the detail page each give it a box, and
+     container queries do the rest.
+     ------------------------------------------------------------- */
+  /* The shell owns the container; the card is queried as its descendant.
+     An element is never its own query container, so the breakpoints below
+     would be dead code if container-type sat on .route-expanded itself. */
+  .route-expanded-shell {
+    width: 100%;
+    container-type: inline-size;
+  }
+
+  .route-expanded {
+    --route-card-accent: var(--color-route-orange);
+    --route-trace-color: var(--route-card-accent);
+    --route-expanded-gutter: var(--space-06);
+    width: 100%;
+    display: grid;
+    grid-template-columns: 4.5fr 3.5fr 2.5fr;
+    align-items: stretch;
+    background-color: var(--color-canvas-black);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-none) !important;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    box-shadow: none;
+  }
+
+  .route-expanded--orange {
+    --route-card-accent: var(--color-route-orange);
+  }
+
+  .route-expanded--coral {
+    --route-card-accent: var(--color-route-coral);
+  }
+
+  .route-expanded--blush {
+    --route-card-accent: var(--color-route-blush);
+  }
+
+  .route-expanded :where(h2, p, dl, dd, figure, figcaption) {
+    margin: var(--space-00);
+  }
+
+  /* ---- Left column: trace + elevation ---- */
+  .route-expanded-trace {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--color-canvas-black);
+  }
+
+  .route-expanded-map {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: calc(var(--space-13) * 1.75);
+    aspect-ratio: 356 / 300;
+    overflow: hidden;
+    background-color: var(--color-canvas-black);
+  }
+
+  .route-expanded-minimap,
+  .route-expanded-minimap-svg,
+  .route-expanded-minimap-svg svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .route-expanded-minimap {
+    position: relative;
+    color: var(--route-trace-color);
+  }
+
+  /* One cached template serves both modes; the active one is set on open. */
+  .route-expanded[data-map-mode="leaflet"] .route-expanded-minimap {
+    display: none;
+  }
+
+  .route-expanded-minimap-svg svg {
+    object-fit: cover;
+  }
+
+  .route-expanded-minimap-marker {
+    position: absolute;
+    inset: var(--space-00);
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .route-expanded-minimap-marker.is-visible {
+    opacity: 1;
+  }
+
+  .route-expanded-minimap-marker circle {
+    fill: var(--color-canvas-white);
+    stroke: var(--route-card-accent);
+    stroke-width: 2;
+  }
+
+  /* The elevation strip is welded to the map's foot: no gap, no seam. */
+  .route-expanded-elevation {
+    position: relative;
+    flex: 0 0 auto;
+    padding: var(--space-05) var(--space-00) var(--space-00);
+    background-color: var(--color-canvas-black);
+    cursor: crosshair;
+  }
+
+  .route-expanded-elevation-svg {
+    display: block;
+    width: 100%;
+    height: var(--space-09);
+  }
+
+  .route-expanded-elevation-area {
+    fill: color-mix(in srgb, var(--route-card-accent) 20%, transparent);
+    stroke: none;
+  }
+
+  .route-expanded-elevation-crest {
+    fill: none;
+    stroke: var(--route-card-accent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .route-expanded-elevation-cursor {
+    stroke: var(--color-canvas-white);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    opacity: 0;
+  }
+
+  .route-expanded-elevation.is-tracking .route-expanded-elevation-cursor {
+    opacity: 0.7;
+  }
+
+  .route-expanded-elevation-scale {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-04);
+    padding: var(--space-03) var(--space-05) var(--space-05);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-body);
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .route-expanded-elevation-readout {
+    color: var(--route-card-accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Middle column: banner, then one column of type ---- */
+  .route-expanded-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--color-canvas-black);
+    border-left: var(--border-hairline);
+  }
+
+  .route-expanded-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-05);
+    padding: var(--space-06) var(--route-expanded-gutter);
+    background-color: var(--route-card-accent);
+    color: var(--color-canvas-black);
+  }
+
+  .route-expanded-banner-identity {
+    min-width: 0;
+  }
+
+  .route-expanded-difficulty {
+    font-family: var(--font-body);
+    font-size: clamp(var(--font-size-label), 5cqi, var(--font-size-body));
+    line-height: var(--leading-body);
+    padding-bottom: var(--space-01);
+  }
+
+  .route-expanded-district {
+    margin-top: var(--space-02) !important;
+    font-family: var(--font-display);
+    font-optical-sizing: none;
+    font-variation-settings: 'opsz' 72, 'wght' 700;
+    font-weight: 700;
+    font-size: clamp(var(--font-size-metric), 11cqi, var(--font-size-wordmark));
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-black);
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  .route-expanded-distance {
+    flex-shrink: 0;
+    font-family: var(--font-body);
+    font-size: clamp(var(--font-size-tagline), 16cqi, var(--font-size-wordmark));
+    font-weight: 400;
+    line-height: 0.85;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .route-expanded-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-05);
+    padding: var(--space-05) var(--route-expanded-gutter);
+    border-bottom: var(--border-hairline);
+  }
+
+  .route-expanded-tags {
+    min-width: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    letter-spacing: 0.02em;
+    color: var(--color-text-secondary);
+  }
+
+  .route-expanded-telemetry {
+    display: flex;
+    gap: var(--space-06);
+    flex-shrink: 0;
+  }
+
+  .route-expanded-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-01);
+  }
+
+  .route-expanded-metric dt {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 300;
+    line-height: var(--leading-compressed);
+    color: var(--color-text-secondary);
+  }
+
+  .route-expanded-metric dd {
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-compressed);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Group-run additions read as notes in green ink, never as a panel. */
+  .route-expanded-groupnotes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-03);
+    padding: var(--space-05) var(--route-expanded-gutter) var(--space-00);
+  }
+
+  .route-expanded-groupnote {
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: 1.35;
+    color: var(--color-group-run-green);
+    text-wrap: pretty;
+  }
+
+  .route-expanded-description {
+    padding: var(--space-05) var(--route-expanded-gutter);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: 1.5;
+    max-width: 68ch;
+    color: var(--color-text-secondary);
+    text-wrap: pretty;
+  }
+
+  .route-expanded-foot {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-05);
+    padding-top: var(--space-05);
+    border-top: var(--border-hairline);
+  }
+
+  .route-expanded-foot-row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-05);
+    padding: var(--space-00) var(--route-expanded-gutter);
+  }
+
+  .route-expanded-start {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-02);
+    min-width: 0;
+    font-family: var(--font-body);
+    line-height: var(--leading-body);
+  }
+
+  .route-expanded-start-label {
+    font-size: var(--font-size-micro);
+    font-weight: 300;
+    color: var(--color-text-secondary);
+  }
+
+  .route-expanded-start-value {
+    font-size: var(--font-size-label);
+    color: var(--color-text-primary);
+  }
+
+  .route-expanded-strava {
+    flex-shrink: 0;
+    margin-left: auto;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-action);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    text-underline-offset: var(--space-02);
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .route-expanded-strava:hover {
+    color: var(--route-card-accent);
+    text-decoration: underline;
+  }
+
+  .route-expanded-adopt {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--space-05) var(--route-expanded-gutter);
+    background-color: color-mix(in srgb, var(--route-card-accent) 20%, transparent);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-none) !important;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-action);
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .route-expanded-adopt:hover,
+  .route-expanded-adopt:focus-visible {
+    background-color: color-mix(in srgb, var(--route-card-accent) 38%, transparent);
+  }
+
+  .route-expanded-adopt:active {
+    background-color: color-mix(in srgb, var(--route-card-accent) 50%, transparent);
+  }
+
+  /* ---- Right column: the photograph, held back ---- */
+  .route-expanded-cover {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    background-color: var(--route-card-accent);
+  }
+
+  .route-expanded-cover-img,
+  .route-expanded-cover-field {
+    position: absolute;
+    inset: var(--space-00);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-none) !important;
+  }
+
+  .route-expanded-cover-field {
+    background-color: var(--route-card-accent);
+  }
+
+  /* Heavy scrim fading toward the info column: vibrance, never a surface. */
+  .route-expanded-cover-scrim {
+    position: absolute;
+    inset: var(--space-00);
+    pointer-events: none;
+    background: linear-gradient(to left,
+        color-mix(in srgb, var(--color-canvas-black) 20%, transparent) 0%,
+        color-mix(in srgb, var(--color-canvas-black) 62%, transparent) 55%,
+        var(--color-canvas-black) 100%);
+  }
+
+  /* ---- Group-run bookmark ----
+     Reuses the standard card's .route-card-bookmark* rules verbatim; only
+     its placement differs here, so nothing about the device is redefined. */
+  .route-expanded .route-card-bookmark {
+    position: absolute;
+    top: var(--space-00);
+    left: var(--space-06);
+    z-index: 3;
+    margin: var(--space-00);
+  }
+
+  /* ---- Tablet: the cover becomes the info column's ground ---- */
+  @container (max-width: 64rem) {
+    .route-expanded {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto;
+    }
+
+    .route-expanded-info {
+      position: relative;
+      border-left: none;
+      border-top: var(--border-hairline);
+      background-color: transparent;
+    }
+
+    .route-expanded-cover {
+      position: absolute;
+      inset: var(--space-00);
+      z-index: 0;
+      grid-area: 2 / 1;
+    }
+
+    .route-expanded-cover-scrim {
+      background: linear-gradient(to top,
+          color-mix(in srgb, var(--color-canvas-black) 92%, transparent) 0%,
+          color-mix(in srgb, var(--color-canvas-black) 82%, transparent) 100%);
+    }
+
+    .route-expanded-info > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .route-expanded-map {
+      aspect-ratio: 16 / 9;
+      min-height: calc(var(--space-10) * 4 + var(--space-06));
+    }
+  }
+
+  /* ---- Phone: single column, tighter gutters ---- */
+  @container (max-width: 40rem) {
+    .route-expanded {
+      --route-expanded-gutter: var(--space-05);
+    }
+
+    .route-expanded-map {
+      aspect-ratio: 4 / 3;
+      min-height: calc(var(--space-13) + var(--space-11));
+    }
+
+    .route-expanded-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-03);
+    }
+
+    .route-expanded-meta {
+      flex-direction: column;
+      gap: var(--space-04);
+    }
+
+    .route-expanded-telemetry {
+      gap: var(--space-07);
+    }
+
+    .route-expanded-metric {
+      align-items: flex-start;
+    }
+
+    .route-expanded-foot-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-03);
+    }
+
+    .route-expanded-strava {
+      margin-left: var(--space-00);
+    }
+
+    .route-expanded .route-card-bookmark {
+      left: var(--space-05);
+    }
+  }
+
   /* -------------------------------------------------------------
      Site Header (5-Column Grid & Sticky Shell)
      ------------------------------------------------------------- */
@@ -1737,5 +2275,1627 @@
     width: 100%;
     background-color: var(--color-surface-canvas);
     border-top: var(--border-hairline);
+  }
+
+  /* -------------------------------------------------------------
+     Adoption Portal (/signup)
+
+     One world, moving left. Five panels sit on a single horizontal
+     track; the track is moved by the flow, never by a gesture, and a
+     move means exactly one thing: a decision was made. Vertical
+     scrolling belongs to the panels. The two axes never overlap, which
+     is what lets the Route Catalogue keep its full height inside a
+     panel without fighting the transition.
+
+     The panels are read as an instrument being calibrated. Each one is
+     a measured column, centred in the viewport and set against a
+     ticked hairline gutter that carries the position marker — so the
+     composition is built outward from the middle rather than inward
+     from the page margins, and the mesh is visible on both flanks
+     instead of behind a form pinned to the left wall.
+     ------------------------------------------------------------- */
+  .signup-shell {
+    overflow: hidden;
+  }
+
+  .signup-portal {
+    position: relative;
+    width: 100%;
+    height: calc(100dvh - var(--header-height));
+    min-height: var(--hero-main-min-height);
+    overflow: hidden;
+    /* The column the gutter and every panel measure themselves against.
+       Declared here so the marker in the gutter and the content it marks
+       are sized by one number rather than two kept in step. */
+    --signup-column: var(--signup-column-wide);
+  }
+
+  .signup-portal[data-panel='charity'] {
+    --signup-column: var(--signup-column-mid);
+  }
+
+  .signup-portal[data-panel='details'] {
+    --signup-column: var(--signup-column-narrow);
+  }
+
+  .signup-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform var(--duration-slow) var(--ease-out-expo);
+    will-change: transform;
+  }
+
+  /* The instrument frame: a gutter column that stays empty for the marker,
+     and the measured column that holds the panel. `justify-content: center`
+     is the whole inversion — the frame is placed from the middle out, and
+     the page gutter only keeps it off the glass. */
+  .signup-panel {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns:
+      var(--signup-gutter)
+      min(var(--signup-column), calc(100% - var(--signup-gutter)));
+    justify-content: center;
+    align-content: center;
+    align-content: safe center;
+    padding: var(--space-10) var(--page-gutter);
+    overflow-y: auto;
+    overflow-x: hidden;
+    opacity: 1;
+    transition: opacity var(--duration-normal) var(--ease-out-expo);
+  }
+
+  .signup-panel > * {
+    grid-column: 2;
+  }
+
+  .signup-panel[data-active='false'] {
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .signup-panel:focus-visible {
+    outline: none;
+  }
+
+  /* The panel where only the decision is left clears the right third for the
+     sphere. The frame still centres — inside a box the sphere has narrowed. */
+  .signup-panel[data-panel='commit'] {
+    padding-right: calc(var(--page-gutter) + var(--signup-sphere-shift));
+  }
+
+  /* Panels 2 and 3 centre inside the space the rail leaves rather than
+     sliding under it. */
+  .signup-panel[data-panel='charity'],
+  .signup-panel[data-panel='details'] {
+    padding-right: calc(var(--page-gutter) + var(--signup-rail-width) + var(--space-09));
+  }
+
+  .signup-heading {
+    margin: var(--space-00) var(--space-00) var(--space-08);
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-headline);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    text-wrap: balance;
+  }
+
+  .signup-empty {
+    max-width: var(--hero-header-max-width);
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: 1.4;
+  }
+
+  /* The action sits on its own ruled foot, so every panel ends the same way:
+     a hairline, then the one thing left to press. */
+  .signup-panel-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-05) var(--space-06);
+    align-items: center;
+    margin-top: var(--space-09);
+    padding-top: var(--space-06);
+    border-top: var(--border-hairline);
+  }
+
+  /* ---- The gutter: a position marker, never a control ----
+     A horizontal strip of evenly weighted labels is a tab bar whatever its
+     semantics claim, and it was read as one. Here the scale is vertical, only
+     ticks are drawn, and the step is named to assistive technology alone. */
+  .signup-stepper {
+    position: absolute;
+    inset: var(--space-00);
+    z-index: 3;
+    display: grid;
+    grid-template-columns:
+      var(--signup-gutter)
+      min(var(--signup-column), calc(100% - var(--signup-gutter)));
+    justify-content: center;
+    align-content: center;
+    padding: var(--space-10) var(--page-gutter);
+    pointer-events: none;
+  }
+
+  /* The gutter tracks whatever the active panel reserved on its right, so the
+     marker stays fixed to the column it measures. */
+  .signup-portal[data-panel='commit'] .signup-stepper {
+    padding-right: calc(var(--page-gutter) + var(--signup-sphere-shift));
+  }
+
+  .signup-portal[data-panel='charity'] .signup-stepper,
+  .signup-portal[data-panel='details'] .signup-stepper {
+    padding-right: calc(var(--page-gutter) + var(--signup-rail-width) + var(--space-09));
+  }
+
+  .signup-stepper-index {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-01);
+    align-self: start;
+    margin: var(--space-00);
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
+    line-height: var(--leading-body);
+  }
+
+  .signup-stepper-ordinal {
+    color: var(--color-accent);
+    font-size: var(--font-size-metric);
+    font-weight: 500;
+    transition: color var(--duration-normal) var(--ease-out-expo);
+  }
+
+  .signup-stepper-total {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-micro);
+  }
+
+  /* The scale itself: an unmeasured rail, the travelled part lit over it, and
+     a tick at every step centre so the marker lands on a graduation. */
+  .signup-stepper-scale {
+    grid-column: 1;
+    grid-row: 2;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: start;
+    height: var(--space-13);
+    margin: var(--space-06) var(--space-00) var(--space-00);
+    padding: var(--space-00);
+    list-style: none;
+  }
+
+  .signup-stepper-scale::before,
+  .signup-stepper-scale::after {
+    content: '';
+    position: absolute;
+    top: var(--space-00);
+    left: var(--space-00);
+    width: var(--border-width-hairline);
+    height: 100%;
+  }
+
+  .signup-stepper-scale::before {
+    background-color: var(--signup-track-idle);
+  }
+
+  .signup-stepper-scale::after {
+    background-color: var(--color-accent);
+    transform: scaleY(var(--signup-stepper-travel, 0));
+    transform-origin: top center;
+    transition: transform var(--duration-slow) var(--ease-out-expo);
+  }
+
+  .signup-stepper-tick {
+    position: relative;
+    height: var(--border-width-hairline);
+  }
+
+  .signup-stepper-tick-mark {
+    display: block;
+    width: var(--signup-tick-length);
+    height: var(--border-width-hairline);
+    background-color: var(--signup-tick-idle);
+    transition:
+      width var(--duration-slow) var(--ease-out-expo),
+      background-color var(--duration-slow) var(--ease-out-expo);
+  }
+
+  .signup-stepper-tick[data-state='done'] .signup-stepper-tick-mark {
+    background-color: var(--color-accent);
+  }
+
+  /* The current graduation reads longer and lit — the only moving part. */
+  .signup-stepper-tick[data-state='current'] .signup-stepper-tick-mark {
+    width: var(--signup-tick-length-major);
+    height: var(--space-01);
+    background-color: var(--color-canvas-white);
+  }
+
+  /* ---- Intro: the invitation, and the one zero-stakes press ----
+     The one panel with no gutter and no scale: nothing has been calibrated
+     yet, so there is nothing to read off one. */
+  .signup-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    grid-column: 1 / -1;
+  }
+
+  .signup-intro-wordmark {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-05);
+    align-items: baseline;
+    margin: var(--space-00) var(--space-00) var(--space-07);
+    color: var(--color-canvas-white);
+    font-family: var(--font-wordmark);
+    font-size: var(--font-fluid-display);
+    line-height: var(--leading-hero-wordmark);
+  }
+
+  .signup-intro-lets {
+    font-variation-settings: 'wdth' 135, 'wght' 245;
+  }
+
+  .signup-intro-run {
+    font-variation-settings: 'wdth' 175, 'wght' 900;
+  }
+
+  .signup-intro-lede {
+    max-width: 58ch;
+    margin: var(--space-00) var(--space-00) var(--space-09);
+    padding-top: var(--space-06);
+    border-top: var(--border-hairline);
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: 1.4;
+  }
+
+  .signup-intro-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-05) var(--space-07);
+    align-items: center;
+  }
+
+  .signup-intro-alt {
+    padding: var(--space-00);
+    border: none;
+    border-bottom: var(--border-width-hairline) solid transparent;
+    border-radius: var(--radius-none);
+    background: none;
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-out-expo),
+      border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-intro-alt:hover,
+  .signup-intro-alt:focus-visible {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  /* ---- Primary action ----
+     Canvas White on Canvas Black, per the system. The delight is in the
+     travel: the arrow detaches and runs while the label holds, and a Canvas
+     Black graduation draws itself along the inside foot — the instrument
+     registering a press rather than a button inflating. */
+  .signup-cta {
+    position: relative;
+    display: inline-flex;
+    gap: var(--space-04);
+    align-items: center;
+    align-self: flex-start;
+    min-height: var(--min-tap-target);
+    padding: var(--space-05) var(--space-07);
+    border: none;
+    border-radius: var(--radius-none);
+    background-color: var(--color-action-primary);
+    color: var(--color-action-primary-text);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-action);
+    overflow: hidden;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-fast) var(--ease-out-expo),
+      box-shadow var(--duration-normal) var(--ease-out-expo),
+      transform var(--duration-instant) var(--ease-out-expo);
+  }
+
+  .signup-cta::after {
+    content: '';
+    position: absolute;
+    right: var(--space-07);
+    bottom: var(--space-04);
+    left: var(--space-07);
+    height: var(--border-width-hairline);
+    background-color: var(--color-action-primary-text);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--duration-normal) var(--ease-out-expo);
+  }
+
+  .signup-cta-arrow {
+    display: inline-block;
+    transition: transform var(--duration-normal) var(--ease-out-expo);
+  }
+
+  .signup-cta:hover,
+  .signup-cta:focus-visible {
+    background-color: var(--color-action-primary-hover);
+    box-shadow: var(--shadow-action-glow);
+  }
+
+  .signup-cta:hover::after,
+  .signup-cta:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .signup-cta:hover .signup-cta-arrow,
+  .signup-cta:focus-visible .signup-cta-arrow {
+    transform: translateX(var(--space-03));
+  }
+
+  .signup-cta:active {
+    transform: translateY(var(--border-width-hairline));
+    box-shadow: none;
+  }
+
+  /* ---- Charity: the cause, stated ---- */
+  .signup-charity {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .signup-charity-identity {
+    display: flex;
+    gap: var(--space-06);
+    align-items: center;
+    padding-bottom: var(--space-07);
+    border-bottom: var(--border-hairline);
+  }
+
+  .signup-charity-logo {
+    width: var(--space-12);
+    height: var(--space-12);
+    flex: 0 0 auto;
+    border: var(--border-hairline);
+    border-radius: var(--radius-none);
+    object-fit: contain;
+  }
+
+  .signup-charity-logo--placeholder {
+    background-color: var(--color-placeholder-grey);
+  }
+
+  .signup-charity-name {
+    margin: var(--space-00);
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-title);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    text-wrap: balance;
+  }
+
+  .signup-charity-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-06);
+    max-width: 68ch;
+    margin-top: var(--space-07);
+  }
+
+  .signup-charity-about,
+  .signup-charity-cause {
+    margin: var(--space-00);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: 1.4;
+  }
+
+  .signup-charity-about {
+    color: var(--color-text-secondary);
+  }
+
+  /* What the money does is the reason the panel exists: it is told at reading
+     scale against its own graduation, not as a second paragraph. */
+  .signup-charity-cause {
+    padding-left: var(--space-06);
+    border-left: var(--border-width-hairline) solid var(--color-accent);
+    color: var(--color-text-primary);
+  }
+
+  /* ---- Details: two instrument groups, each under its own ruled caption ---- */
+  .signup-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+  }
+
+  .signup-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-07);
+  }
+
+  .signup-group-title {
+    display: flex;
+    gap: var(--space-04);
+    align-items: baseline;
+    margin: var(--space-00);
+    padding-bottom: var(--space-04);
+    border-bottom: var(--border-hairline);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-action);
+  }
+
+  .signup-group-index {
+    color: var(--color-accent);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+  }
+
+  .signup-details-identity {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-06);
+  }
+
+  .signup-details-name {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-05);
+  }
+
+  .signup-details-commitment {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-09);
+  }
+
+  /* ---- Fields: recessed wells, and a value worth typing ----
+     A bare underline made a name feel like a form entry. The field is inset
+     into the mesh, the value is set in the display face, and the foot lights
+     to Route Orange on focus — the instrument accepting a reading. */
+  .signup-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-03);
+    margin: var(--space-00);
+  }
+
+  .signup-field-label {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    line-height: var(--leading-action);
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-field:focus-within .signup-field-label,
+  .signup-field[data-filled='true'] .signup-field-label {
+    color: var(--color-text-secondary);
+  }
+
+  .signup-field-input {
+    width: 100%;
+    min-height: var(--min-tap-target);
+    padding: var(--space-04) var(--space-05);
+    border: var(--border-hairline);
+    border-bottom: var(--border-width-hairline) solid var(--color-border-strong);
+    border-radius: var(--radius-none);
+    background-color: var(--signup-field-fill);
+    color: var(--color-text-primary);
+    caret-color: var(--color-accent);
+    font-family: var(--font-display);
+    font-size: var(--font-size-metric);
+    font-weight: 500;
+    line-height: var(--leading-body);
+    transition:
+      border-color var(--duration-fast) var(--ease-out-expo),
+      background-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-field-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .signup-field-input:hover {
+    background-color: var(--signup-field-fill-focus);
+  }
+
+  .signup-field-input:focus {
+    outline: none;
+    background-color: var(--signup-field-fill-focus);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .signup-field-input[aria-invalid='true'] {
+    background-color: var(--signup-field-fill-invalid);
+    border-bottom-color: var(--color-route-coral);
+  }
+
+  .signup-field-error {
+    color: var(--color-route-coral);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-body);
+  }
+
+  /* ---- Sliders: a ruled scale, not a bare wire ----
+     The track is drawn by the wrapper so the measured part of the range can be
+     lit against the unmeasured remainder, with graduations behind both. The
+     thumb is a blade that lengthens under the finger. */
+  .signup-slider {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+  }
+
+  .signup-slider-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-04);
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: var(--space-03);
+    border-bottom: var(--border-hairline);
+  }
+
+  .signup-slider-readout {
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-title);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: var(--leading-compressed);
+  }
+
+  .signup-slider-track {
+    position: relative;
+    display: block;
+    height: var(--min-tap-target);
+  }
+
+  .signup-slider-track::before,
+  .signup-slider-track::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: var(--space-00);
+    height: var(--signup-track-height);
+    margin-top: calc(-1 * var(--signup-track-height) / 2);
+    pointer-events: none;
+  }
+
+  .signup-slider-track::before {
+    right: var(--space-00);
+    background-color: var(--signup-track-idle);
+  }
+
+  .signup-slider-track::after {
+    width: var(--signup-slider-fill, 0%);
+    background-color: var(--color-canvas-white);
+  }
+
+  /* Graduations straddle the track rather than hanging off it, so the lit
+     portion is read against the scale and not beside it. */
+  .signup-slider-ticks {
+    position: absolute;
+    top: 50%;
+    right: var(--space-00);
+    left: var(--space-00);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: var(--signup-tick-length-major);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .signup-slider-tick {
+    width: var(--border-width-hairline);
+    height: var(--signup-tick-length);
+    background-color: var(--signup-tick-idle);
+  }
+
+  .signup-slider-tick[data-major='true'] {
+    height: var(--signup-tick-length-major);
+  }
+
+  .signup-slider-input {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: var(--min-tap-target);
+    margin: var(--space-00);
+    background: none;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .signup-slider-input::-webkit-slider-runnable-track {
+    height: var(--min-tap-target);
+    background: none;
+    border-radius: var(--radius-none);
+  }
+
+  .signup-slider-input::-moz-range-track {
+    height: var(--min-tap-target);
+    background: none;
+    border-radius: var(--radius-none);
+  }
+
+  .signup-slider-input::-webkit-slider-thumb {
+    width: var(--signup-thumb-width);
+    height: var(--signup-thumb-height);
+    margin-top: calc((var(--min-tap-target) - var(--signup-thumb-height)) / 2);
+    border: none;
+    border-radius: var(--radius-none);
+    background-color: var(--color-canvas-white);
+    appearance: none;
+    transition:
+      height var(--duration-fast) var(--ease-out-expo),
+      margin-top var(--duration-fast) var(--ease-out-expo),
+      background-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-slider-input::-moz-range-thumb {
+    width: var(--signup-thumb-width);
+    height: var(--signup-thumb-height);
+    border: none;
+    border-radius: var(--radius-none);
+    background-color: var(--color-canvas-white);
+    transition:
+      height var(--duration-fast) var(--ease-out-expo),
+      background-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-slider-input:hover::-webkit-slider-thumb,
+  .signup-slider-input:active::-webkit-slider-thumb,
+  .signup-slider-input:focus-visible::-webkit-slider-thumb {
+    height: var(--signup-thumb-height-active);
+    margin-top: calc((var(--min-tap-target) - var(--signup-thumb-height-active)) / 2);
+    background-color: var(--color-accent);
+  }
+
+  .signup-slider-input:hover::-moz-range-thumb,
+  .signup-slider-input:active::-moz-range-thumb,
+  .signup-slider-input:focus-visible::-moz-range-thumb {
+    height: var(--signup-thumb-height-active);
+    background-color: var(--color-accent);
+  }
+
+  .signup-slider-input:focus-visible {
+    outline: var(--border-width-hairline) solid var(--color-accent);
+    outline-offset: var(--space-02);
+  }
+
+  .signup-slider-scale {
+    display: flex;
+    justify-content: space-between;
+    margin: var(--space-00);
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-variant-numeric: tabular-nums;
+    line-height: var(--leading-body);
+  }
+
+  .signup-slider-scale-value {
+    color: var(--color-text-secondary);
+  }
+
+  /* Re-keyed in React on every change, so a new equivalence arrives rather
+     than swapping in place. */
+  .signup-slider-impact {
+    margin: var(--space-00);
+    color: var(--color-accent);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+    animation: scroll-fade var(--duration-normal) var(--ease-out-expo) backwards;
+  }
+
+  /* ---- Summary rail: the instrument's read-out ---- */
+  .signup-rail {
+    position: absolute;
+    top: var(--space-11);
+    right: var(--page-gutter);
+    z-index: 2;
+    width: var(--signup-rail-width);
+    border: var(--border-hairline);
+    background: linear-gradient(to bottom,
+        var(--color-header-veil-top) 0%,
+        var(--color-header-veil-bottom) 100%);
+    -webkit-backdrop-filter: blur(var(--blur-floating));
+    backdrop-filter: blur(var(--blur-floating));
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--duration-normal) var(--ease-out-expo),
+      visibility var(--duration-normal) var(--ease-out-expo);
+  }
+
+  .signup-rail[data-visible='true'] {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .signup-rail-inner {
+    padding: var(--space-06);
+  }
+
+  .signup-rail-title {
+    display: flex;
+    gap: var(--space-04);
+    align-items: center;
+    margin: var(--space-00) var(--space-00) var(--space-06);
+  }
+
+  .signup-rail-title-text {
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-action);
+  }
+
+  .signup-rail-title-rule {
+    flex: 1 1 auto;
+    height: var(--border-width-hairline);
+    background-color: var(--color-border-hairline);
+  }
+
+  /* The Artwork gets real estate: the trace is the name of the thing being
+     adopted, and at stamp size it was neither. */
+  .signup-rail-artwork {
+    margin-bottom: var(--space-06);
+  }
+
+  .signup-rail-artwork .route-thumbnail {
+    width: 100%;
+    height: var(--space-13);
+  }
+
+  .signup-rail-rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-05);
+    margin: var(--space-00);
+  }
+
+  .signup-rail-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-02);
+    padding-bottom: var(--space-05);
+    border-bottom: var(--border-hairline);
+    transition: border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-rail-row:last-child {
+    padding-bottom: var(--space-00);
+    border-bottom: none;
+  }
+
+  .signup-rail-row:hover {
+    border-bottom-color: var(--color-border-strong);
+  }
+
+  .signup-rail-label {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-body);
+  }
+
+  .signup-rail-value {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-02) var(--space-04);
+    align-items: baseline;
+    margin: var(--space-00);
+  }
+
+  .signup-rail-primary {
+    flex: 1 1 100%;
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    font-weight: 500;
+    line-height: var(--leading-body);
+  }
+
+  .signup-rail-primary--numeric {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .signup-rail-meta {
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-variant-numeric: tabular-nums;
+    line-height: var(--leading-body);
+  }
+
+  /* `change` waits at half strength and comes up under the pointer, so the
+     read-out reads as a statement first and a set of controls second. */
+  .signup-rail-value .signup-change {
+    margin-left: auto;
+    opacity: 0.55;
+    transition:
+      opacity var(--duration-fast) var(--ease-out-expo),
+      color var(--duration-fast) var(--ease-out-expo),
+      border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-rail-row:hover .signup-change,
+  .signup-rail-value .signup-change:focus-visible {
+    opacity: 1;
+  }
+
+  /* The rows arrive in the order they were decided. */
+  .signup-rail[data-visible='true'] [data-rail-step] {
+    animation: scroll-rise var(--duration-moderate) var(--ease-out-expo) backwards;
+    --motion-rise-y: var(--space-04);
+  }
+
+  .signup-rail[data-visible='true'] [data-rail-step='1'] { animation-delay: 0.04s; }
+  .signup-rail[data-visible='true'] [data-rail-step='2'] { animation-delay: 0.10s; }
+  .signup-rail[data-visible='true'] [data-rail-step='3'] { animation-delay: 0.16s; }
+  .signup-rail[data-visible='true'] [data-rail-step='4'] { animation-delay: 0.22s; }
+  .signup-rail[data-visible='true'] [data-rail-step='5'] { animation-delay: 0.28s; }
+
+  /* The Artwork named by its drawing, not only by its words. */
+  .route-thumbnail {
+    display: block;
+    flex: 0 0 auto;
+    width: var(--space-11);
+    height: var(--space-09);
+    border: var(--border-hairline);
+    background-color: var(--color-canvas-black);
+    overflow: hidden;
+  }
+
+  .route-thumbnail svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .route-thumbnail--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .route-thumbnail-label {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-body);
+  }
+
+  .signup-change {
+    padding: var(--space-00);
+    border: none;
+    border-bottom: var(--border-width-hairline) solid var(--color-border-strong);
+    border-radius: var(--radius-none);
+    background: none;
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-action);
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-out-expo),
+      border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-change:hover,
+  .signup-change:focus-visible {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  /* ---- Commit: name on top, the commitment beneath, the world to the right ---- */
+  .signup-commit {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .signup-companion {
+    max-width: var(--hero-header-max-width);
+    margin-bottom: var(--space-09);
+  }
+
+  .signup-companion-input {
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-title);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+  }
+
+  .signup-review {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-05);
+    margin: var(--space-00);
+    border-top: var(--border-hairline);
+    padding-top: var(--space-06);
+  }
+
+  .signup-review-row {
+    display: grid;
+    grid-template-columns: minmax(var(--space-12), 1fr) 3fr;
+    gap: var(--space-05);
+    align-items: baseline;
+    padding-bottom: var(--space-05);
+    border-bottom: var(--border-hairline);
+    transition: border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-review-row:last-child {
+    padding-bottom: var(--space-00);
+    border-bottom: none;
+  }
+
+  .signup-review-row:hover {
+    border-bottom-color: var(--color-border-strong);
+  }
+
+  .signup-review-label {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+  }
+
+  .signup-review-value {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-02) var(--space-05);
+    align-items: baseline;
+    margin: var(--space-00);
+  }
+
+  .signup-review-text {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-02) var(--space-05);
+    align-items: baseline;
+  }
+
+  .signup-review-primary {
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-metric);
+    font-weight: 500;
+    line-height: var(--leading-body);
+  }
+
+  .signup-review-meta {
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-variant-numeric: tabular-nums;
+    line-height: var(--leading-body);
+  }
+
+  .signup-review-value .signup-change {
+    margin-left: auto;
+    opacity: 0.55;
+    transition:
+      opacity var(--duration-fast) var(--ease-out-expo),
+      color var(--duration-fast) var(--ease-out-expo),
+      border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .signup-review-row:hover .signup-change,
+  .signup-review-value .signup-change:focus-visible {
+    opacity: 1;
+  }
+
+  .signup-commit-error {
+    margin: var(--space-06) var(--space-00) var(--space-00);
+    padding: var(--space-05);
+    border: var(--border-width-hairline) solid var(--color-route-coral);
+    color: var(--color-route-coral);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: 1.4;
+  }
+
+  .signup-commit-hint {
+    margin: var(--space-00);
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    line-height: var(--leading-body);
+  }
+
+  .signup-commit .signup-panel-foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* The beat: the button drops to a hairline and Canvas White wipes back in,
+     the label inverting beneath it. The commitment consolidating, rather than
+     a bar filling up. */
+  .signup-commit-button {
+    position: relative;
+    width: 100%;
+    min-height: var(--min-tap-target);
+    padding: var(--space-06) var(--space-07);
+    border: var(--border-width-hairline) solid var(--color-canvas-white);
+    border-radius: var(--radius-none);
+    background-color: var(--color-action-primary);
+    color: var(--color-action-primary-text);
+    font-family: var(--font-body);
+    font-size: var(--font-size-metric);
+    font-weight: 500;
+    line-height: var(--leading-action);
+    overflow: hidden;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-normal) var(--ease-out-expo),
+      box-shadow var(--duration-normal) var(--ease-out-expo),
+      transform var(--duration-instant) var(--ease-out-expo);
+  }
+
+  .signup-commit-button:hover:not(:disabled),
+  .signup-commit-button:focus-visible:not(:disabled) {
+    background-color: var(--color-action-primary-hover);
+    box-shadow: var(--shadow-action-glow);
+  }
+
+  .signup-commit-button:active:not(:disabled) {
+    transform: translateY(var(--border-width-hairline));
+    box-shadow: none;
+  }
+
+  .signup-commit-button:disabled {
+    background-color: transparent;
+    color: var(--color-text-muted);
+    border-color: var(--color-border-strong);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .signup-commit-wipe {
+    position: absolute;
+    inset: var(--space-00);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-06) var(--space-07);
+    background-color: var(--color-canvas-white);
+    color: var(--color-action-primary-text);
+    clip-path: inset(0 100% 0 0);
+  }
+
+  .signup-commit-button[data-committing='true'] {
+    background-color: transparent;
+    border-color: var(--color-canvas-white);
+    color: var(--color-canvas-white);
+    box-shadow: none;
+    cursor: progress;
+  }
+
+  .signup-commit-button[data-committing='true'] .signup-commit-wipe {
+    animation: signup-commit-wipe var(--duration-deliberate) var(--ease-out-expo) forwards;
+  }
+
+  @keyframes signup-commit-wipe {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  /* ---- The Route Catalogue, hosted rather than rebuilt ---- */
+  .signup-catalogue-slot .route-catalogue {
+    min-height: auto;
+  }
+
+  /* ---- The staged read-out ----
+     The instrument reports itself in order on arrival. Keyed to `data-active`
+     rather than to mount, so every visit to a panel plays it and no inert
+     panel animates off-screen. */
+  .signup-panel[data-active='true'] [data-reveal-step] {
+    animation: scroll-rise var(--duration-moderate) var(--ease-out-expo) backwards;
+  }
+
+  .signup-panel[data-active='true'] [data-reveal-step='1'] { animation-delay: 0.06s; }
+  .signup-panel[data-active='true'] [data-reveal-step='2'] { animation-delay: 0.16s; }
+  .signup-panel[data-active='true'] [data-reveal-step='3'] { animation-delay: 0.26s; }
+  .signup-panel[data-active='true'] [data-reveal-step='4'] { animation-delay: 0.36s; }
+
+  /* ---- Mobile: the column is the page, the rail is a thumb-reachable tally ---- */
+  @media (width <= 900px) {
+    .signup-panel[data-panel='charity'],
+    .signup-panel[data-panel='details'],
+    .signup-panel[data-panel='commit'] {
+      padding-right: var(--page-gutter);
+      padding-bottom: var(--space-13);
+    }
+
+    .signup-portal[data-panel='charity'] .signup-stepper,
+    .signup-portal[data-panel='details'] .signup-stepper,
+    .signup-portal[data-panel='commit'] .signup-stepper {
+      padding-right: var(--page-gutter);
+    }
+
+    /* The gutter lies down: there is no room beside the column, so the scale
+       runs across the top of it instead of down its flank. */
+    .signup-stepper {
+      inset: var(--space-00) var(--space-00) auto;
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+      padding: var(--space-05) var(--page-gutter) var(--space-00);
+    }
+
+    .signup-stepper-index {
+      grid-column: 1;
+      flex-direction: row;
+      gap: var(--space-02);
+      align-items: baseline;
+    }
+
+    .signup-stepper-ordinal {
+      font-size: var(--font-size-label);
+    }
+
+    .signup-stepper-scale {
+      grid-column: 1;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+      height: auto;
+      margin: var(--space-04) var(--space-00) var(--space-00);
+    }
+
+    .signup-stepper-scale::before,
+    .signup-stepper-scale::after {
+      width: 100%;
+      height: var(--border-width-hairline);
+    }
+
+    .signup-stepper-scale::after {
+      transform: scaleX(var(--signup-stepper-travel, 0));
+      transform-origin: left center;
+    }
+
+    .signup-stepper-tick {
+      width: var(--border-width-hairline);
+      height: auto;
+    }
+
+    .signup-stepper-tick-mark {
+      width: var(--border-width-hairline);
+      height: var(--signup-tick-length);
+    }
+
+    .signup-stepper-tick[data-state='current'] .signup-stepper-tick-mark {
+      width: var(--space-01);
+      height: var(--signup-tick-length-major);
+    }
+
+    .signup-panel {
+      grid-template-columns: minmax(0, 1fr);
+      padding-top: var(--space-12);
+    }
+
+    .signup-panel > * {
+      grid-column: 1;
+    }
+
+    .signup-rail {
+      top: auto;
+      right: var(--space-00);
+      bottom: var(--space-00);
+      left: var(--space-00);
+      width: auto;
+      border-right: none;
+      border-bottom: none;
+      border-left: none;
+      padding-bottom: var(--safe-inset-bottom);
+    }
+
+    .signup-rail-inner {
+      padding: var(--space-04) var(--page-gutter);
+    }
+
+    /* No room for the trace on a phone: the tally is the point down here. */
+    .signup-rail-title,
+    .signup-rail-artwork {
+      display: none;
+    }
+
+    .signup-rail-rows {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: var(--space-03) var(--space-06);
+    }
+
+    .signup-rail-row {
+      flex-direction: row;
+      gap: var(--space-03);
+      align-items: baseline;
+      padding-bottom: var(--space-00);
+      border-bottom: none;
+    }
+
+    .signup-rail-primary {
+      flex: 0 1 auto;
+      font-size: var(--font-size-label);
+    }
+
+    .signup-rail-value .signup-change {
+      margin-left: var(--space-00);
+      opacity: 1;
+    }
+
+    .signup-details-name {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .signup-review-row {
+      grid-template-columns: 1fr;
+      gap: var(--space-02);
+    }
+
+    .signup-review-value .signup-change {
+      margin-left: var(--space-00);
+      opacity: 1;
+    }
+
+    /* Two lines rather than a smaller one, echoing the stacked wordmark:
+       the brand's own form language does the scaling. */
+    .signup-intro-wordmark {
+      flex-direction: column;
+      gap: var(--space-00);
+      align-items: flex-start;
+    }
+  }
+
+  /* Reduced motion: the panels change without travelling, and the world stays
+     where it is. The commit panel's framing still resolves, because that beat
+     is the flow's meaning rather than its decoration. */
+  @media (prefers-reduced-motion: reduce) {
+    .signup-track {
+      transition: none;
+    }
+
+    .signup-panel {
+      transition: opacity var(--duration-fast) linear;
+    }
+
+    .signup-panel[data-active='true'] [data-reveal-step],
+    .signup-rail[data-visible='true'] [data-rail-step],
+    .signup-slider-impact {
+      animation: none;
+    }
+
+    .signup-stepper-scale::after {
+      transition: none;
+    }
+
+    .signup-cta-arrow,
+    .signup-cta::after {
+      transition: none;
+    }
+
+    .signup-commit-button[data-committing='true'] .signup-commit-wipe {
+      animation-duration: var(--duration-fast);
+    }
+  }
+
+  /* -------------------------------------------------------------
+     Adoption confirmation (/signup/confirmed/:adopterId)
+
+     The same layout for both arrivals. The sphere stays small and to
+     the right because a page returned to for route details wants a
+     quiet background, not because a returning visitor would remember
+     the flow it came from. Only the motion and the email line differ.
+     ------------------------------------------------------------- */
+  .confirmed-main-region {
+    padding: var(--space-11) var(--page-gutter) var(--space-12);
+  }
+
+  .confirmed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+  }
+
+  .confirmed-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-09);
+    max-width: var(--hero-mission-max-width);
+    /* Clears the sphere, which holds the right of the viewport. */
+    padding-right: var(--space-09);
+  }
+
+  .confirmed-headline {
+    margin: var(--space-00);
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-display);
+    font-weight: 600;
+    line-height: var(--leading-compressed);
+    text-wrap: balance;
+  }
+
+  /* The Adopter ID is the one thing the Adopter keeps forever, so it is read
+     out at the scale of a final instrument value rather than filed in a box
+     under the headline. */
+  .confirmed-id {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-04);
+    margin: var(--space-00);
+    padding: var(--space-07) var(--space-00) var(--space-07) var(--space-07);
+    border-left: var(--border-width-hairline) solid var(--color-accent);
+    background: linear-gradient(to right,
+        var(--color-surface-floating) 0%,
+        transparent 100%);
+    -webkit-backdrop-filter: blur(var(--blur-floating));
+    backdrop-filter: blur(var(--blur-floating));
+  }
+
+  .confirmed-id-label {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    line-height: var(--leading-body);
+  }
+
+  .confirmed-id-value {
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: var(--font-fluid-headline);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: var(--leading-compressed);
+  }
+
+  .confirmed-id-note {
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+  }
+
+  .confirmed-facts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-05);
+    margin: var(--space-00);
+    border-top: var(--border-hairline);
+    padding-top: var(--space-06);
+  }
+
+  .confirmed-fact {
+    display: grid;
+    grid-template-columns: minmax(var(--space-12), 1fr) 3fr;
+    gap: var(--space-05);
+    align-items: baseline;
+  }
+
+  .confirmed-fact-label {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-body);
+  }
+
+  .confirmed-fact-value {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-02);
+    margin: var(--space-00);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-metric);
+    font-weight: 500;
+    line-height: var(--leading-body);
+  }
+
+  .confirmed-fact-meta {
+    color: var(--color-accent);
+    font-size: var(--font-size-label);
+    font-weight: 400;
+  }
+
+  .confirmed-journey {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-06);
+    margin: var(--space-00);
+    padding: var(--space-00);
+    list-style: none;
+  }
+
+  .confirmed-journey-stage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-02);
+    padding-top: var(--space-04);
+    border-top: var(--border-width-hairline) solid var(--signup-track-idle);
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+  }
+
+  .confirmed-journey-index {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    line-height: var(--leading-body);
+  }
+
+  /* A run that happened is not a cancelled line item: a completed stage is
+     marked by its graduation going solid, not by a strike. */
+  .confirmed-journey-stage[data-state='done'] {
+    border-top-color: var(--color-accent);
+    color: var(--color-text-secondary);
+  }
+
+  .confirmed-journey-stage[data-state='done'] .confirmed-journey-index {
+    color: var(--color-accent);
+  }
+
+  .confirmed-journey-stage[data-state='active'] {
+    border-top-color: var(--color-canvas-white);
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .confirmed-journey-stage[data-state='active'] .confirmed-journey-index {
+    color: var(--color-accent);
+  }
+
+  .confirmed-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-06);
+    align-items: flex-start;
+    padding-top: var(--space-06);
+    border-top: var(--border-hairline);
+  }
+
+  /* Four identical underlines gave the page no next step; the references sit
+     below the one action that moves the adoption forward. */
+  .confirmed-actions-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-04) var(--space-07);
+    align-items: center;
+  }
+
+  .confirmed-secondary {
+    padding: var(--space-00);
+    border: none;
+    border-bottom: var(--border-width-hairline) solid var(--color-border-strong);
+    border-radius: var(--radius-none);
+    background: none;
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: var(--leading-action);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-out-expo),
+      border-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .confirmed-secondary:hover,
+  .confirmed-secondary:focus-visible {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .confirmed-secondary[data-share-state='copied'] {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .confirmed-secondary[data-share-state='failed'] {
+    color: var(--color-route-coral);
+    border-bottom-color: var(--color-route-coral);
+  }
+
+  .confirmed-notice {
+    max-width: 68ch;
+    margin: var(--space-00);
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    line-height: 1.4;
+  }
+
+  .confirmed-route {
+    width: 100%;
+  }
+
+  /* The staged reveal, and the one thing that separates the two arrivals.
+     It plays only on a first arrival: a return visit wants the information
+     immediately, not a performance of it. Same rise the homepage uses, fired
+     on a timeline here rather than on scroll. */
+  .confirmed[data-reveal='true'] [data-reveal-step] {
+    animation: scroll-rise var(--duration-moderate) var(--ease-out-expo) backwards;
+  }
+
+  .confirmed[data-reveal='true'] [data-reveal-step='1'] { animation-delay: 0s; }
+  .confirmed[data-reveal='true'] [data-reveal-step='2'] { animation-delay: 0.14s; }
+  .confirmed[data-reveal='true'] [data-reveal-step='3'] { animation-delay: 0.28s; }
+  .confirmed[data-reveal='true'] [data-reveal-step='4'] { animation-delay: 0.42s; }
+  .confirmed[data-reveal='true'] [data-reveal-step='5'] { animation-delay: 0.56s; }
+  .confirmed[data-reveal='true'] [data-reveal-step='6'] { animation-delay: 0.70s; }
+  .confirmed[data-reveal='true'] [data-reveal-step='7'] { animation-delay: 0.84s; }
+
+  @media (width <= 900px) {
+    .confirmed-main {
+      padding-right: var(--space-00);
+    }
+
+    .confirmed {
+      gap: var(--space-10);
+    }
+
+    .confirmed-fact {
+      grid-template-columns: 1fr;
+      gap: var(--space-02);
+    }
+
+    .confirmed-journey {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-04);
+    }
+
+    .confirmed-id {
+      padding: var(--space-06) var(--space-00) var(--space-06) var(--space-06);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .confirmed[data-reveal='true'] [data-reveal-step] {
+      animation: none;
+    }
   }
 }

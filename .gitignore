@@ -34,3 +34,7 @@ scratch/
 .impeccable/
 .claude/skills/
 
+
+# Cloudflare Worker local secrets (workerd / vite-plugin)
+.dev.vars
+.dev.vars.*

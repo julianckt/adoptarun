@@ -11,6 +11,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      // `cloudflare:workers` is a workerd built-in with no Node resolution, so
+      // tests exercise the real import path against a controllable double.
+      'cloudflare:workers': resolve(__dirname, './tests/helpers/cloudflare-workers.ts'),
     },
   },
 });

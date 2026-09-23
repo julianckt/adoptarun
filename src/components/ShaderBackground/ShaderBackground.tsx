@@ -1,37 +1,116 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useStore } from '@nanostores/react';
 import { ShaderGradientCanvas, ShaderGradient } from '@shadergradient/react';
 import { useFrame } from '@react-three/fiber';
+import { $panel, $rotationSteps } from '@/stores/signup';
+import type { PanelId } from '@/utils/signup-flow';
+
+/**
+ * A still of the sphere, exported from this same shader, used only when WebGL
+ * is unavailable. If the asset is missing the page falls back to Canvas Black
+ * rather than showing a broken image.
+ */
+const SPHERE_STILL_SRC = '/images/sphere-still.webp';
+import {
+  PANEL_FRAMING,
+  PANEL_TRANSITION_MS,
+  ROTATION_DELTA_RAD,
+  easeOutExpo,
+} from '@/utils/signup-motion';
 import {
   SHADER_PRESET_A,
   SHADER_PRESET_B,
+  SHADER_PRESET_C,
+  SHADER_PRESET_D,
   DEFAULT_CANVAS_OPTIONS,
   type ShaderGradientConfig,
+  type ShaderPresetKey,
 } from './shaderConfig';
+
+/**
+ * A yaw move in progress. The Adoption Portal drives this so the camera and the
+ * CSS panel slide share one timeline instead of a spring and an ease landing
+ * near each other. See `signup-motion.ts` for the contract.
+ */
+export interface FlowRotation {
+  from: number;
+  to: number;
+  startedAt: number;
+  durationMs: number;
+}
 
 interface ParallaxRigProps {
   mouseRef: React.RefObject<{ x: number; y: number }>;
   scrollRef: React.RefObject<number>;
+  flowRotationRef: React.RefObject<FlowRotation | null>;
   isSuspended: boolean;
   prefersReducedMotion: boolean;
 }
 
-function WebGLParallaxRig({ mouseRef, scrollRef, isSuspended, prefersReducedMotion }: ParallaxRigProps) {
+function WebGLParallaxRig({
+  mouseRef,
+  scrollRef,
+  flowRotationRef,
+  isSuspended,
+  prefersReducedMotion,
+}: ParallaxRigProps) {
+  // Parallax is smoothed per-frame; the flow's yaw is authored on an exact
+  // duration. They are summed rather than blended so neither can swallow the
+  // other.
+  const parallaxRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
   useFrame(({ scene }) => {
-    if (isSuspended || prefersReducedMotion) return;
+    const move = flowRotationRef.current;
+    let flowY = 0;
+    if (move) {
+      const elapsed = performance.now() - move.startedAt;
+      const progress = move.durationMs <= 0 ? 1 : elapsed / move.durationMs;
+      flowY = move.from + (move.to - move.from) * easeOutExpo(progress);
+      if (progress >= 1) {
+        flowRotationRef.current = { ...move, from: move.to, startedAt: 0, durationMs: 0 };
+      }
+    }
+
+    if (isSuspended || prefersReducedMotion) {
+      scene.rotation.y = flowY;
+      scene.rotation.x = 0;
+      return;
+    }
+
     const targetRotY = (mouseRef.current?.x ?? 0) * 0.12 + (scrollRef.current ?? 0) * 0.04;
     const targetRotX = (mouseRef.current?.y ?? 0) * 0.06;
-    scene.rotation.y += (targetRotY - scene.rotation.y) * 0.05;
-    scene.rotation.x += (targetRotX - scene.rotation.x) * 0.05;
+    parallaxRef.current.x += (targetRotY - parallaxRef.current.x) * 0.05;
+    parallaxRef.current.y += (targetRotX - parallaxRef.current.y) * 0.05;
+
+    scene.rotation.y = flowY + parallaxRef.current.x;
+    scene.rotation.x = parallaxRef.current.y;
   });
   return null;
 }
 
 export interface ShaderBackgroundProps {
   /**
-   * Optional manual preset override ('presetA' | 'presetB').
+   * Optional manual preset override.
    * If omitted, dynamically managed by scroll/IntersectionObserver.
    */
-  forcedPreset?: 'presetA' | 'presetB';
+  forcedPreset?: ShaderPresetKey;
+  /**
+   * Binds the camera to the Adoption Portal's panel state: yaw accumulates one
+   * fixed delta per transition, framing is absolute per panel.
+   */
+  flow?: 'signup';
+  /**
+   * 'immediate' skips the idle deferral and the ambient fade. The confirmation
+   * page uses it so the sphere is present on first paint, where a hole would
+   * land exactly where the flow is meant to feel continuous.
+   */
+  mountMode?: 'idle' | 'immediate';
+  /**
+   * Seeds the panel the camera opens on. The confirmation page opens on the
+   * commit framing so the sphere is already small and to the right, rather
+   * than snapping there a frame after the page paints.
+   */
+  initialPanel?: PanelId;
   /**
    * Optional custom className for outer wrapper.
    */
@@ -40,10 +119,14 @@ export interface ShaderBackgroundProps {
 
 export default function ShaderBackground({
   forcedPreset,
+  flow,
+  mountMode = 'idle',
+  initialPanel,
   className,
 }: ShaderBackgroundProps) {
-  const [isIdle, setIsIdle] = useState<boolean>(false);
-  const [activePresetKey, setActivePresetKey] = useState<'presetA' | 'presetB'>(
+  const isImmediate = mountMode === 'immediate';
+  const [isIdle, setIsIdle] = useState<boolean>(isImmediate);
+  const [activePresetKey, setActivePresetKey] = useState<ShaderPresetKey>(
     forcedPreset ?? 'presetA'
   );
   const [isSuspended, setIsSuspended] = useState<boolean>(false);
@@ -51,16 +134,64 @@ export default function ShaderBackground({
   const [isReadyForTransitions, setIsReadyForTransitions] = useState<boolean>(false);
   const [isPresetSwapping, setIsPresetSwapping] = useState<boolean>(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
+  /**
+   * True when there is no canvas to freeze: WebGL was refused outright, or the
+   * context was lost mid-session. Distinct from reduced motion, where the mesh
+   * is still rendered and simply stops animating.
+   */
+  const [hasWebGL, setHasWebGL] = useState<boolean>(true);
+  const [stillFailed, setStillFailed] = useState<boolean>(false);
 
   const mouseTargetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const scrollTargetRef = useRef<number>(0);
-  const prevPresetRef = useRef<'presetA' | 'presetB'>(activePresetKey);
+  const prevPresetRef = useRef<ShaderPresetKey>(activePresetKey);
+
+  // ---------------------------------------------------------------------------
+  // Adoption Portal binding. Inert on every other surface.
+  // ---------------------------------------------------------------------------
+  const storedPanel = useStore($panel);
+  const flowSteps = useStore($rotationSteps);
+  const [isSeeded, setIsSeeded] = useState<boolean>(false);
+
+  /**
+   * The opening framing applies on the very first render, before the store has
+   * been told about it, so the confirmation page paints with the sphere already
+   * small and to the right rather than snapping there a frame later. The store
+   * is updated in an effect, for any other island that reads it.
+   */
+  const flowPanel = !isSeeded && initialPanel ? initialPanel : storedPanel;
+
+  useEffect(() => {
+    if (!initialPanel) return;
+    $panel.set(initialPanel);
+    setIsSeeded(true);
+  }, [initialPanel]);
+  const flowRotationRef = useRef<FlowRotation | null>(null);
+  const isFlowBound = flow === 'signup';
+
+  useEffect(() => {
+    if (!isFlowBound) return;
+
+    const to = flowSteps * ROTATION_DELTA_RAD;
+    const current = flowRotationRef.current;
+    const from = current
+      ? current.from + (current.to - current.from) * easeOutExpo(
+          current.durationMs <= 0 ? 1 : (performance.now() - current.startedAt) / current.durationMs
+        )
+      : 0;
+
+    // Reduced motion keeps the world where it is: the panels cross-fade instead.
+    flowRotationRef.current = prefersReducedMotion
+      ? { from: 0, to: 0, startedAt: 0, durationMs: 0 }
+      : { from, to, startedAt: performance.now(), durationMs: PANEL_TRANSITION_MS };
+  }, [isFlowBound, flowSteps, prefersReducedMotion]);
 
   // ---------------------------------------------------------------------------
   // 0. Idle mount deferral (timeout: 800ms)
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (isImmediate) return;
     if ('requestIdleCallback' in window) {
       const handle = (window as Window & { requestIdleCallback: any; cancelIdleCallback: any }).requestIdleCallback(
         () => setIsIdle(true),
@@ -77,13 +208,18 @@ export default function ShaderBackground({
   // 1. First-paint fade-in trigger & initial coordinate snap
   // ---------------------------------------------------------------------------
   useEffect(() => {
+    if (isImmediate) {
+      setIsLoaded(true);
+      setIsReadyForTransitions(true);
+      return;
+    }
     // Reveal canvas and enable native damping only after initial mount snap
     const timer = setTimeout(() => {
       setIsLoaded(true);
       setIsReadyForTransitions(true);
     }, 300);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isImmediate]);
 
   // ---------------------------------------------------------------------------
   // 2. Prefers-reduced-motion detection
@@ -99,6 +235,34 @@ export default function ShaderBackground({
 
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // 2a. WebGL availability and context loss
+  //
+  // Hardened browsers refuse WebGL outright, and a thermally throttled phone
+  // can lose the context part-way through a session. Either way there is
+  // nothing to freeze, so a still stands in — the same sphere, pre-rendered,
+  // which DESIGN.md's Mesh Noise Splash Rule sanctions as the system's other
+  // primary rather than as a degraded version of it.
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const probe = document.createElement('canvas');
+      const context =
+        probe.getContext('webgl2') ||
+        probe.getContext('webgl') ||
+        probe.getContext('experimental-webgl');
+      if (!context) setHasWebGL(false);
+    } catch {
+      setHasWebGL(false);
+    }
+
+    const onContextLost = () => setHasWebGL(false);
+    window.addEventListener('webglcontextlost', onContextLost, true);
+    return () => window.removeEventListener('webglcontextlost', onContextLost, true);
   }, []);
 
   // ---------------------------------------------------------------------------
@@ -133,7 +297,7 @@ export default function ShaderBackground({
       { selector: '#bottom-cta', preset: 'presetA' as const },
     ];
 
-    const observedElements: { element: Element; preset: 'presetA' | 'presetB'; isIntersecting: boolean }[] = [];
+    const observedElements: { element: Element; preset: ShaderPresetKey; isIntersecting: boolean }[] = [];
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -213,7 +377,14 @@ export default function ShaderBackground({
   // 5. Active Configuration Computation
   // ---------------------------------------------------------------------------
   const activeConfig: ShaderGradientConfig = useMemo(() => {
-    const base = activePresetKey === 'presetB' ? SHADER_PRESET_B : SHADER_PRESET_A;
+    const base =
+      activePresetKey === 'presetB'
+        ? SHADER_PRESET_B
+        : activePresetKey === 'presetC'
+          ? SHADER_PRESET_C
+          : activePresetKey === 'presetD'
+            ? SHADER_PRESET_D
+            : SHADER_PRESET_A;
 
     // Apply reduced motion and suspension flags
     const effectiveAnimate =
@@ -229,6 +400,9 @@ export default function ShaderBackground({
       enableTransition: effectiveEnableTransition,
       cAzimuthAngle: base.cAzimuthAngle,
       cPolarAngle: base.cPolarAngle,
+      // Framing is absolute per panel, unlike yaw, because the commit panel's
+      // layout depends on the sphere sitting small and to the right.
+      cameraZoom: isFlowBound ? PANEL_FRAMING[flowPanel].cameraZoom : base.cameraZoom,
     };
   }, [
     activePresetKey,
@@ -236,6 +410,8 @@ export default function ShaderBackground({
     prefersReducedMotion,
     isReadyForTransitions,
     isPresetSwapping,
+    isFlowBound,
+    flowPanel,
   ]);
 
   return (
@@ -247,12 +423,24 @@ export default function ShaderBackground({
         pointerEvents: 'none',
         zIndex: -1,
         opacity: isLoaded ? 1 : 0,
-        transition: 'opacity var(--duration-ambient) cubic-bezier(0.25, 0.1, 0.25, 1)',
+        transition: isImmediate
+          ? 'none'
+          : 'opacity var(--duration-ambient) cubic-bezier(0.25, 0.1, 0.25, 1)',
         overflow: 'hidden',
       }}
+      data-flow-panel={isFlowBound ? flowPanel : undefined}
       aria-hidden="true"
     >
-      {isIdle && (
+      {!hasWebGL && !stillFailed && (
+        <img
+          className="shader-background-still"
+          src={SPHERE_STILL_SRC}
+          alt=""
+          onError={() => setStillFailed(true)}
+        />
+      )}
+
+      {isIdle && hasWebGL && (
         <ShaderGradientCanvas
           style={{
             width: '100%',
@@ -268,6 +456,7 @@ export default function ShaderBackground({
           <WebGLParallaxRig
             mouseRef={mouseTargetRef}
             scrollRef={scrollTargetRef}
+            flowRotationRef={flowRotationRef}
             isSuspended={isSuspended}
             prefersReducedMotion={prefersReducedMotion}
           />

@@ -6,6 +6,8 @@
  * and mode applicability so that any property can be tweaked individually.
  */
 
+export type ShaderPresetKey = 'presetA' | 'presetB' | 'presetC' | 'presetD';
+
 export type ShaderMeshType = 'waterPlane' | 'plane' | 'sphere';
 export type ShaderAnimateToggle = 'on' | 'off';
 export type ShaderGrainToggle = 'on' | 'off';
@@ -442,6 +444,77 @@ export const SHADER_PRESET_B: ShaderGradientConfig = {
   enableCameraUpdate: true,
   toggleAxis: false,
   zoomOut: false,
+};
+
+// =============================================================================
+// PRESET C: ADOPTION PORTAL (SIGNUP FLOW & CONFIRMATION)
+// =============================================================================
+export const SHADER_PRESET_C: ShaderGradientConfig = {
+  // 1. Geometry
+  type: 'sphere',
+  wireframe: false,
+  shader: 'defaults',
+
+  // 2. Animation & Waves
+  animate: 'on',
+  uTime: 0.3,
+  uSpeed: 0.15,          // Gentle, calm wave motion
+  uStrength: 0.4,        // Pronounced liquid folds
+  uDensity: 1.2,         // Balanced wave frequency
+  uFrequency: 5.5,
+  uAmplitude: 1.0,       // Organic spiral distortion for 3D sphere
+
+  // 3. Colors (Adopt a Run Brand Tokens)
+  color1: '#ffac69',     // var(--color-route-orange)
+  color2: '#db9b81',     // var(--color-route-coral)
+  color3: '#181311',     // var(--color-canvas-black) / deep dusk base
+  reflection: 0.4,
+
+  // 4. Position & Rotation
+  positionX: 0,
+  positionY: 0,       // Centers the sphere in the viewport
+  positionZ: 0,
+  rotationX: 180,
+  rotationY: 0,
+  rotationZ: 90,        // Diagonal flow matching the wordmark typography angle
+
+  // 5. Camera & View
+  cAzimuthAngle: 0,
+  cPolarAngle: 90,       // Slight upward look for dramatic scale
+  cDistance: 0.45,
+  cameraZoom: 6.0,
+
+  // 6. Lighting & Environment
+  lightType: '3d',
+  brightness: 1.2,
+  envPreset: 'city',
+
+  // 7. Grain
+  grain: 'on',           // Adds subtle texture, eliminating digital banding
+  grainBlending: 0.5,
+
+  // 8. Range & Looping
+  range: 'disabled',
+  rangeStart: 0,
+  rangeEnd: 40,
+  loop: 'on',
+  loopDuration: 0,
+
+  // 9. Advanced Controls
+  control: 'props',
+  enableTransition: true,
+  smoothTime: 0.3,
+  enableCameraUpdate: true,
+  toggleAxis: false,
+  zoomOut: false,
+};
+
+// =============================================================================
+// PRESET D: RESERVED FOR FUTURE USE
+// Placeholder — copied from Preset A pending assignment.
+// =============================================================================
+export const SHADER_PRESET_D: ShaderGradientConfig = {
+  ...SHADER_PRESET_A,
 };
 
 /**

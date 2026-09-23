@@ -12,6 +12,21 @@ export interface Props {
   class?: string;
   route: SanityRoute;
   colorTheme?: 'route-orange' | 'route-coral' | 'route-blush';
+  /**
+   * What clicking the card does.
+   * 'none'   — a plain article, the default; nothing is interactive.
+   * 'link'   — wraps in an anchor (homepage and featured grid go to /routes).
+   * 'expand' — wraps in a button that opens the expanded card in a dialog.
+   * 'select' — picks this Artwork inside the Adoption Portal, announcing the
+   *            choice as a `route-card:select` event rather than navigating.
+   */
+  action?: 'none' | 'link' | 'expand' | 'select';
+  /** For action="select": whether this Artwork is the one currently chosen. */
+  selected?: boolean;
+  /** Destination for action="link". */
+  href?: string;
+  /** Which map the expanded card should show; 'minimap' avoids a map on a map. */
+  mapMode?: 'leaflet' | 'minimap';
   [key: string]: any;
 }
 
@@ -19,6 +34,10 @@ const {
   class: className,
   route,
   colorTheme = 'route-orange',
+  action = 'none',
+  selected = false,
+  href = '/routes',
+  mapMode = 'leaflet',
   ...restProps
 } = Astro.props;
 
@@ -69,10 +88,22 @@ const groupRunStart =
       })()
     : null;
 const showSignups = isGroupRun && typeof groupRunSignupCount === 'number';
+
+// The card's behaviour is decided at build time by its call site. The trigger
+// is a stretched overlay INSIDE the article rather than a wrapper around it:
+// a <button> may only contain phrasing content, so wrapping the article (with
+// its heading and <time>) would be invalid markup and would erase both from
+// assistive navigation.
+const routeSlug = route.slug?.current ?? '';
 ---
 
 <article
-  class:list={['route-card', themeClass, { 'route-card--group-run': isGroupRun }, className]}
+  class:list={[
+    'route-card',
+    themeClass,
+    { 'route-card--group-run': isGroupRun, 'route-card--selected': action === 'select' && selected },
+    className,
+  ]}
   {...restProps}
 >
   <!-- Night Plate: full-bleed map under a veil, framed by the route color -->
@@ -147,6 +178,29 @@ const showSignups = isGroupRun && typeof groupRunSignupCount === 'number';
       <span class="route-card-distance">{formattedDistance}</span>
     </div>
   </div>
+
+  {action === 'link' && (
+    <a class="route-card-trigger" href={href}>view {district} route</a>
+  )}
+  {action === 'expand' && (
+    <button
+      type="button"
+      class="route-card-trigger"
+      aria-haspopup="dialog"
+      data-route-expand
+      data-route-slug={routeSlug}
+      data-map-mode={mapMode}
+    >expand {district} route details</button>
+  )}
+  {action === 'select' && (
+    <button
+      type="button"
+      class="route-card-trigger"
+      aria-pressed={selected ? 'true' : 'false'}
+      data-route-select
+      data-route-slug={routeSlug}
+    >adopt the {district} route</button>
+  )}
 
   <slot />
 </article>

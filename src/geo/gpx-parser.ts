@@ -371,7 +371,13 @@ export function calculateAspectBoundingBox(
   };
 }
 
-function projectCoordinate(
+/**
+ * Projects a lat/lng into an SVG viewBox using a bounding box from
+ * calculateAspectBoundingBox. Exported so consumers that need to place marks
+ * over a generated minimap (the expanded route card's elevation hover dot)
+ * share this exact projection instead of reimplementing it and drifting.
+ */
+export function projectLatLngToSvg(
   lat: number,
   lng: number,
   bbox: GeoBoundingBox,
@@ -394,7 +400,7 @@ function coordinatesToPathD(
   if (!coords || coords.length === 0) return '';
   let d = '';
   for (let i = 0; i < coords.length; i++) {
-    const [x, y] = projectCoordinate(coords[i][0], coords[i][1], bbox, width, height);
+    const [x, y] = projectLatLngToSvg(coords[i][0], coords[i][1], bbox, width, height);
     d += i === 0 ? `M${x} ${y}` : ` L${x} ${y}`;
   }
   return d;

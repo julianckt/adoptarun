@@ -22,14 +22,17 @@
       "head_sampling_rate": 1,
       "persist": true
     }
-  }
-  // D1 Database binding deferred until MVP requires persistent storage
-  // "d1_databases": [
-  //   {
-  //     "binding": "DB",
-  //     "database_name": "adoptarun-d1",
-  //     "database_id": "adoptarun-d1-local",
-  //     "migrations_dir": "migrations"
-  //   }
-  // ]
+  },
+  // Adoptions, the Adopter ID sequence, and verified run telemetry.
+  // Reached as `locals.runtime.env.DB` — which is why the Cloudflare adapter is
+  // attached in dev too, so `astro dev` runs in workerd against a local replica
+  // of this schema rather than having no binding at all.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "adoptarun-d1",
+      "database_id": "169150e7-d9fc-4b0b-aec2-1986483e5b87",
+      "migrations_dir": "migrations"
+    }
+  ]
 }

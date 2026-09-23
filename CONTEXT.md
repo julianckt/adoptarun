@@ -29,11 +29,11 @@ The act of selecting a specific Artwork and its paired Charity Cause, committing
 _Avoid_: Booking, registration, sign-up, pledge
 
 **Adoption Portal**:
-The dedicated 4-step interactive flow (`/signup`) where an Adopter selects/verifies an Artwork, pairs a Charity Cause, configures commitment and fundraising sliders, and names their route animal companion.
+The dedicated interactive flow (`/signup`) where an Adopter selects/verifies an Artwork, pairs a Charity Cause, configures commitment and fundraising sliders, and names their route animal companion. Four steps of commitment — select route, select charity, enter details, commit & adopt — opened by a `let's run` invitation panel that carries a deep-linked Artwork through.
 _Avoid_: Checkout, form, sign-up page
 
 **Adopter ID**:
-A persistent 6-character identifier formatted as `NNNN-CC` (e.g., `1204-JC`), generated upon completing the Adoption Portal commitment. The 4 numeric digits (`NNNN`) start at seed `1200` and increment pseudo-sequentially (jumping randomly by +1, +2, +3, or +4 per adoption via atomic mutation) to maintain a live community sequence. The 2 trailing characters (`CC`) are the runner's uppercase ASCII initials, acting as a personal check value known only to the runner.
+A persistent 6-character identifier formatted as `NNNN-CC` (e.g., `1204-JC`), generated upon completing the Adoption Portal commitment. The 4 numeric digits (`NNNN`) start at seed `1100` and increment pseudo-sequentially (jumping randomly by +1, +2, +3, or +4 per adoption via atomic mutation) to maintain a live community sequence. The 2 trailing characters (`CC`) are the runner's uppercase ASCII initials, acting as a personal check value known only to the runner.
 _Avoid_: User ID, account number, ticket number, random UUID
 
 **Charity Cause**:

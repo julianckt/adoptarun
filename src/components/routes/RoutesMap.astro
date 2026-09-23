@@ -68,7 +68,7 @@ const tileUrl = cartoApiKey
         const theme = themeCycles[idx % themeCycles.length];
         return (
           <div class="route-card-template" data-slug={route.slug.current}>
-            <RouteCard route={route} colorTheme={theme} />
+            <RouteCard route={route} colorTheme={theme} action="expand" mapMode="minimap" />
           </div>
         );
       })

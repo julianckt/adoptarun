@@ -131,3 +131,26 @@ export interface SanitySiteCopy {
   ctaDescription: string;
 }
 
+
+/**
+ * Adoption confirmation email copy.
+ *
+ * Read from the build-time snapshot only — never fetched at request time — so
+ * the signup endpoint can compose an email without a network call. Edits go
+ * live on deploy, not on publish.
+ */
+export interface SanityEmailCopy {
+  _id: string;
+  _type: 'emailCopy';
+  subject: string;
+  preheader: string;
+  greeting: string;
+  intro: string;
+  adopterIdLabel: string;
+  adopterIdNote: string;
+  ctaIntro: string;
+  ctaLabel: string;
+  closing: string;
+  signoff: string;
+  footerNote: string;
+}

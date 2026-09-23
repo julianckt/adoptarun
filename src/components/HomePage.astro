@@ -54,7 +54,7 @@ const heroDescription = siteCopy?.heroDescription?.trim();
         <div class="hero-cards">
           <RouteCarousel ariaLabel="Featured hero routes carousel">
             {heroRoutes.map((route) => (
-              <RouteCard route={route} />
+              <RouteCard route={route} action="link" href="/routes" />
             ))}
           </RouteCarousel>
         </div>

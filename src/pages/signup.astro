@@ -1,0 +1,45 @@
+---
+/**
+ * Adoption Portal (/signup)
+ *
+ * Five panels on one horizontal track, seen against a single continuous world.
+ * Every panel is server-rendered here rather than inside the island, so the
+ * Route Catalogue stays an ordinary Astro component and panel 1 hosts it
+ * instead of reimplementing it. The island owns panel state, the URL, and the
+ * camera; the catalogue owns its own filtering.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ShaderBackgroundWrapper from '@/components/ShaderBackground/ShaderBackgroundWrapper.astro';
+import RouteCatalogue from '@/components/routes/RouteCatalogue.astro';
+import SignupPortal from '@/components/signup/SignupPortal';
+import { getRoutes, getCharities, getSettings } from '@/sanity/queries';
+import { toPortalCharity, toPortalRoutes } from '@/utils/signup-view-model';
+
+const [routes, charities, settings] = await Promise.all([
+  getRoutes().catch(() => null),
+  getCharities().catch(() => null),
+  getSettings().catch(() => null),
+]);
+
+const portalRoutes = toPortalRoutes(routes);
+// One Charity Cause is published today, which is why panel 2 states the cause
+// rather than offering a grid of one card to pick from.
+const portalCharity = charities?.[0] ? toPortalCharity(charities[0]) : null;
+---
+
+<BaseLayout
+  title="adopt a run — adoption portal"
+  description="Adopt a GPS-art route, pair it with a charity cause, and name your companion. No account, no password."
+  hideFooter={true}
+  noindex={true}
+  class="signup-shell has-shader-bg"
+  settings={settings}
+>
+  <ShaderBackgroundWrapper flow="signup" mountMode="immediate" forcedPreset="presetC" />
+
+  <main id="signup-main">
+    <SignupPortal client:load routes={portalRoutes} charity={portalCharity}>
+      <RouteCatalogue routes={routes} cardAction="select" syncUrl={false} />
+    </SignupPortal>
+  </main>
+</BaseLayout>

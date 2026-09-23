@@ -1,15 +1,43 @@
 ---
 import ShaderBackground from './ShaderBackground';
+import type { PanelId } from '@/utils/signup-flow';
+import type { ShaderPresetKey } from './shaderConfig';
 
 export interface Props {
   class?: string;
+  /** Binds the camera to the Adoption Portal's panel state. */
+  flow?: 'signup';
+  /** 'immediate' skips the idle deferral and the ambient fade-in. */
+  mountMode?: 'idle' | 'immediate';
+  /** Seeds the panel the camera opens on. */
+  initialPanel?: PanelId;
+  /** Optional manual preset override, bypassing the scroll/IntersectionObserver. */
+  forcedPreset?: ShaderPresetKey;
 }
 
-const { class: className } = Astro.props;
+const { class: className, flow, mountMode = 'idle', initialPanel, forcedPreset } = Astro.props;
 ---
 
 <div class:list={['shader-background-viewport', className]} aria-hidden="true">
-  <ShaderBackground client:idle={{ timeout: 800 }} />
+  {
+    mountMode === 'immediate' ? (
+      <ShaderBackground
+        client:load
+        flow={flow}
+        mountMode={mountMode}
+        initialPanel={initialPanel}
+        forcedPreset={forcedPreset}
+      />
+    ) : (
+      <ShaderBackground
+        client:idle={{ timeout: 800 }}
+        flow={flow}
+        mountMode={mountMode}
+        initialPanel={initialPanel}
+        forcedPreset={forcedPreset}
+      />
+    )
+  }
 </div>
 
 <style>
@@ -20,5 +48,24 @@ const { class: className } = Astro.props;
     pointer-events: none;
     background-color: transparent;
     overflow: hidden;
+  }
+
+  /* Framing is absolute per panel: the world recedes to the right on the panel
+     where only the decision is left. Panels 0-3 share the full-bleed framing,
+     so only the commit panel declares a shift. */
+  /* Stand-in when WebGL is refused or the context is lost: the same sphere,
+     pre-rendered, framed as the live canvas frames it. */
+  .shader-background-viewport :global(.shader-background-still) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .shader-background-viewport :global([data-flow-panel]) {
+    transition: transform var(--duration-slow) var(--ease-out-expo);
+  }
+
+  .shader-background-viewport :global([data-flow-panel='commit']) {
+    transform: translateX(var(--signup-sphere-shift));
   }
 </style>

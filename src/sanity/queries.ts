@@ -1,7 +1,7 @@
 import { defineQuery } from 'groq';
 import type { SanityClient } from '@sanity/client';
 import { sanityClient } from './client';
-import type { SanityRoute, SanityCharity, SanitySiteCopy, SanitySettings } from './types';
+import type { SanityRoute, SanityCharity, SanitySiteCopy, SanitySettings, SanityEmailCopy } from './types';
 import sanityCache from '../data/sanity-cache.json';
 import { recordFallback } from './fallbackState';
 
@@ -255,3 +255,38 @@ export async function getSiteCopy(client: SanityClient = sanityClient): Promise<
   }
 }
 
+
+/**
+ * Adoption confirmation email copy, from the build-time snapshot.
+ *
+ * Deliberately synchronous and cache-only. `POST /api/signup` runs inside a
+ * Worker on the Adopter's critical path; a Sanity round trip there would add
+ * latency and a failure mode to a request whose whole job is to not fail. The
+ * copy is baked in by `scripts/cache-sanity.mjs` at build time instead, so
+ * editing it in the Studio takes effect on the next deploy.
+ *
+ * Returns null when no snapshot exists; the email template supplies defaults.
+ */
+export function getCachedEmailCopy(): SanityEmailCopy | null {
+  return (sanityCache?.data?.emailCopy as unknown as SanityEmailCopy) || null;
+}
+
+/**
+ * An Artwork from the build-time snapshot, by slug.
+ *
+ * Synchronous and cache-only, for the same reason as `getCachedEmailCopy`:
+ * `POST /api/signup` composes the confirmation email on the Adopter's critical
+ * path and must not make a Sanity round trip there. Returns null for a slug
+ * that resolves to nothing, which is a real case — slugs are stored as
+ * submitted and an Artwork can be renamed or unpublished afterwards.
+ */
+export function getCachedRouteBySlug(slug: string): SanityRoute | null {
+  const routes = (sanityCache?.data?.routes ?? []) as unknown as SanityRoute[];
+  return routes.find((route) => route.slug?.current === slug) ?? null;
+}
+
+/** A Charity Cause from the build-time snapshot, by slug. See `getCachedRouteBySlug`. */
+export function getCachedCharityBySlug(slug: string): SanityCharity | null {
+  const charities = (sanityCache?.data?.charities ?? []) as unknown as SanityCharity[];
+  return charities.find((charity) => charity.slug?.current === slug) ?? null;
+}

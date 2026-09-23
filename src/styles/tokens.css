@@ -29,6 +29,12 @@
     --color-header-shadow: rgba(0, 0, 0, 0.45);
     --color-overlay-dark: rgba(0, 0, 0, 0.7);
     --shadow-toast: 0 var(--space-04) var(--space-08) rgba(0, 0, 0, 0.6);
+    /* DESIGN.md: interactive lift is a subtle ambient glow, not a drop shadow. */
+    --shadow-action-glow: 0 0 var(--space-06) rgba(245, 174, 102, 0.28);
+    /* DESIGN.md: surfaces floating over mesh take an 8-16% white fill with a
+       20px backdrop blur. Forbidden over plain white or black. */
+    --color-surface-floating: rgba(255, 251, 249, 0.10);
+    --blur-floating: 20px;
     --color-border-subtle: var(--color-border-hairline);
     --color-border-strong: rgba(255, 251, 249, 0.40);
     --color-accent: var(--color-route-orange);
@@ -90,6 +96,9 @@
 
     /* Layout Seam & Header Tokens */
     --container-max-width: 1512px;
+    /* Widest the expanded route card is given in a dialog; below this the
+       cover column stops reading as a photograph. */
+    --route-modal-max-width: 1200px;
     --page-gutter: var(--space-09);
     --header-height: var(--space-10);
     --burger-stroke: 1.5px;
@@ -99,7 +108,40 @@
     --hero-main-min-height: 520px;
     --hero-mission-max-width: 830px;
     --toast-max-width: 380px;
+    /* Adoption Portal: how far the sphere clears the commit panel's content. */
+    --signup-sphere-shift: 26vw;
+    --signup-rail-width: 420px;
     --min-tap-target: 44px;
+
+    /* Adoption Portal — the instrument.
+       The flow is read as a precision instrument being calibrated: a narrow
+       centred column, a ticked hairline gutter carrying the position marker,
+       ruled sliders, and recessed fields. The column is the composition; the
+       page gutters only keep it off the glass. */
+    /* Three measures, one per kind of panel: the dense controls of `details`,
+       the reading measure of `charity`, and the panels hosting a wide object —
+       the catalogue, the review, and the opening statement. */
+    --signup-column-narrow: 640px;
+    --signup-column-mid: 800px;
+    --signup-column-wide: 1120px;
+    /* The ticked gutter to the left of every column. */
+    --signup-gutter: 72px;
+    --signup-tick-length: 9px;
+    --signup-tick-length-major: 15px;
+    /* Recessed field fills: below the 8-16% floating range because a field is
+       an inset, not a surface lifted off the mesh. */
+    --signup-field-fill: rgba(255, 251, 249, 0.05);
+    --signup-field-fill-focus: rgba(255, 251, 249, 0.09);
+    --signup-field-fill-invalid: rgba(255, 132, 132, 0.07);
+    /* Instrument strokes, quieter than --color-border-strong so the filled
+       portion of a track and the travelled part of the gutter read as the
+       measured value against an unmeasured remainder. */
+    --signup-track-idle: rgba(255, 251, 249, 0.18);
+    --signup-tick-idle: rgba(255, 251, 249, 0.26);
+    --signup-track-height: var(--space-01);
+    --signup-thumb-width: var(--space-01);
+    --signup-thumb-height: var(--space-06);
+    --signup-thumb-height-active: var(--space-08);
 
     /* Semantic Font Families & Fluid Clamp Typography */
     --font-display: 'degular-variable', 'Degular Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -160,9 +202,20 @@
     }
   }
 
+  @media (width <= 1024px) {
+    :root {
+      /* The gutter keeps its ticks but stops reserving a full instrument
+         margin once the column has to give ground. */
+      --signup-gutter: var(--space-08);
+    }
+  }
+
   @media (width <= 768px) {
     :root {
       --header-height: calc(var(--space-09) + var(--space-06));
+      /* No room to move aside on a phone: the sphere sits behind the content. */
+      --signup-sphere-shift: 0vw;
+      --signup-gutter: var(--space-06);
     }
   }
 
