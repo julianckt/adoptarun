@@ -145,6 +145,11 @@ const tileUrl = cartoApiKey
     font-family: var(--font-body) !important;
   }
 
+  /* CARTO dark_all tiles read very dim by default; lift them slightly. */
+  :global(.leaflet-tile-pane) {
+    filter: brightness(1.25) contrast(1.05);
+  }
+
   :global(.leaflet-control-attribution) {
     display: none !important; /* Attribution placed clean in telemetry HUD */
   }
