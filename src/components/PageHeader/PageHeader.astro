@@ -35,7 +35,13 @@ const { title, eyebrow, subtitle, preset } = Astro.props;
   .page-header {
     position: relative;
     overflow: hidden;
-    padding-block: var(--space-12) var(--space-10);
+    /* The site header is transparent until scrolled (see Header.astro's veil),
+       so this band pulls up underneath it — same technique as .hero-fullscreen
+       in components.css — letting the shader read through the nav at the top
+       of the page instead of leaving flat canvas black behind it. */
+    margin-top: calc(-1 * var(--header-height));
+    padding-top: calc(var(--header-height) + var(--space-12));
+    padding-bottom: var(--space-10);
     background-color: var(--color-canvas-black);
     border-bottom: var(--border-hairline);
   }
