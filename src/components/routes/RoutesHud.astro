@@ -264,7 +264,9 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
   }
 
   .hud-scrim--top-left {
-    inset: -24px -48px -32px -24px;
+    /* Left edge always reaches the viewport edge, matching the page gutter
+       at every breakpoint, instead of a fixed offset that falls short. */
+    inset: -24px -48px -32px calc(-1 * var(--page-gutter));
     background: radial-gradient(
       ellipse at top left,
       rgba(24, 19, 17, 0.92) 0%,
@@ -274,7 +276,7 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
   }
 
   .hud-scrim--bottom-left {
-    inset: -24px -32px -24px -24px;
+    inset: -24px -32px -24px calc(-1 * var(--page-gutter));
     background: radial-gradient(
       ellipse at bottom left,
       rgba(24, 19, 17, 0.90) 0%,
