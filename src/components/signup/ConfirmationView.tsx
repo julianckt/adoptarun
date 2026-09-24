@@ -153,25 +153,31 @@ export default function ConfirmationView({
    * not a cancelled line item.
    */
   const journey: { name: string; index: string; state: 'done' | 'active' | 'ahead' }[] = [
-    { name: 'match & commit', index: 'one.', state: 'done' },
-    { name: 'nurture & grow', index: 'two.', state: 'active' },
-    { name: 'forever guardian', index: 'three.', state: 'ahead' },
+    { name: 'match & commit - done!', index: 'step one.', state: 'done' },
+    { name: "nurture & grow - let's run", index: 'step two.', state: 'active' },
+    { name: 'forever guardian', index: 'step three.', state: 'ahead' },
   ];
 
   return (
     <div className="confirmed" data-reveal={arrival ? 'true' : 'false'}>
       <div className="confirmed-main">
-        <h1 className="confirmed-headline" data-reveal-step="1">
+        {arrival && (
+          <p className="confirmed-notice" data-reveal-step="1">
+            Confirmation sent to {arrival.email}, with your Adopter ID inside.
+          </p>
+        )}
+
+        <h1 className="confirmed-headline" data-reveal-step="2">
           {adoption.companionName} is waiting for your run
         </h1>
 
-        <p className="confirmed-id" data-reveal-step="2">
+        <p className="confirmed-id" data-reveal-step="3">
           <span className="confirmed-id-label">adopter id</span>
           <span className="confirmed-id-value">{adoption.adopterId}</span>
-          <span className="confirmed-id-note">this is how you log your run</span>
+          <span className="confirmed-id-note">save this — you&rsquo;ll log your run with it</span>
         </p>
 
-        <dl className="confirmed-facts" data-reveal-step="3">
+        <dl className="confirmed-facts" data-reveal-step="4">
           <div className="confirmed-fact">
             <dt className="confirmed-fact-label">route</dt>
             <dd className="confirmed-fact-value">{route?.title ?? '—'}</dd>
@@ -205,7 +211,7 @@ export default function ConfirmationView({
           )}
         </dl>
 
-        <ol className="confirmed-journey" data-reveal-step="4" aria-label="Caretaker journey">
+        <ol className="confirmed-journey" data-reveal-step="5" aria-label="Caretaker journey">
           {journey.map((stage) => (
             <li key={stage.name} className="confirmed-journey-stage" data-state={stage.state}>
               <span className="confirmed-journey-index" aria-hidden="true">
@@ -216,7 +222,7 @@ export default function ConfirmationView({
           ))}
         </ol>
 
-        <div className="confirmed-actions" data-reveal-step="5">
+        <div className="confirmed-actions" data-reveal-step="6">
           <a className="signup-cta" href="/log">
             <span className="signup-cta-label">log your run</span>
             <span className="signup-cta-arrow" aria-hidden="true">
@@ -247,11 +253,6 @@ export default function ConfirmationView({
           </div>
         </div>
 
-        {arrival && (
-          <p className="confirmed-notice" data-reveal-step="6">
-            Confirmation sent to {arrival.email}, with your Adopter ID inside.
-          </p>
-        )}
       </div>
 
       <div className="confirmed-route" data-reveal-step="7">

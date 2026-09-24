@@ -29,12 +29,7 @@ export default function IntroPanel({
         <span className="signup-intro-run">run</span>
       </p>
 
-      <p className="signup-intro-lede" data-reveal-step="2">
-        Four decisions, no account, no password. Choose an Artwork, pair it with
-        a cause, and name the companion you are running for.
-      </p>
-
-      <div className="signup-intro-actions" data-reveal-step="3">
+      <div className="signup-intro-actions" data-reveal-step="2">
         <button type="button" className="signup-cta" onClick={onAdvance}>
           <span className="signup-cta-label">{ctaLabel}</span>
           <span className="signup-cta-arrow" aria-hidden="true">

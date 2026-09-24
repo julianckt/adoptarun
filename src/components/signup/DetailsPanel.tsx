@@ -111,12 +111,7 @@ export default function DetailsPanel({
   return (
     <div className="signup-details">
       <section className="signup-group" data-reveal-step="1">
-        <h2 className="signup-group-title">
-          <span className="signup-group-index" aria-hidden="true">
-            a
-          </span>
-          who is running
-        </h2>
+        <h2 className="signup-group-title">about you</h2>
         <div className="signup-details-identity">
           <div className="signup-details-name">
             {field('firstName', 'first name', 'text', 'given-name')}
@@ -127,16 +122,12 @@ export default function DetailsPanel({
       </section>
 
       <section className="signup-group" data-reveal-step="2">
-        <h2 className="signup-group-title">
-          <span className="signup-group-index" aria-hidden="true">
-            b
-          </span>
-          what you are committing to
-        </h2>
+        <h2 className="signup-group-title">about your commitment</h2>
 
         <div className="signup-details-commitment">
           {showTimeframeSlider && (
             <div className="signup-slider" style={fill(commitmentDays, COMMITMENT_DAYS_MIN, COMMITMENT_DAYS_MAX)}>
+              <p className="signup-slider-intro">your target run-by date</p>
               <div className="signup-slider-head">
                 <label className="signup-field-label" htmlFor="signup-timeframe">
                   commitment timeframe
@@ -170,6 +161,7 @@ export default function DetailsPanel({
           )}
 
           <div className="signup-slider" style={fill(targetHkd, TARGET_HKD_MIN, TARGET_HKD_MAX)}>
+            <p className="signup-slider-intro">your target fundraising goal</p>
             <div className="signup-slider-head">
               <label className="signup-field-label" htmlFor="signup-target">
                 target impact goal

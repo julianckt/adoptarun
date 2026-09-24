@@ -31,12 +31,12 @@ export const ROTATION_DELTA_DEG = -80;
 export const ROTATION_DELTA_RAD = (ROTATION_DELTA_DEG * Math.PI) / 180;
 
 /**
- * Floor for the commit beat, mirroring `--duration-deliberate`. This is NOT
+ * Floor for the commit beat, mirroring `--duration-commit-beat`. This is NOT
  * part of the backend stub: when the real request replaces the stand-in it
  * races this floor, so a fast response still gets the full gesture and a slow
  * one is already covered.
  */
-export const MINIMUM_COMMIT_BEAT_MS = 900;
+export const MINIMUM_COMMIT_BEAT_MS = 1600;
 
 export interface PanelFraming {
   /** ShaderGradient camera zoom; lower pulls the sphere back. */

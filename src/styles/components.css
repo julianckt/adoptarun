@@ -2374,6 +2374,14 @@
     padding-right: calc(var(--page-gutter) + var(--signup-rail-width) + var(--space-09));
   }
 
+  /* Tighter vertical rhythm on the details panel only — the two-instrument
+     form reads better dense, and the reduction here doesn't touch the other
+     panels' shared padding. */
+  .signup-panel[data-panel='details'] {
+    padding-top: var(--space-09);
+    padding-bottom: var(--space-09);
+  }
+
   .signup-heading {
     margin: var(--space-00) var(--space-00) var(--space-08);
     color: var(--color-text-primary);
@@ -2386,7 +2394,7 @@
 
   .signup-empty {
     max-width: var(--hero-header-max-width);
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     font-family: var(--font-body);
     font-size: var(--font-size-body);
     line-height: 1.4;
@@ -2454,7 +2462,7 @@
   }
 
   .signup-stepper-total {
-    color: var(--color-text-muted);
+    color: var(--color-text-primary);
     font-size: var(--font-size-micro);
   }
 
@@ -2484,8 +2492,11 @@
     height: 100%;
   }
 
+  /* Full-opacity, not the shared --signup-track-idle token (used elsewhere at
+     reduced alpha) — here "upcoming" is read purely from the hairline width
+     against done/current's thicker marks, never from dimness. */
   .signup-stepper-scale::before {
-    background-color: var(--signup-track-idle);
+    background-color: var(--color-canvas-white);
   }
 
   .signup-stepper-scale::after {
@@ -2504,20 +2515,25 @@
     display: block;
     width: var(--signup-tick-length);
     height: var(--border-width-hairline);
-    background-color: var(--signup-tick-idle);
+    background-color: var(--color-canvas-white);
     transition:
       width var(--duration-slow) var(--ease-out-expo),
+      height var(--duration-slow) var(--ease-out-expo),
       background-color var(--duration-slow) var(--ease-out-expo);
   }
 
+  /* Done reads slightly heavier than upcoming's hairline, orange rather than
+     white — weight and hue both say "passed", neither relies on opacity. */
   .signup-stepper-tick[data-state='done'] .signup-stepper-tick-mark {
+    height: var(--space-01);
     background-color: var(--color-accent);
   }
 
-  /* The current graduation reads longer and lit — the only moving part. */
+  /* The current graduation reads longer, thickest, and lit — the only moving
+     part. */
   .signup-stepper-tick[data-state='current'] .signup-stepper-tick-mark {
     width: var(--signup-tick-length-major);
-    height: var(--space-01);
+    height: var(--space-02);
     background-color: var(--color-canvas-white);
   }
 
@@ -2527,7 +2543,8 @@
   .signup-intro {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     grid-column: 1 / -1;
   }
 
@@ -2551,20 +2568,10 @@
     font-variation-settings: 'wdth' 175, 'wght' 900;
   }
 
-  .signup-intro-lede {
-    max-width: 58ch;
-    margin: var(--space-00) var(--space-00) var(--space-09);
-    padding-top: var(--space-06);
-    border-top: var(--border-hairline);
-    color: var(--color-text-secondary);
-    font-family: var(--font-body);
-    font-size: var(--font-size-body);
-    line-height: 1.4;
-  }
-
   .signup-intro-actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-05) var(--space-07);
     align-items: center;
   }
@@ -2575,7 +2582,7 @@
     border-bottom: var(--border-width-hairline) solid transparent;
     border-radius: var(--radius-none);
     background: none;
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     font-family: var(--font-body);
     font-size: var(--font-size-label);
     line-height: var(--leading-action);
@@ -2729,13 +2736,13 @@
   .signup-details {
     display: flex;
     flex-direction: column;
-    gap: var(--space-10);
+    gap: var(--space-09);
   }
 
   .signup-group {
     display: flex;
     flex-direction: column;
-    gap: var(--space-07);
+    gap: var(--space-06);
   }
 
   .signup-group-title {
@@ -2752,16 +2759,10 @@
     line-height: var(--leading-action);
   }
 
-  .signup-group-index {
-    color: var(--color-accent);
-    font-size: var(--font-size-micro);
-    font-weight: 500;
-  }
-
   .signup-details-identity {
     display: flex;
     flex-direction: column;
-    gap: var(--space-06);
+    gap: var(--space-05);
   }
 
   .signup-details-name {
@@ -2773,7 +2774,7 @@
   .signup-details-commitment {
     display: flex;
     flex-direction: column;
-    gap: var(--space-09);
+    gap: var(--space-08);
   }
 
   /* ---- Fields: recessed wells, and a value worth typing ----
@@ -2788,7 +2789,7 @@
   }
 
   .signup-field-label {
-    color: var(--color-text-muted);
+    color: var(--color-text-primary);
     font-family: var(--font-body);
     font-size: var(--font-size-micro);
     font-weight: 500;
@@ -2798,7 +2799,7 @@
 
   .signup-field:focus-within .signup-field-label,
   .signup-field[data-filled='true'] .signup-field-label {
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
   }
 
   .signup-field-input {
@@ -2806,7 +2807,7 @@
     min-height: var(--min-tap-target);
     padding: var(--space-04) var(--space-05);
     border: var(--border-hairline);
-    border-bottom: var(--border-width-hairline) solid var(--color-border-strong);
+    border-bottom: var(--border-width-hairline) solid var(--color-canvas-white);
     border-radius: var(--radius-none);
     background-color: var(--signup-field-fill);
     color: var(--color-text-primary);
@@ -2836,6 +2837,7 @@
 
   .signup-field-input[aria-invalid='true'] {
     background-color: var(--signup-field-fill-invalid);
+    border-bottom-width: var(--space-01);
     border-bottom-color: var(--color-route-coral);
   }
 
@@ -2843,6 +2845,7 @@
     color: var(--color-route-coral);
     font-family: var(--font-body);
     font-size: var(--font-size-micro);
+    font-weight: 600;
     line-height: var(--leading-body);
   }
 
@@ -3016,9 +3019,21 @@
     margin: var(--space-00);
     color: var(--color-accent);
     font-family: var(--font-body);
-    font-size: var(--font-size-label);
+    font-size: var(--font-size-metric);
     line-height: var(--leading-body);
+    text-align: center;
     animation: scroll-fade var(--duration-normal) var(--ease-out-expo) backwards;
+  }
+
+  /* The line introducing what an instrument below it is for — sits above the
+     whole slider block, distinct from the slider's own hairline label. */
+  .signup-slider-intro {
+    margin: var(--space-00);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    font-weight: 400;
+    line-height: var(--leading-body);
   }
 
   /* ---- Summary rail: the instrument's read-out ---- */
@@ -3031,7 +3046,8 @@
     border: var(--border-hairline);
     background: linear-gradient(to bottom,
         var(--color-header-veil-top) 0%,
-        var(--color-header-veil-bottom) 100%);
+        var(--color-header-veil-bottom) 50%,
+        var(--color-header-veil-top) 100%);
     -webkit-backdrop-filter: blur(var(--blur-floating));
     backdrop-filter: blur(var(--blur-floating));
     opacity: 0;
@@ -3143,20 +3159,11 @@
     line-height: var(--leading-body);
   }
 
-  /* `change` waits at half strength and comes up under the pointer, so the
-     read-out reads as a statement first and a set of controls second. */
   .signup-rail-value .signup-change {
     margin-left: auto;
-    opacity: 0.55;
     transition:
-      opacity var(--duration-fast) var(--ease-out-expo),
       color var(--duration-fast) var(--ease-out-expo),
       border-color var(--duration-fast) var(--ease-out-expo);
-  }
-
-  .signup-rail-row:hover .signup-change,
-  .signup-rail-value .signup-change:focus-visible {
-    opacity: 1;
   }
 
   /* The rows arrive in the order they were decided. */
@@ -3207,7 +3214,7 @@
     border-bottom: var(--border-width-hairline) solid var(--color-border-strong);
     border-radius: var(--radius-none);
     background: none;
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     font-family: var(--font-body);
     font-size: var(--font-size-micro);
     line-height: var(--leading-action);
@@ -3309,25 +3316,19 @@
 
   .signup-review-value .signup-change {
     margin-left: auto;
-    opacity: 0.55;
     transition:
-      opacity var(--duration-fast) var(--ease-out-expo),
       color var(--duration-fast) var(--ease-out-expo),
       border-color var(--duration-fast) var(--ease-out-expo);
-  }
-
-  .signup-review-row:hover .signup-change,
-  .signup-review-value .signup-change:focus-visible {
-    opacity: 1;
   }
 
   .signup-commit-error {
     margin: var(--space-06) var(--space-00) var(--space-00);
     padding: var(--space-05);
-    border: var(--border-width-hairline) solid var(--color-route-coral);
+    border: var(--space-01) solid var(--color-route-coral);
     color: var(--color-route-coral);
     font-family: var(--font-body);
     font-size: var(--font-size-label);
+    font-weight: 600;
     line-height: 1.4;
   }
 
@@ -3408,7 +3409,7 @@
   }
 
   .signup-commit-button[data-committing='true'] .signup-commit-wipe {
-    animation: signup-commit-wipe var(--duration-deliberate) var(--ease-out-expo) forwards;
+    animation: signup-commit-wipe var(--duration-commit-beat) var(--ease-out-expo) forwards;
   }
 
   @keyframes signup-commit-wipe {
@@ -3423,6 +3424,19 @@
   /* ---- The Route Catalogue, hosted rather than rebuilt ---- */
   .signup-catalogue-slot .route-catalogue {
     min-height: auto;
+  }
+
+  /* RouteCatalogue.astro's own `.catalogue-main` carries a `page-frame` inset
+     and top padding sized for being the page's own frame at `/routes`. Hosted
+     inside a signup panel it already sits in that panel's own gutter and
+     padding, so both are zeroed here rather than in the shared component.
+     Selector is three classes deep (rather than two) so it reliably beats the
+     scoped rule Astro attaches to `.catalogue-main` regardless of stylesheet
+     load order. */
+  .signup-portal .signup-catalogue-slot .catalogue-main {
+    padding-top: var(--space-00);
+    padding-inline: var(--space-00);
+    max-width: none;
   }
 
   /* ---- The staged read-out ----
@@ -3561,7 +3575,6 @@
 
     .signup-rail-value .signup-change {
       margin-left: var(--space-00);
-      opacity: 1;
     }
 
     .signup-details-name {
@@ -3575,7 +3588,6 @@
 
     .signup-review-value .signup-change {
       margin-left: var(--space-00);
-      opacity: 1;
     }
 
     /* Two lines rather than a smaller one, echoing the stacked wordmark:
@@ -3583,7 +3595,7 @@
     .signup-intro-wordmark {
       flex-direction: column;
       gap: var(--space-00);
-      align-items: flex-start;
+      align-items: center;
     }
   }
 
@@ -3724,8 +3736,10 @@
 
   .confirmed-fact-value {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-02);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-03);
     margin: var(--space-00);
     color: var(--color-text-primary);
     font-family: var(--font-body);
@@ -3791,15 +3805,14 @@
 
   .confirmed-actions {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-06);
-    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-05) var(--space-07);
+    align-items: center;
     padding-top: var(--space-06);
     border-top: var(--border-hairline);
   }
 
-  /* Four identical underlines gave the page no next step; the references sit
-     below the one action that moves the adoption forward. */
   .confirmed-actions-secondary {
     display: flex;
     flex-wrap: wrap;

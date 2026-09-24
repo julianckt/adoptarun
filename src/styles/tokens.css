@@ -187,6 +187,10 @@
     --duration-slow: 0.6s;
     --duration-deliberate: 0.9s;
     --duration-ambient: 2.4s;
+    /* The Adoption Portal's commit beat: deliberately longer than any shared
+       duration, so it stays its own token rather than dragging --duration-deliberate
+       (shared with nav-rule-in) to match. */
+    --duration-commit-beat: 1.6s;
 
     /* Motion Easing Tokens */
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
