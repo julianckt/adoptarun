@@ -760,7 +760,7 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
       const url = new URL(window.location.href);
       const params = toFilterParams(currentState);
       // Preserve current view param if present
-      const currentView = url.searchParams.get('view') || 'grid';
+      const currentView = url.searchParams.get('view') || 'map';
       params.set('view', currentView);
 
       const newRelativePathQuery = `${window.location.pathname}?${params.toString()}`;

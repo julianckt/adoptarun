@@ -152,6 +152,7 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
         aria-pressed="false"
         data-view="grid"
       >
+        <span class="hud-view-dot" aria-hidden="true">●</span>
         <span>grid</span>
       </button>
     </div>
@@ -410,8 +411,13 @@ const mailtoHref = `mailto:${contactEmail}?subject=${mailtoSubject}`;
   }
 
   .hud-view-dot {
+    display: none;
     font-size: var(--font-size-micro);
     line-height: 1;
+  }
+
+  .hud-view-btn.is-active .hud-view-dot {
+    display: inline;
   }
 
   /* Bottom-Left Telemetry & Route Suggestion */
