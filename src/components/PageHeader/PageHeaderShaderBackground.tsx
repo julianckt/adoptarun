@@ -32,8 +32,19 @@ export interface PageHeaderShaderBackgroundProps {
 /**
  * A deliberately lighter sibling of homepage ShaderBackground: no cursor/scroll
  * parallax, no signup-flow binding, no idle-mount fade. Boxed to its parent's
- * size (the PageHeader band) rather than the viewport, and the canvas is fully
- * unmounted — not just paused — while scrolled out of view.
+ * size (the PageHeader band) rather than the viewport.
+ *
+ * The WebGL canvas mounts once and stays mounted — @shadergradient/react's
+ * underlying react-three-fiber Canvas always render-loops continuously and
+ * doesn't expose a way to pause that loop, so unmounting the whole canvas on
+ * every scroll-out was the only way to stop rendering, but re-creating the
+ * WebGL context (and recompiling the shader) on scroll-back-in is slow enough
+ * to show as a flash of empty header on a fast upward scroll. Instead, only
+ * the <ShaderGradient> mesh itself — the actual per-pixel fragment-shader
+ * work — unmounts while the header is offscreen, via one IntersectionObserver.
+ * The canvas keeps rendering an empty scene (a trivial clear() versus a full
+ * noise-shader pass), and reappears instantly on scroll-back since there's no
+ * context/shader recreation to wait on.
  */
 export default function PageHeaderShaderBackground({
   preset,
@@ -108,7 +119,7 @@ export default function PageHeaderShaderBackground({
         />
       )}
 
-      {isVisible && hasWebGL && (
+      {hasWebGL && (
         <ShaderGradientCanvas
           style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
           pixelDensity={DEFAULT_CANVAS_OPTIONS.pixelDensity}
@@ -117,52 +128,54 @@ export default function PageHeaderShaderBackground({
           lazyLoad={DEFAULT_CANVAS_OPTIONS.lazyLoad}
           powerPreference={DEFAULT_CANVAS_OPTIONS.powerPreference}
         >
-          <ShaderGradient
-            type={config.type}
-            animate={prefersReducedMotion ? 'off' : config.animate}
-            uTime={config.uTime}
-            uSpeed={config.uSpeed}
-            uStrength={config.uStrength}
-            uDensity={config.uDensity}
-            uFrequency={config.uFrequency}
-            uAmplitude={config.uAmplitude}
-            color1={config.color1}
-            color2={config.color2}
-            color3={config.color3}
-            reflection={config.reflection}
-            wireframe={config.wireframe}
-            shader={config.shader}
-            positionX={config.positionX}
-            positionY={config.positionY}
-            positionZ={config.positionZ}
-            rotationX={config.rotationX}
-            rotationY={config.rotationY}
-            rotationZ={config.rotationZ}
-            cAzimuthAngle={config.cAzimuthAngle}
-            cPolarAngle={config.cPolarAngle}
-            cDistance={config.cDistance}
-            cameraZoom={config.cameraZoom}
-            lightType={config.lightType}
-            brightness={config.brightness}
-            envPreset={config.envPreset}
-            grain={config.grain}
-            grainBlending={config.grainBlending}
-            range={config.range}
-            rangeStart={config.rangeStart}
-            rangeEnd={config.rangeEnd}
-            loop={config.loop}
-            loopDuration={config.loopDuration}
-            control={config.control}
-            urlString={config.urlString}
-            enableTransition={false}
-            smoothTime={config.smoothTime}
-            enableCameraUpdate={false}
-            toggleAxis={config.toggleAxis}
-            zoomOut={config.zoomOut}
-            hoverState={config.hoverState}
-            rotSpringOption={config.rotSpringOption}
-            posSpringOption={config.posSpringOption}
-          />
+          {isVisible && (
+            <ShaderGradient
+              type={config.type}
+              animate={prefersReducedMotion ? 'off' : config.animate}
+              uTime={config.uTime}
+              uSpeed={config.uSpeed}
+              uStrength={config.uStrength}
+              uDensity={config.uDensity}
+              uFrequency={config.uFrequency}
+              uAmplitude={config.uAmplitude}
+              color1={config.color1}
+              color2={config.color2}
+              color3={config.color3}
+              reflection={config.reflection}
+              wireframe={config.wireframe}
+              shader={config.shader}
+              positionX={config.positionX}
+              positionY={config.positionY}
+              positionZ={config.positionZ}
+              rotationX={config.rotationX}
+              rotationY={config.rotationY}
+              rotationZ={config.rotationZ}
+              cAzimuthAngle={config.cAzimuthAngle}
+              cPolarAngle={config.cPolarAngle}
+              cDistance={config.cDistance}
+              cameraZoom={config.cameraZoom}
+              lightType={config.lightType}
+              brightness={config.brightness}
+              envPreset={config.envPreset}
+              grain={config.grain}
+              grainBlending={config.grainBlending}
+              range={config.range}
+              rangeStart={config.rangeStart}
+              rangeEnd={config.rangeEnd}
+              loop={config.loop}
+              loopDuration={config.loopDuration}
+              control={config.control}
+              urlString={config.urlString}
+              enableTransition={false}
+              smoothTime={config.smoothTime}
+              enableCameraUpdate={false}
+              toggleAxis={config.toggleAxis}
+              zoomOut={config.zoomOut}
+              hoverState={config.hoverState}
+              rotSpringOption={config.rotSpringOption}
+              posSpringOption={config.posSpringOption}
+            />
+          )}
         </ShaderGradientCanvas>
       )}
     </div>

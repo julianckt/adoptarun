@@ -63,32 +63,44 @@ describe('PageHeaderShaderBackground', () => {
     vi.restoreAllMocks();
   });
 
-  it('does not mount the WebGL canvas until the header scrolls into view', async () => {
+  it('mounts the WebGL canvas once, before the header is even in view', () => {
     render(<PageHeaderShaderBackground preset="presetA" />);
-
-    expect(screen.queryByTestId('shader-canvas')).toBeNull();
-
-    const observer = MockIntersectionObserver.instances[0];
-    act(() => observer.trigger(true));
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('shader-canvas')).not.toBeNull();
-    });
+    // The canvas (WebGL context) mounts immediately and stays mounted — only
+    // the shader mesh inside it toggles with visibility. See the component's
+    // doc comment for why: re-creating the context on every scroll-back was
+    // slow enough to show as a flash of empty header.
+    expect(screen.queryByTestId('shader-canvas')).not.toBeNull();
+    expect(screen.queryByTestId('shader-gradient')).toBeNull();
   });
 
-  it('unmounts the WebGL canvas again once it scrolls out of view', async () => {
+  it('renders the shader mesh once the header scrolls into view, without remounting the canvas', async () => {
     render(<PageHeaderShaderBackground preset="presetA" />);
+    const canvas = screen.getByTestId('shader-canvas');
+    const observer = MockIntersectionObserver.instances[0];
+
+    act(() => observer.trigger(true));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('shader-gradient')).not.toBeNull();
+    });
+    expect(screen.getByTestId('shader-canvas')).toBe(canvas);
+  });
+
+  it('removes the shader mesh — but keeps the canvas mounted — once scrolled out of view', async () => {
+    render(<PageHeaderShaderBackground preset="presetA" />);
+    const canvas = screen.getByTestId('shader-canvas');
     const observer = MockIntersectionObserver.instances[0];
 
     act(() => observer.trigger(true));
     await waitFor(() => {
-      expect(screen.queryByTestId('shader-canvas')).not.toBeNull();
+      expect(screen.queryByTestId('shader-gradient')).not.toBeNull();
     });
 
     act(() => observer.trigger(false));
     await waitFor(() => {
-      expect(screen.queryByTestId('shader-canvas')).toBeNull();
+      expect(screen.queryByTestId('shader-gradient')).toBeNull();
     });
+    expect(screen.getByTestId('shader-canvas')).toBe(canvas);
   });
 
   it('falls back to the static still image when WebGL is unavailable', async () => {
