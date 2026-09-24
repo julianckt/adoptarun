@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader/PageHeader.astro';
 import { getSiteCopy, getSettings } from '@/sanity/queries';
 import { groupFaqsByCategory } from '@/utils/faq-utils';
 
@@ -17,12 +18,9 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
   footerVariant="full"
   settings={settings}
 >
-  <main class="faq-page page-frame">
-    <!-- Hero Section: Ultra-minimal -->
-    <header class="faq-hero">
-      <h1 class="faq-title font-display">frequently asked questions</h1>
-    </header>
+  <PageHeader title="frequently asked questions" preset="presetD" />
 
+  <main class="faq-page page-frame">
     <!-- Mobile Sticky Horizontal Subheader -->
     <nav class="faq-mobile-nav" aria-label="FAQ Categories (Mobile)">
       <div class="faq-mobile-nav-track" id="faq-mobile-track">
@@ -244,26 +242,9 @@ const faqGroups = groupFaqsByCategory(siteCopy?.faqs || []);
 
 <style>
   .faq-page {
-    padding-block: var(--space-09) var(--space-10);
+    padding-block: var(--space-08) var(--space-10);
     min-height: 80vh;
     color: var(--color-canvas-white);
-  }
-
-  /* -------------------------------------------------------------
-     Hero Section
-     ------------------------------------------------------------- */
-  .faq-hero {
-    margin-bottom: var(--space-06);
-  }
-
-  .faq-title {
-    margin: 0;
-    font-size: var(--font-fluid-headline);
-    font-weight: 500;
-    line-height: var(--leading-compressed);
-    color: var(--color-canvas-white);
-    letter-spacing: normal;
-    text-transform: lowercase;
   }
 
   /* -------------------------------------------------------------

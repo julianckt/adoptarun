@@ -8,6 +8,7 @@
  * Fully compliant with DESIGN.md and Lumos tokens.
  */
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader/PageHeader.astro';
 import CharityCard from '@/components/charities/CharityCard.astro';
 import CharityPartnerInvite from '@/components/charities/CharityPartnerInvite.astro';
 import { getCharities, getSettings } from '@/sanity/queries';
@@ -27,14 +28,9 @@ const hasCharities = Array.isArray(charities) && charities.length > 0;
   footerVariant="full"
   settings={settings}
 >
-  <main class="charities-page">
-    <!-- Ultra-Minimal Editorial Hero -->
-    <header class="charities-hero">
-      <div class="charities-hero-container">
-        <h1 class="charities-title font-display">partner charities</h1>
-      </div>
-    </header>
+  <PageHeader title="partner charities" preset="presetD" />
 
+  <main class="charities-page">
     <!-- Architectural Charity Cards Grid -->
     <section class="charities-section" aria-label="Partner non-profit organizations">
       <div class="charities-grid-container">
@@ -69,39 +65,11 @@ const hasCharities = Array.isArray(charities) && charities.length > 0;
     box-sizing: border-box;
   }
 
-  /* Ultra-Minimal Hero */
-  .charities-hero {
-    width: 100%;
-    padding-top: var(--space-12);
-    padding-bottom: var(--space-08);
-    border-bottom: var(--border-hairline);
-    background-color: var(--color-canvas-black);
-  }
-
-  .charities-hero-container {
-    max-width: var(--container-max-width);
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: var(--page-gutter);
-    padding-right: var(--page-gutter);
-    box-sizing: border-box;
-  }
-
-  .charities-title {
-    font-size: var(--font-fluid-title);
-    line-height: var(--leading-compressed);
-    font-weight: 500;
-    color: var(--color-canvas-white);
-    margin: 0;
-    text-transform: lowercase;
-    letter-spacing: normal;
-  }
-
   /* Grid Section */
   .charities-section {
     width: 100%;
     flex-grow: 1;
-    padding-top: var(--space-10);
+    padding-top: var(--space-08);
     padding-bottom: var(--space-12);
   }
 

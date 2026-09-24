@@ -1,0 +1,88 @@
+---
+/**
+ * PageHeader.astro
+ *
+ * Reusable colorful hero band for content pages (FAQs, Charities, and future
+ * pages). Boxes the ShaderGradient (a lighter, non-parallax sibling of the
+ * homepage's ShaderBackground) to this header's height, with a scrim between
+ * it and the title so text contrast never depends on which preset is passed.
+ */
+import PageHeaderShaderBackground from './PageHeaderShaderBackground';
+import type { ShaderPresetKey } from '@/components/ShaderBackground/shaderConfig';
+
+export interface Props {
+  title: string;
+  eyebrow?: string;
+  subtitle?: string;
+  /** Which shaderConfig preset this header uses. Passed explicitly per page — never hardcoded. */
+  preset: ShaderPresetKey;
+}
+
+const { title, eyebrow, subtitle, preset } = Astro.props;
+---
+
+<header class="page-header">
+  <PageHeaderShaderBackground preset={preset} client:load />
+  <div class="page-header-scrim" aria-hidden="true"></div>
+  <div class="page-header-container">
+    {eyebrow && <p class="page-header-eyebrow">{eyebrow}</p>}
+    <h1 class="page-header-title font-display">{title}</h1>
+    {subtitle && <p class="page-header-subtitle">{subtitle}</p>}
+  </div>
+</header>
+
+<style>
+  .page-header {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--space-12) var(--space-10);
+    background-color: var(--color-canvas-black);
+    border-bottom: var(--border-hairline);
+  }
+
+  .page-header-scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-color: var(--color-header-veil-top);
+  }
+
+  .page-header-container {
+    position: relative;
+    z-index: 1;
+    max-width: var(--container-max-width);
+    margin-inline: auto;
+    padding-inline: var(--page-gutter);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-03);
+  }
+
+  .page-header-eyebrow {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    line-height: var(--leading-action);
+    color: var(--color-text-secondary);
+    text-transform: lowercase;
+  }
+
+  .page-header-title {
+    margin: 0;
+    font-size: var(--font-fluid-headline);
+    font-weight: 500;
+    line-height: var(--leading-compressed);
+    color: var(--color-canvas-white);
+    letter-spacing: normal;
+    text-transform: lowercase;
+  }
+
+  .page-header-subtitle {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: var(--leading-body);
+    color: var(--color-text-secondary);
+  }
+</style>
