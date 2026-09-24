@@ -99,6 +99,9 @@
     /* Widest the expanded route card is given in a dialog; below this the
        cover column stops reading as a photograph. */
     --route-modal-max-width: 1200px;
+    /* Narrowest a route card is allowed to shrink to in the catalogue grid
+       before a column drops, so telemetry/title never gets cramped. */
+    --route-card-min-width: 288px;
     --page-gutter: var(--space-09);
     --header-height: var(--space-10);
     --burger-stroke: 1.5px;

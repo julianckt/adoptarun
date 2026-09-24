@@ -380,7 +380,10 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
 
   .catalogue-main {
     display: grid;
-    grid-template-columns: minmax(calc(var(--space-13) + var(--space-05)), calc(var(--space-13) + var(--space-11))) 1fr;
+    /* Sidebar column matches one card column: content is 3 card columns plus
+       2 inner gaps, so quartering (total - outer gap - 2 inner gaps) gives
+       the width of one card, and the sidebar is clamped to the same floor. */
+    grid-template-columns: minmax(var(--route-card-min-width), calc((100% - var(--space-09) - 2 * var(--space-06)) / 4)) 1fr;
     gap: var(--space-09);
     padding-top: var(--space-11);
   }
@@ -551,7 +554,7 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
 
   .catalogue-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--route-card-min-width), 1fr));
     gap: var(--space-06);
     width: 100%;
   }
@@ -598,12 +601,6 @@ const themeCycles: ('route-orange' | 'route-coral' | 'route-blush')[] = [
   }
 
   /* Responsive Rules */
-  @media (max-width: 1024px) {
-    .catalogue-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
   @media (max-width: 768px) {
     .catalogue-mobile-bar {
       display: flex;
