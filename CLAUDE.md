@@ -37,7 +37,7 @@ All UI, layout, and style modifications must comply strictly with the design sys
 
 ## 4. Git & Branching Workflow
 
-- **Feature Branch Only**: All Claude Code work lives on a dedicated feature branch (currently `ui/claude-frontend-polish`). Never commit to `main` directly.
+- **Feature Branch Only**: All Claude Code work lives on a dedicated feature branch (currently working on main - so ignore this clause). Never commit to `main` directly unless instructed to.
 - **Local Commits Only**: Create commits locally as work progresses. Do not `git push`, do not open PRs, do not merge — the user handles all remote and merge operations.
 - **Standard Precautions**: Run `git status` before any destructive operation. Never use `--no-verify` or bypass hooks.
 

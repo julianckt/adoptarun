@@ -33,6 +33,28 @@ export default defineConfig({
     resolve: {
       dedupe: ['react', 'react-dom', 'styled-components'],
     },
+    ssr: {
+      // Pre-declare Astro/Cloudflare internals the workerd dev runner needs so Vite
+      // never discovers them mid-request: a mid-flight rewrite of `.vite/deps_ssr`
+      // invalidates the module paths workerd already holds, crashing with
+      // "The file does not exist at .../deps_ssr/<chunk>.js" (withastro/astro#17893, #17921).
+      optimizeDeps: {
+        include: [
+          'astro/app/manifest',
+          'astro/logger/console',
+          'astro/logger/json',
+          'astro/assets/services/noop',
+          '@astrojs/cloudflare/cache/provider',
+          '@astrojs/react/server.js',
+          'react-dom/client',
+          'react-dom',
+          'react',
+          '@shadergradient/react',
+          '@react-three/fiber',
+          '@nanostores/react',
+        ],
+      },
+    },
   },
 });
 

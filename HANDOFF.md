@@ -1,218 +1,201 @@
-# Handoff: Fix Chrome Header Translucent Background via Real DOM Veil
+# Signup flow — round 2 polish handoff
 
-## 1. Objective
+Implementing agent: this is a fully-scoped, pre-approved plan. Don't re-derive requirements from a wider conversation — everything you need is below. Each section names the exact file(s)/selector(s) to touch. Run `npm run typecheck`, `npm test`, `npm run check:design`, and `npm run build` when done; verify anything visual via the dev server (`npm run dev`, or the project's browser-preview tooling) since several of these are layout/rendering bugs that need eyes-on confirmation, not just code review. Commit to `main` when finished (no PR).
 
-Resolve the regression where the sticky header background on Chromium browsers (Google Chrome, Edge, Arc, Brave) fails to render the translucent frosted glass blur on scroll, displaying only an opaque darkening gradient scrim. Implement the **Real DOM Veil** architecture ([`.site-header-veil`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/Header.astro#L39)) to bypass Blink's pseudo-element backdrop root detachment, while strictly maintaining the static blur performance invariant in [`DESIGN.md`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/DESIGN.md#L249).
+Context: this is round 2 of signup-page (`/signup`) and confirmation-page (`/signup/confirmed/[adopterId]`) UI polish. Round 1 already shipped (commit `10d009d`) — text contrast, panel 0 centering, a first pass at the Route Catalogue padding override, the rail's gradient, panel 3 copy/spacing, panel 4 timing, confirmation page reorder. This round fixes leftovers from that pass and adds new tweaks.
 
----
-
-## 2. Suggested Skills
-
-The implementing agent should activate:
-- `/implement`: Main implementation execution workflow.
-- `impeccable`: For design system token verification and running `npm run check:design`.
+Design-system rules that apply throughout (see `CLAUDE.md`): compose all spacing/color/typography from tokens in `src/styles/tokens.css` — no arbitrary literal `px`/`rem`/hex/`rgb`. `npm run check:design` must report 0 new anti-patterns. CSS lives in `@layer base`/`@layer components` in `src/styles/components.css`, or scoped Astro `<style>` blocks.
 
 ---
 
-## 3. Invariants & Repository Rules
+## 1. Panel 0 — "run" weight load-in animation, replaying every visit
 
-1. **Static Blur Rule ([`DESIGN.md:L249`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/DESIGN.md#L249)):** The blur radius must remain static at 28px (`--header-blur`) and saturation at 170% (`--header-saturate`). Only `opacity` animates when transitioning to the stuck state (`[data-stuck]`). Do not animate `backdrop-filter: blur(0px)` &rarr; `blur(28px)`.
-2. **Design System Enforcement:** Run `npm run check:design` with `BypassSandbox: true` before declaring completion; 0 anti-patterns must be reported.
-3. **Seam Boundaries:** Do not mock or regex-parse `.astro` templates in Vitest. Verify via `npm test`, `npm run check:design`, and visual verification.
-4. **Sandbox Execution:** Run all build, test, and design check commands with `BypassSandbox: true`.
+File: `src/components/signup/IntroPanel.tsx`, CSS in `src/styles/components.css` (search `.signup-intro-run`, defined near `.signup-intro-wordmark`).
 
----
+Current: `.signup-intro-run { font-variation-settings: 'wdth' 175, 'wght' 900; }` — a Typekit-hosted variable font, `--font-wordmark: 'scale-variable', 'Scale VF', system-ui, sans-serif;` (`tokens.css`). Font loading is Adobe Typekit's standard inline loader in `src/layouts/BaseLayout.astro` (kit `pyi8tbr`) — it sets `wf-loading`/`wf-active`/`wf-inactive` classes on `<html>` but **nothing in the codebase currently consumes them**. There is no existing font-ready detection to reuse.
 
-## 4. Root Cause Analysis & Background Findings
+**Requirement**: animate `.signup-intro-run`'s weight from 0 to full (900), but only once the real "Scale VF" font is confirmed active (not the system-font fallback) — i.e. the word must never render at a bogus weight on a fallback font. The animation must **replay every time panel 0 becomes active again** (the user navigates back to it), not just once ever.
 
-### The Preceding Investigation
-This issue was previously addressed in **Conversation `c6de69e5-80f7-451c-a8db-1b4c38fc78b7`** (commit [`0e26829`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/styles/components.css)).
-
-In Chromium's Blink rendering engine, an element with `backdrop-filter` samples pixels behind it only within its nearest **backdrop root** (CSS Filter Effects Module Level 2):
-1. **Backdrop Root Isolation:** Originally, [`.site-header`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/styles/components.css#L546) had `isolation: isolate;`. Because the veil was on a child pseudo-element `.site-header::before` with `z-index: -1`, Chrome only sampled pixels within `.site-header` behind `::before`. Since no content was painted behind `::before` within that isolated context, Chrome rendered 0 blur, displaying only the CSS linear gradient scrim (`--color-header-veil-top` &rarr; `--color-header-veil-bottom`).
-2. **Pseudo-Element Compositor Detachment (Chromium Bugs 1152778 & 1205161):** Although `isolation: isolate` was removed in commit `0e26829`, Blink has a persistent compositor bug when handling CSS generated pseudo-elements (`::before` / `::after`) that combine `position: absolute;`, `backdrop-filter`, and an `opacity` transition from `0` to `1`. In many Chromium compositing trees, the pseudo-element's `PaintLayer` fails to attach to the root compositor backdrop pass, causing it to sample an unpopulated black or clear framebuffer.
-3. **Sibling Backdrop Layer Collision:** In [`src/styles/components.css:L1658`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/styles/components.css#L1658):
-   ```css
-   body.has-shader-bg > main {
-     clip-path: inset(-100vh 0 calc(-1 * var(--safe-inset-bottom)) 0);
-   }
-   ```
-   `<main>` has `clip-path`, forming a separate offscreen composited texture layer. Because [`<Header />`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/Header.astro) is a preceding **sibling** of `<main>` in [`BaseLayout.astro`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/layouts/BaseLayout.astro#L120-L121), Chrome's compositor can fail to include `<main>`'s clipped content when a pseudo-element on `<header>` requests a backdrop copy.
+**Implementation approach**:
+- In `IntroPanel.tsx`, add a `useEffect` that runs once on mount: `document.fonts.ready.then(() => { if (document.fonts.check("900 1em scale-variable")) { /* set a data attribute */ } })`. Set a `data-font-ready="true"` attribute on the `.signup-intro-run` span (via React state) once confirmed. If the check fails (font never became active — e.g. `wf-inactive` case), leave it at `data-font-ready="false"` permanently rather than falling back to some other animation, since we never want the system font animating.
+- CSS: register a custom property so `font-variation-settings`'s `wght` axis is independently animatable — `@property --intro-run-wght { syntax: '<number>'; inherits: true; initial-value: 0; }` (add near the top of `components.css`, alongside any other `@property` blocks if they exist — check first) — then `.signup-intro-run { font-variation-settings: 'wdth' 175, 'wght' var(--intro-run-wght); }`.
+- Add a `@keyframes signup-run-weight-in { from { --intro-run-wght: 0; } to { --intro-run-wght: 900; } }`.
+- Trigger it with: `.signup-panel[data-active='true'] .signup-intro-run[data-font-ready='true'] { animation: signup-run-weight-in var(--duration-deliberate) var(--ease-out-expo) forwards; }` — reuse the existing `[data-active='true']` panel-visibility pattern (see how `[data-reveal-step]` animations are keyed the same way, `components.css` ~line 3433). Because this selector re-matches every time `data-active` flips back to `'true'`, the CSS `animation` property gets removed-then-reapplied and **restarts automatically** each visit — matching how the existing reveal-step animations already replay on every panel revisit. No extra JS needed for the replay behavior.
+- Before this animation is eligible to run (`data-font-ready` still `false`), the element should render at its final weight statically as a safe fallback (e.g. default the CSS custom property's `initial-value` such that if JS never sets `data-font-ready`, `wght` doesn't just stay stuck at 0 forever — actually per the spec, the word should stay invisible-thin until confirmed, so initial `wght: 0` unanimated is correct and intentional if the font truly never loads; that's an acceptable edge case, not a bug to guard further).
 
 ---
 
-## 5. Solutions Explored & Rationale
+## 2. Panel 1 — Route Catalogue's real 80px top padding (cascade-layer bug)
 
-| Solution | Mechanism | Trade-off / Decision |
-| :--- | :--- | :--- |
-| **A. Direct Blur on `.site-header[data-stuck]`** | Put `backdrop-filter: blur(28px)` directly on `.site-header[data-stuck]` with a transition from `blur(0px)`. | **Rejected:** Violates [`DESIGN.md:L249`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/DESIGN.md#L249). Animating `blur()` forces per-frame Gaussian shader passes on the GPU, causing frame drops on lower-powered devices. |
-| **B. Pure CSS Hardware Hint on `::before`** | Add `will-change: opacity, backdrop-filter; transform: translateZ(0);` to `.site-header::before`. | **Rejected as brittle:** Chromium's pseudo-element PaintLayer attachment bug is inconsistent across Blink patch versions. |
-| **C. Real DOM Veil Element (`.site-header-veil`)** *(Chosen Solution)* | Insert an explicit `<div class="site-header-veil" aria-hidden="true"></div>` inside `<header>`. Move the veil background, blur, and border to this element. | **Selected:** Gives Blink an explicit DOM `LayoutObject` with a direct parent-child stacking relationship. Promotes cleanly to a compositor layer via `will-change: opacity; transform: translateZ(0);`. Complies 100% with [`DESIGN.md`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/DESIGN.md#L249). |
+Files: `src/styles/components.css` (search `.signup-catalogue-slot .catalogue-main`, the existing override from round 1), `src/components/routes/RouteCatalogue.astro` (read-only — **do not edit this file**, it's shared with `/routes`).
 
----
+**Do NOT add a `.signup-panel[data-panel='route']` padding override** — the user explicitly rejected that approach. The fix must be to the existing `.catalogue-main` override itself.
 
-## 6. Exact Implementation Instructions
+**Diagnosis, verify before fixing**: `RouteCatalogue.astro`'s own scoped `<style>` block sets `.catalogue-main { padding-top: var(--space-11); }` (80px — this exact value is what's leaking through). `components.css` wraps its entire contents in `@layer components { ... }` (confirm this — check the top of the file). Astro scoped component styles are typically **not** wrapped in any `@layer`. Per the CSS cascade-layers spec, **unlayered rules always win over layered rules regardless of specificity** — so even though the existing override `.signup-portal .signup-catalogue-slot .catalogue-main { padding-top: var(--space-00); ... }` (3 classes) is far more specific than RouteCatalogue's own `.catalogue-main[data-astro-cid-*] { padding-top: var(--space-11); }` (1 class + 1 attribute), the layered override still loses if this hypothesis is correct. Confirm by checking whether `RouteCatalogue.astro`'s `<style>` tag has any `@layer` wrapper (it almost certainly doesn't) and whether `components.css`'s override rule sits inside `@layer components`.
 
-### Step 1: Add Veil DOM Element in [`src/components/Header.astro`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/components/Header.astro)
-
-Locate the `<header>` element at lines 39–41:
-```astro
-<div class="site-header-sentinel" aria-hidden="true"></div>
-<header class:list={['site-header', className]} {...restProps}>
-  <!-- Insert the veil div as the first child of header -->
-  <div class="site-header-veil" aria-hidden="true"></div>
-  <!-- One landmark for the whole row: the CTA, links and menu toggle are all navigation -->
-  <nav class="site-header-grid" aria-label="Primary">
-```
-
-### Step 2: Refactor Header Styles in [`src/styles/components.css`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/styles/components.css)
-
-Locate lines 546–606:
-
-1. **Replace `.site-header::before` and `.site-header::after`** with `.site-header-veil`:
-   ```css
-   /* -------------------------------------------------------------
-      Site Header (5-Column Grid & Sticky Shell)
-      ------------------------------------------------------------- */
-   .site-header {
-     position: sticky;
-     top: 0;
-     z-index: 100;
-     width: 100%;
-     height: var(--header-height);
-     box-sizing: border-box;
-     display: flex;
-     align-items: center;
-     padding-block: max(var(--space-04), var(--safe-inset-top)) var(--space-04);
-     padding-inline: max(var(--page-gutter), var(--safe-inset-left)) max(var(--page-gutter), var(--safe-inset-right));
-   }
-
-   /* Sentinel pinned to the document top; the header observes it to know
-      when it has left the top of the page (single source of truth). */
-   .site-header-sentinel {
-     position: absolute;
-     top: 0;
-     left: 0;
-     width: 1px;
-     height: var(--space-03);
-     pointer-events: none;
-     visibility: hidden;
-   }
-
-   /* Veil: a tinted, saturated blur closed off by a hairline, with soft ambient depth.
-      Only opacity animates; the blur itself stays static (DESIGN.md).
-      Implemented on a real DOM element (.site-header-veil) to ensure Blink creates a stable
-      compositing layer and avoids pseudo-element backdrop root detachment bugs in Chromium. */
-   .site-header-veil {
-     position: absolute;
-     inset: 0;
-     pointer-events: none;
-     background: linear-gradient(to bottom,
-         var(--color-header-veil-top) 0%,
-         var(--color-header-veil-bottom) 100%);
-     backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
-     -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
-     border-bottom: 1px solid var(--color-border-subtle);
-     box-shadow: 0 var(--space-03) var(--space-06) calc(-1 * var(--space-04)) var(--color-header-shadow);
-     opacity: 0;
-     transform: translateZ(0);
-     will-change: opacity;
-     transition: opacity var(--duration-moderate) var(--ease-out-expo);
-   }
-
-   .site-header[data-stuck] .site-header-veil {
-     opacity: 1;
-   }
-
-   .site-header-grid {
-     position: relative;
-     z-index: 1;
-     transition: opacity var(--duration-normal) var(--ease-out-expo);
-     display: grid;
-     grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
-     align-items: center;
-     gap: var(--space-06);
-     max-width: var(--container-max-width);
-     margin: 0 auto;
-     width: 100%;
-   }
-   ```
-
-2. **Update Reduced Motion Query (Line ~715):**
-   Replace references to `.site-header::before, .site-header::after` with `.site-header-veil`:
-   ```css
-   @media (prefers-reduced-motion: reduce) {
-     .nav-brand-cta .brand-run,
-     .nav-brand-cta .brand-with,
-     .nav-brand-cta::after,
-     .site-header-veil {
-       transition-duration: 0.01ms;
-     }
-     ...
-   }
-   ```
-
-### Step 3: Inspect Sibling Compositing Layer on `<main>`
-
-Check [`src/styles/components.css:L1658`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/styles/components.css#L1658):
+**Fix** (once confirmed): add `!important` to the specific properties in the existing override that need to win — this is the standard, spec-sanctioned way for a rule inside a named layer to beat an unlayered rule (per the cascade spec, `!important` reverses layer priority, so an `!important` declaration in a named layer beats a non-important unlayered declaration). Update the existing rule to:
 ```css
-body.has-shader-bg > main {
-  clip-path: inset(-100vh 0 calc(-1 * var(--safe-inset-bottom)) 0);
+.signup-portal .signup-catalogue-slot .catalogue-main {
+  padding-top: var(--space-00) !important;
+  padding-inline: var(--space-00) !important;
+  max-width: none !important;
 }
 ```
-If testing in Chrome shows that `<main>`'s `clip-path` still prevents backdrop sampling for the sibling header:
-- Move the bottom safe-area clip from `<main>` to `.shader-background-viewport` (or use `overflow: clip` on the shader wrapper), removing `clip-path` from `<main>` so `<main>` remains in the root backdrop copy pass.
+Add a one-line comment explaining why `!important` is needed here (cascade-layer vs. unlayered Astro-scoped style), so it doesn't look like an arbitrary escape hatch to a future reader.
+
+Verify live (dev server, `/signup`, panel 1) that the visible gap between the "match with a route" heading and the catalogue sidebar/grid now matches only `.signup-heading`'s own `margin-bottom` (40px) plus whatever the shared `.signup-panel` padding-top already contributes — no residual 80px. Also verify `/routes` is completely unaffected (it doesn't have the `.signup-catalogue-slot` wrapper class, so this selector never matches there).
 
 ---
 
-## 7. Verification Checklist
+## 3. Panel 2 — remove hairline before CTA, tighten spacing
 
-Execute all commands with `BypassSandbox: true`:
+File: `src/styles/components.css`. Root class for this panel: `.signup-charity` (in `CharityPanel.tsx`). The hairline comes from the shared `.signup-panel-foot { border-top: var(--border-hairline); margin-top: var(--space-09); padding-top: var(--space-06); }`, which is also reused by `DetailsPanel.tsx` and `CommitPanel.tsx` — **scope any change to `.signup-charity` only**, do not touch the shared base rule.
 
-```bash
-# 1. Verify design tokens (0 anti-patterns required)
-npm run check:design
-
-# 2. Run unit and integration tests
-npm test
-
-# 3. Verify production build and check-build guards
-npm run build
+Add:
+```css
+.signup-charity .signup-panel-foot {
+  border-top: none;
+  margin-top: var(--space-06);
+  padding-top: var(--space-00);
+}
 ```
-
-### Visual Verification
-1. Open http://localhost:4321 in Google Chrome.
-2. At scroll 0 (top of page), verify the header is transparent over the hero canvas.
-3. Scroll down 200px past the hero. Verify:
-   - Header receives `[data-stuck]` attribute.
-   - `.site-header-veil` transitions opacity to `1`.
-   - The background displays a distinct **28px frosted-glass translucent blur** over the passing text, cards, and images, rather than an opaque dark gradient scrim.
-   - Navigation links, CTA, and menu controls remain fully clickable.
+(Tightens the combined gap from `--space-09` + `--space-06` = 72px down to `--space-06` = 24px, now that there's no line needing clearance. Adjust the exact value if it looks too tight/loose live, but keep it meaningfully tighter than the current 72px.)
 
 ---
 
-## 8. Chrome Scroll-Timeline Polyfill Findings & Safari Compatibility
+## 4. Panel 3 — headings, slider labels, impact readout, CTA hairline
 
-### Root Cause & Findings Breakdown
+File: `src/styles/components.css`, `src/components/signup/DetailsPanel.tsx`. Root class `.signup-details`.
 
-1. **Feature Detection False-Positive in Safari 18+ ([`scroll-timeline-loader.ts:L226-L234`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L226-L234)):**
-   - **Issue:** `CSS.supports('animation-timeline', 'view()')` returns `true` in Safari 18+ (macOS Sequoia / iOS 18).
-   - **Impact:** `initScrollTimeline()` checks `isNativeSupported` and immediately exits with `return;` under the assumption that native compositor animations will run. However, WebKit's implementation for Web Animations API `element.animate(..., { timeline: viewTimeline })` and CSS `@supports (animation-timeline: view())` keyframe scroll bindings is incomplete or non-functional for complex multi-range timelines. Safari skips polyfill instantiation because `CSS.supports` passes, leaving scroll animations dormant.
+- **`.signup-group-title`** (the "about you"/"about your commitment" headings): change `font-family: var(--font-body)` → `var(--font-display)` (Degular — it's already in that token's stack, `'degular-variable', 'Degular Display', ...`; there is no separate "Degular" token). Change `font-size: var(--font-size-label)` (16px) → `var(--font-size-body)` (20px). Change `padding-bottom` (currently `var(--space-04)`, 12px — the gap to its `border-bottom` hairline) → `var(--space-01)` (2px), so the hairline reads as an underline directly beneath the text.
+- **Slider labels**: in `DetailsPanel.tsx`, delete the two standalone `<p className="signup-slider-intro">your target run-by date</p>` / `<p className="signup-slider-intro">your target fundraising goal</p>` lines entirely. Instead, edit the existing `<label className="signup-field-label" htmlFor="signup-timeframe">commitment timeframe</label>` → change its text to "your target run-by date" and its `className` to `signup-slider-intro`. Same for the target slider: `<label className="signup-field-label" htmlFor="signup-target">target impact goal</label>` → text "your target fundraising goal", `className="signup-slider-intro"`. Net result: one line per slider, in the position the old micro-label occupied (inside `.signup-slider-head`, next to the readout), at the `.signup-slider-intro` visual style (font-size-body, canvas-white/`--color-text-primary`, body font, weight 400 — already defined, don't need to change that CSS rule itself).
+- **`.signup-slider-impact`** (the equivalency readout, e.g. "≈ feeds 20 families"): change `font-size: var(--font-size-metric)` (24px) → `var(--font-size-body)` (20px). Change `color: var(--color-accent)` → `var(--color-text-primary)` (canvas white). Leave `text-align: center` as-is.
+- **CTA hairline**: same pattern as panel 2 — scope to `.signup-details`:
+```css
+.signup-details .signup-panel-foot {
+  border-top: none;
+}
+```
+(No spacing-tightening requested here, just remove the line — leave `margin-top`/`padding-top` as they are for this panel.)
 
-2. **Vite Dynamic Import & Polyfill Scope Isolation ([`scroll-timeline-loader.ts:L242`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L242)):**
-   - **Issue:** `await import('scroll-timeline-polyfill/dist/scroll-timeline.js')` relies on side-effect global assignment (`window.ViewTimeline`, `window.ScrollTimeline`).
-   - **Impact:** In Vite's client-side module bundling and code-splitting setup, dynamic script imports of non-ESM IIFE polyfills can fail to expose global constructor properties on `window` in non-Chromium browsers before DOM execution, resulting in `ViewTimeline` being `undefined`.
+---
 
-3. **WAAPI `pseudoElement` Target Rejection in WebKit ([`scroll-timeline-loader.ts:L111-L119`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L111-L119), [`L209-L218`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L209-L218)):**
-   - **Issue:** The polyfill attempts `element.animate(traceKeyframes(), { pseudoElement: '::before' | '::after' })` for section hairline trace animations (`scroll-trace`).
-   - **Impact:** WebKit (Safari) throws `NotSupportedError` when WAAPI target options specify pseudo-elements. The `try { ... } catch` block in `setupJourneySection` and `setupAboutSection` correctly prevents runtime crashes, but causes pseudo-element hairline trace animations to freeze at settled states.
+## 5. Rail — browser-safe scrim restructure, group-run tag, cause-line spacing bug
 
-### Recommended Remediation Steps
+Files: `src/components/signup/SummaryRail.tsx`, `src/styles/components.css` (search `.signup-rail`, `.site-header-veil`).
 
-1. **Refine Capability Detection in [`scroll-timeline-loader.ts`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/src/utils/scroll-timeline-loader.ts#L226):**
-   Replace generic `CSS.supports('animation-timeline', 'view()')` with explicit WebAnim/Chrome compositor checks (e.g., verifying `typeof window.ViewTimeline !== 'undefined'` or checking user-agent compositor support), ensuring Safari forces polyfill fallback execution.
-2. **Expose Polyfill in Vite `optimizeDeps` or Static Import:**
-   Ensure `scroll-timeline-polyfill` is bundled statically or added to `vite.optimizeDeps.include` in [`astro.config.mjs`](file:///Users/julianchung/Documents/Work/Coding/antigravity/adoptarun/astro.config.mjs) so `window.ViewTimeline` is guaranteed to be defined upon client hydration.
-3. **Animate Real DOM Hairlines for Cross-Browser Trace Parity:**
-   Refactor hairline trace elements from CSS pseudo-elements (`::before` / `::after`) to explicit inline DOM elements (`<div class="hairline-trace" />`) where Web Animations API pseudo-element targets fail in WebKit.
+### 5a. Structural fix for Chrome/Safari translucency
 
+`.signup-rail` currently combines `background: linear-gradient(...)`, `backdrop-filter`, and `opacity`/`visibility` transitions all on one element — translucency reportedly doesn't render correctly in Chrome or Safari. The site header (`.site-header-veil`, `components.css` ~line 1109, with a long comment documenting a real Chromium compositor bug — read that comment in full before touching this) works around this by keeping the blurred/gradient layer on its **own plain DOM node** with a **static, never-animating** blur, and only ever animating `opacity` on that node. `.mobile-nav-veil` reuses the identical pattern.
+
+Apply the same split to the rail:
+- In `SummaryRail.tsx`, add a new child `<div className="signup-rail-veil" aria-hidden="true" />` as the **first child** inside `<aside className="signup-rail">`, a sibling before the existing `<div className="signup-rail-inner">`.
+- In `components.css`, move the `background`, `border`, `-webkit-backdrop-filter`/`backdrop-filter` declarations off `.signup-rail` and onto a new `.signup-rail-veil` rule: `position: absolute; inset: 0; pointer-events: none;` plus those visual properties, **no transitions at all** on this new rule (fully static).
+- `.signup-rail` itself keeps only: `position`, `top`/`right`, `z-index`, `width`, `opacity`/`visibility` + their transition (unchanged from today), plus enough `position: relative` if needed so the inset:0 veil child positions against it. No `background`/`backdrop-filter` remain directly on `.signup-rail`.
+- **Gradient values**: revert to the original 2-stop (not the round-1 3-stop mirror): `linear-gradient(to bottom, var(--color-header-veil-top) 0%, var(--color-header-veil-bottom) 100%)` — i.e. exactly what it was before round 1's "mirror" edit. Reuse the existing tokens, no new ones.
+- Check the mobile media-query block (`@media (width <= 900px)`) for `.signup-rail` — it currently sets `border-right: none; border-bottom: none; border-left: none;` for the mobile bottom-bar treatment. Since `border` moves to `.signup-rail-veil`, move these mobile border overrides to target `.signup-rail-veil` instead.
+
+### 5b. Cause-line extra space under "SPCA"
+
+`SummaryRail.tsx`'s cause row (`data-rail-step="3"`) is exactly `<dt>cause</dt><dd><span className="signup-rail-primary">{charity?.name ?? '—'}</span>{charity && <button className="signup-change">...</button>}</dd>` — no stray whitespace or blank conditional was found by static reading. The user reports visible extra space under "SPCA" specifically. Diagnose live in the browser (this is the one item in this handoff that couldn't be resolved by reading code alone) — check computed styles on `.signup-rail-row`, `.signup-rail-value`, `.signup-rail-primary` for this specific row versus the route row above it (which has a `.signup-rail-meta` line the cause row lacks — the asymmetry may be layout-related, e.g. a min-height or line-height reserving space for a second line that never renders for this row). Fix whatever's actually causing it.
+
+### 5c. Group-run indicator + am/pm
+
+File: `src/utils/signup-commitment.ts` — `toHkTime()` currently does:
+```ts
+function toHkTime(moment: Date): string {
+  return moment.toLocaleTimeString('en-GB', {
+    timeZone: HK_TIME_ZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+```
+Change `hour12: false` → `hour12: true`, then lowercase the AM/PM and strip the space Node/browsers insert by default (`"11:59 PM"` → `"11:59pm"`) — e.g. `.toLocaleTimeString(...).toLowerCase().replace(' ', '')`.
+
+`formatTargetDate()` (same file) stays **exactly as-is** otherwise — it already only includes time when `targetTime` is non-null, and `targetTime` is only ever populated for group runs (solo adoptions have `targetTime: null` per the `Commitment` type's own doc comment) — **do not change this conditional**; solo/non-group-run must continue to show date only, never time, and this is already guaranteed by the existing null-check, not something to add.
+
+Confirmed date format to keep as-is: `"thu 31 dec · 23:59"` (weekday-short, day, month-short, lowercased, `·`-separated from time).
+
+At each of the 3 call sites, append the group-run tag using the **same `·` separator style**, so the final string reads `"thu 31 dec · 23:59 · Group Run"` — with "Group Run" (capitalized, exactly as written) colored using `--color-group-run-green` (confirm this exact token name exists in `tokens.css`), and the date/time/separators in their normal/default color:
+
+- **`SummaryRail.tsx`**, the target-date row (`panel === 'details'` block, `data-rail-step="4"`): after `{formatTargetDate(targetDate, targetTime)}`, add `{route?.isGroupRun && <> · <span className="text-route-group-run">Group Run</span></>}` (pick a CSS class name consistent with existing conventions if `text-route-group-run` isn't already used elsewhere — check for an existing group-run color utility class first, e.g. search "group-run" in `components.css`, reuse if one exists rather than inventing a new one).
+- **`CommitPanel.tsx`**: the `reviewRow` helper currently types its `value` param as `value: string` — widen this to `value: ReactNode` (minimal, contained change) so the target-date row (`reviewRow('target date', formatTargetDate(targetDate, targetTime), null, 'details')`) can instead pass a composed `<>{formatTargetDate(...)}{route?.isGroupRun && <> · <span className="text-route-group-run">Group Run</span></>}</>` as the value.
+- **`ConfirmationView.tsx`**: same treatment on its `confirmed-fact` "target date" row — append the same conditional span after `{formatTargetDate(adoption.targetDate, adoption.targetTime)}`, using the resolved `route` local const's `isGroupRun`.
+
+---
+
+## 6. Mobile — stepper relocation, tick direction, rail one-item-per-line
+
+Files: `src/styles/components.css` (search `.signup-stepper`, `.signup-rail` inside the `@media (width <= 900px)` block), `src/components/signup/SummaryRail.tsx`.
+
+### 6a. Rail must also appear on the `route` panel (mobile), stepper-only
+
+`SummaryRail.tsx` currently: `const isVisible = panel === 'charity' || panel === 'details';` — this single boolean drives `data-visible`, `aria-hidden`, and `inert` all at once, and is used by **desktop** CSS too (the rail must stay completely absent on desktop for the `route`/`intro`/`commit` panels — only extend visibility for `route` specifically, and only visually on mobile).
+
+Required behavior:
+- On the `route` panel: the rail container appears **only on mobile**, and shows **only the stepper** inside it — no title/artwork/rows.
+- On `charity`/`details`: unchanged from today (full rail content) — plus the relocated stepper at the top (see 6b).
+- On `intro`/`commit`: rail stays fully hidden, same as today, both mobile and desktop.
+
+Implementation: change `isVisible` to `panel === 'charity' || panel === 'details' || panel === 'route'`, and add `data-panel={panel}` to the `<aside className="signup-rail">` element so CSS can distinguish. Wrap the existing title/artwork/`<dl className="signup-rail-rows">` block in a condition so it doesn't render when `panel === 'route'` (e.g. `{panel !== 'route' && (...)}`) — only the (CSS-repositioned, see 6b) stepper should be visible in that case. Then in CSS:
+- Keep the **desktop** rule that hides the rail entirely outside `charity`/`details` (add/confirm a desktop-only rule like `.signup-rail[data-panel='route'] { display: none; }` scoped outside the mobile media query, or equivalent — verify against how `.signup-rail[data-visible='true']` currently gates desktop visibility and adjust so `route` never shows on desktop).
+- Inside the mobile media query, ensure `.signup-rail[data-panel='route']` **is** visible (don't let the desktop-only hide rule leak into the mobile block).
+
+### 6b. Stepper repositioning — CSS only, no JSX move (confirmed by user)
+
+`SignupStepper` remains a sibling of `SummaryRail` under `SignupPortal.tsx` (both absolutely positioned relative to `.signup-portal`, which is `position: relative`) — do not restructure the component tree. The visual effect wanted: on mobile, `.signup-stepper` should appear as if it's the first item inside `.signup-rail-inner`, sitting at the top of the rail's bottom-pinned box, for every panel where the rail is visible on mobile (`route`, `charity`, `details`).
+
+Since `.signup-rail`'s mobile height varies by content (the `route`-only stepper case is much shorter than the full `charity`/`details` rail), a single fixed `bottom` offset for `.signup-stepper` won't work correctly across all three cases with pure guesswork — **verify this live in the dev server for all three panels** (route/charity/details) at mobile width and adjust the stepper's mobile `position`/`bottom`/`top` values until it visually sits flush against the top of the rail's actual rendered box in each case. If a purely fixed-offset CSS approach can't reasonably cover all three without visible drift, it's acceptable to make the stepper's mobile container `position: absolute` anchored to `bottom: 0` of `.signup-portal` at the same `z-index` layer as the rail and let it visually overlap the rail's own top padding area (i.e., give `.signup-rail-inner` a mobile `padding-top` sized to leave room for the stepper visually sitting "inside" it, without literally nesting the DOM) — use your judgement on the exact technique as long as the end visual result matches "stepper at the top of the rail" on all three panels.
+
+### 6c. Tick direction — extend upward only
+
+`.signup-stepper-tick-mark` mobile CSS currently (`components.css`, inside the `@media (width <= 900px)` block):
+```css
+.signup-stepper-tick-mark {
+  width: var(--border-width-hairline);
+  height: var(--signup-tick-length);
+}
+```
+The parent `.signup-stepper-tick` is `position: relative; height: var(--border-width-hairline);` (a 1px-tall slice at the scale line's position, since `.signup-stepper-scale::before`/`::after` sit at `top: 0` of the scale container on mobile). Today the tick-mark is a normal block-flow child, so it overflows **downward** below that 1px line (confirmed: "ticks currently sit going downwards"). To make it extend **only upward**: give `.signup-stepper-tick-mark` `position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);` on mobile (anchoring its bottom edge to the tick's 1px slot — which sits at the line — so its height extends upward from there instead of downward). Apply the equivalent anchor to the `[data-state='current']` mobile override too (which sets a taller `height: var(--signup-tick-length-major)` and `width: var(--space-01)`) so it also grows upward, just further.
+
+### 6d. Rail rows — one item per line, right-aligned change button
+
+Mobile currently (`components.css`, same media query block):
+```css
+.signup-rail-rows {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--space-03) var(--space-06);
+}
+
+.signup-rail-row {
+  flex-direction: row;
+  gap: var(--space-03);
+  align-items: baseline;
+  padding-bottom: var(--space-00);
+  border-bottom: none;
+}
+
+.signup-rail-primary {
+  flex: 0 1 auto;
+  font-size: var(--font-size-label);
+}
+
+.signup-rail-value .signup-change {
+  margin-left: var(--space-00);
+}
+```
+Change `.signup-rail-rows`'s `flex-direction: row; flex-wrap: wrap;` → `flex-direction: column;` (each row/item gets its own full line — remove the `flex-wrap` line since it's no longer relevant in column mode, or leave it harmlessly, your call). **Keep `.signup-rail-row`'s own internal layout exactly as it is today** (`flex-direction: row; align-items: baseline;` — label and value stay inline/snug together on the same line within each row). Change `.signup-rail-value .signup-change`'s mobile override from `margin-left: var(--space-00);` back to `margin-left: auto;` (matching the desktop rule, so the "change" button right-aligns to the end of each row's line on mobile too).
+
+---
+
+## Verification checklist
+
+- [ ] `npm run typecheck` clean
+- [ ] `npm test` (full suite) passes
+- [ ] `npm run check:design` — 0 new anti-patterns (existing unrelated findings in `RoutesHud.astro`/`routes.astro` are pre-existing, ignore)
+- [ ] `npm run build` succeeds; spot-check `/routes` build output is unaffected by the panel-1 fix (grep for `signup-catalogue-slot` in `dist/client/routes/index.html` — should be absent, confirming the selector never matches there)
+- [ ] Live-verify in the dev server: panel 0 wordmark weight-in animation replays on every visit; panel 1's top gap; panel 2/3 hairline removal + panel 3 heading/label changes; rail translucency in an actual Chromium and WebKit browser if available; the cause-line spacing bug (5b) is actually fixed, not just guessed at; group-run tag renders correctly in rail + review + confirmation page for a group-run adoption and is absent (no time, no tag) for a solo one; mobile stepper-in-rail across route/charity/details panels; tick direction; rail rows one-per-line with right-aligned change buttons
+- [ ] Commit to `main` (no PR) with a descriptive message; standard attribution footer

@@ -465,8 +465,8 @@ export const SHADER_PRESET_C: ShaderGradientConfig = {
   uAmplitude: 1.0,       // Organic spiral distortion for 3D sphere
 
   // 3. Colors (Adopt a Run Brand Tokens)
-  color1: '#ffac69',     // var(--color-route-orange)
-  color2: '#db9b81',     // var(--color-route-coral)
+  color1: '#d98f52',     // var(--color-route-orange)
+  color2: '#b87d66',     // var(--color-route-coral)
   color3: '#181311',     // var(--color-canvas-black) / deep dusk base
   reflection: 0.4,
 

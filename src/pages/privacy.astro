@@ -48,6 +48,9 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
               Your personal data is <strong>never sold</strong>, <strong>never rented</strong>, and <strong>never given to outside parties or advertisers</strong>.
               All data we retain is stored securely on <strong>Cloudflare’s enterprise-grade servers</strong> to ensure high standards of physical and digital security.
             </p>
+            <p class="privacy-callout">
+              <strong>the short version:</strong> your data is never sold, never rented, and never shared — full stop.
+            </p>
           </div>
         </article>
 
@@ -90,7 +93,13 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
                 <strong>strava sync:</strong> When you connect your Strava account to verify a run, our servers check your recent activity data in-memory solely to confirm the route shape and calculate your completion metrics. We <strong>never store your Strava passwords or access tokens</strong> — once verification is finished, the connection tokens are discarded immediately.
               </li>
               <li>
+                <strong>strava data privacy:</strong> We follow Strava's API guidelines closely — your Strava activity data is only ever accessible through your own Adopter ID, never anyone else's. We also don't pool it into aggregate or de-identified datasets, not even for our own community stats.
+              </li>
+              <li>
                 <strong>gpx file uploads:</strong> If you upload a <code>.gpx</code> file from your GPS watch or fitness app, we process the file in-memory to extract the artwork outline and telemetry for your certificate. The raw file itself is <strong>never stored on our servers</strong>.
+              </li>
+              <li>
+                <strong>your certificate, your call:</strong> Your Digital Certificate link carries your Adopter ID, and you're always free to share it — on social media, with friends, wherever you like. That's entirely up to you; your underlying Strava run data itself stays out of any aggregate reporting, as per as Strava's terms.
               </li>
             </ul>
           </div>
@@ -132,7 +141,7 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
                 <strong>zero advertising trackers:</strong> We do not use third-party advertising cookies or cross-site tracking scripts. You will not be followed around the web after visiting our site.
               </li>
               <li>
-                <strong>essential convenience storage:</strong> We may use minimal local browser storage solely to remember your immediate user preferences — such as active route filter selections or your adoption form progress.
+                <strong>essential convenience storage:</strong> We may use minimal local browser storage solely to remember your immediate user preferences — things like your active route filter selections, your in-progress adoption form, or the last charity you viewed.
               </li>
             </ul>
           </div>
@@ -146,14 +155,20 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
           </header>
           <div class="privacy-section-body font-body">
             <p>
-              Whether you are running in Hong Kong, Europe, North America, or anywhere else in the world, we uphold clear, universal data rights (aligned with GDPR and international standards):
+              Whether you are running in Hong Kong, or anywhere else in the world, we uphold clear, universal data rights:
             </p>
             <ul class="privacy-list">
               <li>
                 <strong>right to access &amp; correction:</strong> You can ask to view any personal details associated with your email or Adopter ID, or request corrections at any time.
               </li>
               <li>
-                <strong>right to complete erasure:</strong> If you ever wish to remove your adoption record, Adopter ID, and Digital Certificate, simply email us. We will permanently erase your personal data from our systems without hassle or automated runarounds.
+                <strong>right to complete erasure:</strong> If you ever wish to remove your adoption record, Adopter ID, and Digital Certificate, just send a deletion request to <a href={`mailto:privacy@adoptarun.org?subject=${encodeURIComponent('Data Deletion Request')}`} class="privacy-inline-link">privacy@adoptarun.org</a>. We will permanently erase your personal data from our systems without hassle or automated runarounds.
+              </li>
+              <li>
+                <strong>how long we keep it:</strong> We hold on to your adoption record and run data for as long as your Adopter ID stays active, plus a short while after so your certificate and the community's stats stay accurate — never longer than that.
+              </li>
+              <li>
+                <strong>not happy with how we've handled things?</strong> You're always welcome to raise it with us directly, and you can also bring it to the PCPD (Hong Kong's privacy watchdog).
               </li>
             </ul>
           </div>
@@ -171,6 +186,9 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
             </p>
             <p>
               If you have any questions, wish to exercise your data rights, or want your records removed, please reach out directly.
+            </p>
+            <p>
+              A quick note: because we rely on global infrastructure providers to run this site, your data may occasionally be processed outside of Hong Kong — always with the same care described in this policy. And if any part of this policy ever turns out to be unenforceable, the rest still stands.
             </p>
             <p class="privacy-contact-note">
               Have questions, feedback, or data requests? We would love to hear from you — drop us a line at <a href={`mailto:${contactEmail}`} class="privacy-inline-link">{contactEmail}</a>.
@@ -340,6 +358,19 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
     margin-top: var(--space-02);
     font-size: var(--font-size-label);
     color: var(--color-text-secondary);
+  }
+
+  .privacy-callout {
+    margin: 0;
+    background-color: var(--color-surface-floating);
+    border-left: calc(var(--border-width-hairline) * 3) solid var(--color-accent);
+    padding: var(--space-04) var(--space-05);
+    color: var(--color-canvas-white);
+  }
+
+  .privacy-callout strong {
+    color: var(--color-accent);
+    font-weight: 500;
   }
 
   @media (min-width: 768px) {

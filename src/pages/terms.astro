@@ -46,7 +46,7 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
             </p>
             <p>
               By browsing our routes, adopting an artwork, logging a run, or using this website, you agree to
-              these simple and friendly terms.
+              these simple terms.
             </p>
           </div>
         </article>
@@ -69,9 +69,18 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
                 <strong>street &amp; trail awareness:</strong> Our GPS art routes are creative guides across Hong Kong's streets and country parks — they are not closed racecourses. You are responsible for navigating safely, obeying traffic lights and pedestrian laws, watching your step on uneven paths, and checking the weather (especially Hong Kong's heat, heavy rain, and typhoon warnings).
               </li>
               <li>
-                <strong>personal responsibility:</strong> You decide when, where, and how you complete a route. While we design the art and share the map traces, Adopt A Run cannot be held responsible for any trips, falls, injuries, accidents, illness, or personal loss along the way.
+                <strong>personal responsibility:</strong> You decide when, where, and how you complete a route. While we design the art and share the map traces, because you're in control of your own run, Adopt A Run, our organizers, and our volunteers can't be held responsible for any trips, falls, injuries, accidents, illness, or personal loss along the way.
+              </li>
+              <li>
+                <strong>we're all in this together:</strong> Everyone taking part looks out for themselves and for each other. Adopt A Run isn't responsible for how other runners, volunteers, or members of the public behave along your route.
+              </li>
+              <li>
+                <strong>young runners welcome:</strong> Kids are a huge part of what makes this a community movement, and we'd love for them to take part! If a runner is under 16, just make sure a parent or guardian's given the OK — and even better, bring them along too.
               </li>
             </ul>
+            <p class="terms-callout">
+              <strong>the short version:</strong> you're free to run this your own way, at your own pace — and that also means it's at your own risk, just like any run around town.
+            </p>
           </div>
         </article>
 
@@ -171,7 +180,7 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
               We do our best to keep this website and all route information accurate and up to date, but everything is provided on an "as is" community basis. As our movement grows, we may occasionally update these terms to reflect new features or partner initiatives.
             </p>
             <p>
-              These terms are governed by the laws of Hong Kong.
+              These terms are governed by the laws of Hong Kong. If any part of them ever turns out to be unenforceable, the rest still stands.
             </p>
             <p class="terms-contact-note">
               Have questions, feedback, or ideas? We would love to hear from you — drop us a line at <a href={`mailto:${contactEmail}`} class="terms-inline-link">{contactEmail}</a>.
@@ -341,6 +350,19 @@ const contactEmail = settings?.footerContactEmail || 'hello@adoptarun.org';
     margin-top: var(--space-02);
     font-size: var(--font-size-label);
     color: var(--color-text-secondary);
+  }
+
+  .terms-callout {
+    margin: 0;
+    background-color: var(--color-surface-floating);
+    border-left: calc(var(--border-width-hairline) * 3) solid var(--color-accent);
+    padding: var(--space-04) var(--space-05);
+    color: var(--color-canvas-white);
+  }
+
+  .terms-callout strong {
+    color: var(--color-accent);
+    font-weight: 500;
   }
 
   @media (min-width: 768px) {

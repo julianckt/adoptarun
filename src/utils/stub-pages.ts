@@ -13,11 +13,11 @@ export const STUB_PAGES: readonly StubPage[] = [
   {
     slug: 'donate',
     title: 'donate',
-    description: 'online donations open soon.',
+    description: 'we are working with fundraising platforms to make donating seamless.',
   },
   {
     slug: 'log',
     title: 'log a run',
-    description: 'run logging opens alongside route adoption.',
+    description: 'the run logging system and the digital certificate system are opening soon. ',
   },
 ];
