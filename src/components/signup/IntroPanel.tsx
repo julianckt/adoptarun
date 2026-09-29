@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+
 export interface IntroPanelProps {
   ctaLabel: string;
   showChooseAnother: boolean;
@@ -22,11 +24,29 @@ export default function IntroPanel({
   onAdvance,
   onChooseAnother,
 }: IntroPanelProps) {
+  const [fontReady, setFontReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      document.fonts.ready.then(() => {
+        if (mounted && document.fonts.check('900 1em scale-variable')) {
+          setFontReady(true);
+        }
+      });
+    }
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div className="signup-intro">
       <p className="signup-intro-wordmark" data-reveal-step="1">
         <span className="signup-intro-lets">let&rsquo;s</span>
-        <span className="signup-intro-run">run</span>
+        <span className="signup-intro-run" data-font-ready={fontReady ? 'true' : 'false'}>
+          run
+        </span>
       </p>
 
       <div className="signup-intro-actions" data-reveal-step="2">

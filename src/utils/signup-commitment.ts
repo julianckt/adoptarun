@@ -46,14 +46,17 @@ function toHkDate(moment: Date): string {
   return moment.toLocaleDateString('en-CA', { timeZone: HK_TIME_ZONE });
 }
 
-/** `HH:MM` for a moment, as it reads on a Hong Kong clock. */
+/** `hh:mma/pm` for a moment, as it reads on a Hong Kong clock. */
 function toHkTime(moment: Date): string {
-  return moment.toLocaleTimeString('en-GB', {
-    timeZone: HK_TIME_ZONE,
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  return moment
+    .toLocaleTimeString('en-GB', {
+      timeZone: HK_TIME_ZONE,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+    .toLowerCase()
+    .replace(/\s+/g, '');
 }
 
 /** Whole days between two Hong Kong calendar dates, ignoring clock time. */

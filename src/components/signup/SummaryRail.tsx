@@ -33,79 +33,91 @@ export default function SummaryRail({
   targetHkd,
   onChange,
 }: SummaryRailProps) {
-  const isVisible = panel === 'charity' || panel === 'details';
+  const isVisible =
+    panel === 'charity' || panel === 'details' || panel === 'route' || panel === 'commit';
 
   return (
     <aside
       className="signup-rail"
+      data-panel={panel}
       data-visible={isVisible ? 'true' : 'false'}
       aria-label="Your adoption so far"
       aria-hidden={isVisible ? undefined : 'true'}
       inert={!isVisible}
     >
+      <div className="signup-rail-veil" aria-hidden="true" />
       <div className="signup-rail-inner">
-        <p className="signup-rail-title">
-          <span className="signup-rail-title-text">your adoption</span>
-          <span className="signup-rail-title-rule" aria-hidden="true" />
-        </p>
+        {panel !== 'route' && panel !== 'commit' && (
+          <>
+            <p className="signup-rail-title">
+              <span className="signup-rail-title-text">your adoption</span>
+              <span className="signup-rail-title-rule" aria-hidden="true" />
+            </p>
 
-        {route && (
-          <div className="signup-rail-artwork" data-rail-step="1">
-            <RouteThumbnail miniMapSvg={route.miniMapSvg} routeTitle={route.title} />
-          </div>
+            {route && (
+              <div className="signup-rail-artwork" data-rail-step="1">
+                <RouteThumbnail miniMapSvg={route.miniMapSvg} routeTitle={route.title} />
+              </div>
+            )}
+
+            <dl className="signup-rail-rows">
+              <div className="signup-rail-row" data-rail-step="2">
+                <dt className="signup-rail-label">route</dt>
+                <dd className="signup-rail-value">
+                  <span className="signup-rail-primary">{route?.title ?? '—'}</span>
+                  {route && (
+                    <span className="signup-rail-meta">
+                      {formatRouteDistance(route.distanceKm ?? 0)} · elev.{' '}
+                      {formatRouteElevation(route.elevationGain ?? 0)}
+                    </span>
+                  )}
+                  {route && (
+                    <button type="button" className="signup-change" onClick={() => onChange('route')}>
+                      change<span className="visually-hidden"> route</span>
+                    </button>
+                  )}
+                </dd>
+              </div>
+
+              <div className="signup-rail-row" data-rail-step="3">
+                <dt className="signup-rail-label">cause</dt>
+                <dd className="signup-rail-value">
+                  <span className="signup-rail-primary">{charity?.name ?? '—'}</span>
+                  {charity && (
+                    <button type="button" className="signup-change" onClick={() => onChange('charity')}>
+                      change<span className="visually-hidden"> charity</span>
+                    </button>
+                  )}
+                </dd>
+              </div>
+
+              {panel === 'details' && (
+                <div className="signup-rail-row" data-rail-step="4">
+                  <dt className="signup-rail-label">target date</dt>
+                  <dd className="signup-rail-value">
+                    <span className="signup-rail-primary">
+                      {formatTargetDate(targetDate, targetTime)}
+                      {route?.isGroupRun && (
+                        <> · <span className="text-route-group-run">Group Run</span></>
+                      )}
+                    </span>
+                  </dd>
+                </div>
+              )}
+
+              {panel === 'details' && (
+                <div className="signup-rail-row" data-rail-step="5">
+                  <dt className="signup-rail-label">impact goal</dt>
+                  <dd className="signup-rail-value">
+                    <span className="signup-rail-primary signup-rail-primary--numeric">
+                      HK${targetHkd.toLocaleString('en-US')}
+                    </span>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </>
         )}
-
-        <dl className="signup-rail-rows">
-          <div className="signup-rail-row" data-rail-step="2">
-            <dt className="signup-rail-label">route</dt>
-            <dd className="signup-rail-value">
-              <span className="signup-rail-primary">{route?.title ?? '—'}</span>
-              {route && (
-                <span className="signup-rail-meta">
-                  {formatRouteDistance(route.distanceKm ?? 0)} · elev.{' '}
-                  {formatRouteElevation(route.elevationGain ?? 0)}
-                </span>
-              )}
-              {route && (
-                <button type="button" className="signup-change" onClick={() => onChange('route')}>
-                  change<span className="visually-hidden"> route</span>
-                </button>
-              )}
-            </dd>
-          </div>
-
-          <div className="signup-rail-row" data-rail-step="3">
-            <dt className="signup-rail-label">cause</dt>
-            <dd className="signup-rail-value">
-              <span className="signup-rail-primary">{charity?.name ?? '—'}</span>
-              {charity && (
-                <button type="button" className="signup-change" onClick={() => onChange('charity')}>
-                  change<span className="visually-hidden"> charity</span>
-                </button>
-              )}
-            </dd>
-          </div>
-
-          {panel === 'details' && (
-            <div className="signup-rail-row" data-rail-step="4">
-              <dt className="signup-rail-label">target date</dt>
-              <dd className="signup-rail-value">
-                <span className="signup-rail-primary">{formatTargetDate(targetDate, targetTime)}</span>
-              </dd>
-            </div>
-          )}
-
-          {panel === 'details' && (
-            <div className="signup-rail-row" data-rail-step="5">
-              <dt className="signup-rail-label">impact goal</dt>
-              <dd className="signup-rail-value">
-                <span className="signup-rail-primary signup-rail-primary--numeric">
-                  HK${targetHkd.toLocaleString('en-US')}
-                </span>
-              </dd>
-            </div>
-          )}
-        </dl>
       </div>
     </aside>
   );

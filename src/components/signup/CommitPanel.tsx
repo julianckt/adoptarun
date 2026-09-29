@@ -49,7 +49,7 @@ export default function CommitPanel({
 }: CommitPanelProps) {
   const reviewRow = (
     label: string,
-    value: string,
+    value: ReactNode,
     meta: string | null,
     jumpTo: PanelId,
     leading?: ReactNode
@@ -114,7 +114,17 @@ export default function CommitPanel({
         )}
         {reviewRow('cause', charity?.name ?? '—', impactReadout, 'charity')}
         {reviewRow('adopter', runnerName || '—', email || null, 'details')}
-        {reviewRow('target date', formatTargetDate(targetDate, targetTime), null, 'details')}
+        {reviewRow(
+          'target date',
+          <>
+            {formatTargetDate(targetDate, targetTime)}
+            {route?.isGroupRun && (
+              <> · <span className="text-route-group-run">Group Run</span></>
+            )}
+          </>,
+          null,
+          'details'
+        )}
         {reviewRow('impact goal', `HK$${targetHkd.toLocaleString('en-US')}`, null, 'details')}
       </dl>
 

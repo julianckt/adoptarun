@@ -127,10 +127,9 @@ export default function DetailsPanel({
         <div className="signup-details-commitment">
           {showTimeframeSlider && (
             <div className="signup-slider" style={fill(commitmentDays, COMMITMENT_DAYS_MIN, COMMITMENT_DAYS_MAX)}>
-              <p className="signup-slider-intro">your target run-by date</p>
               <div className="signup-slider-head">
-                <label className="signup-field-label" htmlFor="signup-timeframe">
-                  commitment timeframe
+                <label className="signup-slider-intro" htmlFor="signup-timeframe">
+                  your target run-by date
                 </label>
                 <output className="signup-slider-readout" htmlFor="signup-timeframe">
                   {formatTargetDate(targetDate, targetTime)}
@@ -161,10 +160,9 @@ export default function DetailsPanel({
           )}
 
           <div className="signup-slider" style={fill(targetHkd, TARGET_HKD_MIN, TARGET_HKD_MAX)}>
-            <p className="signup-slider-intro">your target fundraising goal</p>
             <div className="signup-slider-head">
-              <label className="signup-field-label" htmlFor="signup-target">
-                target impact goal
+              <label className="signup-slider-intro" htmlFor="signup-target">
+                your target fundraising goal
               </label>
               <output className="signup-slider-readout" htmlFor="signup-target">
                 HK${targetHkd.toLocaleString('en-US')}

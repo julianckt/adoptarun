@@ -78,7 +78,17 @@ describe('resolveCommitment', () => {
       expect(result.mode).toBe('group-run');
       expect(result.showTimeframeSlider).toBe(false);
       expect(result.targetDate).toBe('2026-03-14');
-      expect(result.targetTime).toBe('07:30');
+      expect(result.targetTime).toBe('07:30am');
+    });
+
+    it('formats evening hours as 12-hour pm time without spaces', () => {
+      const result = resolveCommitment({
+        route: groupRunRoute('2026-03-14T23:59:00+08:00'),
+        commitmentDays: 5,
+        now: new Date('2026-03-10T09:00:00+08:00'),
+      });
+
+      expect(result.targetTime).toBe('11:59pm');
     });
 
     it('derives commitment days as the gap to the event', () => {
@@ -142,7 +152,7 @@ describe('formatTargetDate', () => {
   });
 
   it('carries the start time for a group run, which is what marks it as one', () => {
-    expect(formatTargetDate('2026-03-14', '07:30')).toBe('sat 14 mar · 07:30');
+    expect(formatTargetDate('2026-03-14', '07:30am')).toBe('sat 14 mar · 07:30am');
   });
 
   it('returns an em dash when there is no date yet', () => {

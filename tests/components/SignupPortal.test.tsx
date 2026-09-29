@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SignupStepper from '../../src/components/signup/SignupStepper';
 import CommitPanel from '../../src/components/signup/CommitPanel';
@@ -90,17 +90,26 @@ describe('DetailsPanel', () => {
   };
 
   it('announces the impact slider by what the money does, not by its number', () => {
-    render(<DetailsPanel {...baseProps} />);
+    const { container } = render(<DetailsPanel {...baseProps} />);
 
-    expect(screen.getByLabelText('target impact goal').getAttribute('aria-valuetext')).toBe(
+    const label = container.querySelector('label[for="signup-target"]');
+    expect(label?.textContent).toBe('your target fundraising goal');
+    expect(label?.className).toBe('signup-slider-intro');
+    expect(container.querySelectorAll('p.signup-slider-intro')).toHaveLength(0);
+
+    expect(screen.getByLabelText('your target fundraising goal').getAttribute('aria-valuetext')).toBe(
       'HK$500 feeds 250 rescued animals'
     );
   });
 
   it('announces the timeframe slider in days', () => {
-    render(<DetailsPanel {...baseProps} />);
+    const { container } = render(<DetailsPanel {...baseProps} />);
 
-    expect(screen.getByLabelText('commitment timeframe').getAttribute('aria-valuetext')).toBe(
+    const label = container.querySelector('label[for="signup-timeframe"]');
+    expect(label?.textContent).toBe('your target run-by date');
+    expect(label?.className).toBe('signup-slider-intro');
+
+    expect(screen.getByLabelText('your target run-by date').getAttribute('aria-valuetext')).toBe(
       '5 days'
     );
   });
@@ -108,8 +117,8 @@ describe('DetailsPanel', () => {
   it('drops the timeframe slider entirely for a scheduled group run', () => {
     render(<DetailsPanel {...baseProps} showTimeframeSlider={false} />);
 
-    expect(screen.queryByLabelText('commitment timeframe')).toBeNull();
-    expect(screen.queryByLabelText('target impact goal')).not.toBeNull();
+    expect(screen.queryByLabelText('your target run-by date')).toBeNull();
+    expect(screen.queryByLabelText('your target fundraising goal')).not.toBeNull();
   });
 
   it('ties a field error to the field it belongs to', () => {
@@ -196,5 +205,31 @@ describe('CommitPanel', () => {
     render(<CommitPanel {...baseProps} companionName="Mochi" isCommitting />);
 
     expect(commitButton().disabled).toBe(true);
+  });
+
+  it('renders "Group Run" tag when route is a scheduled group run', () => {
+    const groupRunRoute: PortalRoute = {
+      ...route,
+      isGroupRun: true,
+      groupRunDateTime: '2026-03-14T07:30:00+08:00',
+    };
+    const { container } = render(
+      <CommitPanel
+        {...baseProps}
+        route={groupRunRoute}
+        targetDate="2026-03-14"
+        targetTime="07:30am"
+      />
+    );
+
+    const groupRunSpan = container.querySelector('.text-route-group-run');
+    expect(groupRunSpan).not.toBeNull();
+    expect(groupRunSpan?.textContent).toBe('Group Run');
+  });
+
+  it('omits "Group Run" tag for solo route', () => {
+    const { container } = render(<CommitPanel {...baseProps} />);
+
+    expect(container.querySelector('.text-route-group-run')).toBeNull();
   });
 });

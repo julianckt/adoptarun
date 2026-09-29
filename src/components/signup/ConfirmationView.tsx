@@ -190,6 +190,9 @@ export default function ConfirmationView({
             <dt className="confirmed-fact-label">target date</dt>
             <dd className="confirmed-fact-value">
               {formatTargetDate(adoption.targetDate, adoption.targetTime)}
+              {route?.isGroupRun && (
+                <> · <span className="text-route-group-run">Group Run</span></>
+              )}
             </dd>
           </div>
           {adoption.targetHkd !== null && (

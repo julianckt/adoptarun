@@ -31,7 +31,18 @@ function compactDate(date: string): string {
 
 /** A Hong Kong wall-clock moment as a UTC `YYYYMMDDTHHMMSSZ` stamp. */
 function toUtcStamp(date: string, time: string): string {
-  const [hours, minutes] = time.split(':').map(Number);
+  const match = time.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+  let hours = 0;
+  let minutes = 0;
+  if (match) {
+    hours = Number(match[1]);
+    minutes = Number(match[2]);
+    const meridiem = match[3]?.toLowerCase();
+    if (meridiem === 'pm' && hours < 12) hours += 12;
+    if (meridiem === 'am' && hours === 12) hours = 0;
+  } else {
+    [hours, minutes] = time.split(':').map(Number);
+  }
   const utc = new Date(
     Date.UTC(
       Number(date.slice(0, 4)),

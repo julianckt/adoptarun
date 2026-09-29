@@ -1,3 +1,9 @@
+@property --intro-run-wght {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
 @layer components {
 
   /* -------------------------------------------------------------
@@ -2565,7 +2571,20 @@
   }
 
   .signup-intro-run {
-    font-variation-settings: 'wdth' 175, 'wght' 900;
+    font-variation-settings: 'wdth' 175, 'wght' var(--intro-run-wght);
+  }
+
+  @keyframes signup-run-weight-in {
+    from {
+      --intro-run-wght: 0;
+    }
+    to {
+      --intro-run-wght: 900;
+    }
+  }
+
+  .signup-panel[data-active='true'] .signup-intro-run[data-font-ready='true'] {
+    animation: signup-run-weight-in var(--duration-deliberate) var(--ease-out-expo) forwards;
   }
 
   .signup-intro-actions {
@@ -2732,6 +2751,12 @@
     color: var(--color-text-primary);
   }
 
+  .signup-charity .signup-panel-foot {
+    border-top: none;
+    margin-top: var(--space-06);
+    padding-top: var(--space-00);
+  }
+
   /* ---- Details: two instrument groups, each under its own ruled caption ---- */
   .signup-details {
     display: flex;
@@ -2750,11 +2775,11 @@
     gap: var(--space-04);
     align-items: baseline;
     margin: var(--space-00);
-    padding-bottom: var(--space-04);
+    padding-bottom: var(--space-01);
     border-bottom: var(--border-hairline);
     color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--font-size-label);
+    font-family: var(--font-display);
+    font-size: var(--font-size-body);
     font-weight: 500;
     line-height: var(--leading-action);
   }
@@ -3017,9 +3042,9 @@
      than swapping in place. */
   .signup-slider-impact {
     margin: var(--space-00);
-    color: var(--color-accent);
+    color: var(--color-text-primary);
     font-family: var(--font-body);
-    font-size: var(--font-size-metric);
+    font-size: var(--font-size-body);
     line-height: var(--leading-body);
     text-align: center;
     animation: scroll-fade var(--duration-normal) var(--ease-out-expo) backwards;
@@ -3036,20 +3061,33 @@
     line-height: var(--leading-body);
   }
 
+  .signup-details .signup-panel-foot {
+    border-top: none;
+  }
+
+  .text-route-group-run {
+    color: var(--color-group-run-green);
+  }
+
   /* ---- Summary rail: the instrument's read-out ---- */
+  .signup-rail-veil {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border: var(--border-hairline);
+    background: linear-gradient(to bottom,
+        var(--color-header-veil-top) 0%,
+        var(--color-header-veil-bottom) 100%);
+    -webkit-backdrop-filter: blur(var(--blur-floating));
+    backdrop-filter: blur(var(--blur-floating));
+  }
+
   .signup-rail {
     position: absolute;
     top: var(--space-11);
     right: var(--page-gutter);
     z-index: 2;
     width: var(--signup-rail-width);
-    border: var(--border-hairline);
-    background: linear-gradient(to bottom,
-        var(--color-header-veil-top) 0%,
-        var(--color-header-veil-bottom) 50%,
-        var(--color-header-veil-top) 100%);
-    -webkit-backdrop-filter: blur(var(--blur-floating));
-    backdrop-filter: blur(var(--blur-floating));
     opacity: 0;
     visibility: hidden;
     transition:
@@ -3060,6 +3098,11 @@
   .signup-rail[data-visible='true'] {
     opacity: 1;
     visibility: visible;
+  }
+
+  .signup-rail[data-panel='route'],
+  .signup-rail[data-panel='commit'] {
+    display: none;
   }
 
   .signup-rail-inner {
@@ -3139,12 +3182,15 @@
   }
 
   .signup-rail-primary {
-    flex: 1 1 100%;
     color: var(--color-text-primary);
     font-family: var(--font-body);
     font-size: var(--font-size-body);
     font-weight: 500;
     line-height: var(--leading-body);
+  }
+
+  .signup-rail-value:has(.signup-rail-meta) .signup-rail-primary {
+    flex: 1 1 100%;
   }
 
   .signup-rail-primary--numeric {
@@ -3426,17 +3472,12 @@
     min-height: auto;
   }
 
-  /* RouteCatalogue.astro's own `.catalogue-main` carries a `page-frame` inset
-     and top padding sized for being the page's own frame at `/routes`. Hosted
-     inside a signup panel it already sits in that panel's own gutter and
-     padding, so both are zeroed here rather than in the shared component.
-     Selector is three classes deep (rather than two) so it reliably beats the
-     scoped rule Astro attaches to `.catalogue-main` regardless of stylesheet
-     load order. */
+  /* Cascade-layer override: !important is needed here so declarations inside
+     @layer components beat RouteCatalogue.astro's unlayered scoped styles. */
   .signup-portal .signup-catalogue-slot .catalogue-main {
-    padding-top: var(--space-00);
-    padding-inline: var(--space-00);
-    max-width: none;
+    padding-top: var(--space-00) !important;
+    padding-inline: var(--space-00) !important;
+    max-width: none !important;
   }
 
   /* ---- The staged read-out ----
@@ -3454,26 +3495,51 @@
 
   /* ---- Mobile: the column is the page, the rail is a thumb-reachable tally ---- */
   @media (width <= 900px) {
+    .signup-panel[data-panel='route'],
     .signup-panel[data-panel='charity'],
     .signup-panel[data-panel='details'],
     .signup-panel[data-panel='commit'] {
       padding-right: var(--page-gutter);
-      padding-bottom: var(--space-13);
+      padding-bottom: calc(var(--space-13) + var(--space-08));
     }
 
-    .signup-portal[data-panel='charity'] .signup-stepper,
-    .signup-portal[data-panel='details'] .signup-stepper,
-    .signup-portal[data-panel='commit'] .signup-stepper {
-      padding-right: var(--page-gutter);
-    }
-
-    /* The gutter lies down: there is no room beside the column, so the scale
-       runs across the top of it instead of down its flank. */
     .signup-stepper {
-      inset: var(--space-00) var(--space-00) auto;
+      position: absolute;
+      top: auto;
+      left: var(--space-00);
+      right: var(--space-00);
+      width: 100%;
+      z-index: 3;
       grid-template-columns: minmax(0, 1fr);
       align-content: start;
-      padding: var(--space-05) var(--page-gutter) var(--space-00);
+      padding: var(--space-03) var(--page-gutter);
+    }
+
+    /* Route and commit: rail acts as stepper container */
+    .signup-portal[data-panel='route'] .signup-rail,
+    .signup-portal[data-panel='commit'] .signup-rail {
+      min-height: calc(var(--space-10) + var(--safe-inset-bottom));
+    }
+
+    .signup-portal[data-panel='route'] .signup-stepper,
+    .signup-portal[data-panel='commit'] .signup-stepper {
+      bottom: var(--safe-inset-bottom);
+    }
+
+    /* Charity and details: rail inner leaves room for stepper at top */
+    .signup-portal[data-panel='charity'] .signup-rail-inner,
+    .signup-portal[data-panel='details'] .signup-rail-inner {
+      padding-top: var(--space-10);
+    }
+
+    /* Charity: 2 rows underneath stepper */
+    .signup-portal[data-panel='charity'] .signup-stepper {
+      bottom: calc(var(--space-11) + var(--safe-inset-bottom));
+    }
+
+    /* Details: 4 rows underneath stepper */
+    .signup-portal[data-panel='details'] .signup-stepper {
+      bottom: calc(var(--space-11) + var(--space-09) + var(--safe-inset-bottom));
     }
 
     .signup-stepper-index {
@@ -3509,16 +3575,25 @@
     }
 
     .signup-stepper-tick {
+      position: relative;
       width: var(--border-width-hairline);
-      height: auto;
+      height: var(--border-width-hairline);
     }
 
     .signup-stepper-tick-mark {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
       width: var(--border-width-hairline);
       height: var(--signup-tick-length);
     }
 
     .signup-stepper-tick[data-state='current'] .signup-stepper-tick-mark {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
       width: var(--space-01);
       height: var(--signup-tick-length-major);
     }
@@ -3532,15 +3607,23 @@
       grid-column: 1;
     }
 
+    .signup-rail[data-panel='route'],
+    .signup-rail[data-panel='commit'] {
+      display: block;
+    }
+
+    .signup-rail-veil {
+      border-right: none;
+      border-bottom: none;
+      border-left: none;
+    }
+
     .signup-rail {
       top: auto;
       right: var(--space-00);
       bottom: var(--space-00);
       left: var(--space-00);
       width: auto;
-      border-right: none;
-      border-bottom: none;
-      border-left: none;
       padding-bottom: var(--safe-inset-bottom);
     }
 
@@ -3555,9 +3638,8 @@
     }
 
     .signup-rail-rows {
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: var(--space-03) var(--space-06);
+      flex-direction: column;
+      gap: var(--space-03);
     }
 
     .signup-rail-row {
@@ -3574,7 +3656,7 @@
     }
 
     .signup-rail-value .signup-change {
-      margin-left: var(--space-00);
+      margin-left: auto;
     }
 
     .signup-details-name {
@@ -3613,8 +3695,10 @@
 
     .signup-panel[data-active='true'] [data-reveal-step],
     .signup-rail[data-visible='true'] [data-rail-step],
-    .signup-slider-impact {
+    .signup-slider-impact,
+    .signup-panel[data-active='true'] .signup-intro-run[data-font-ready='true'] {
       animation: none;
+      --intro-run-wght: 900;
     }
 
     .signup-stepper-scale::after {

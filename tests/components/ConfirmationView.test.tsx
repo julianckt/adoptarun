@@ -163,4 +163,39 @@ describe('ConfirmationView', () => {
     expect(screen.getByText('Sha Tin Boar')).toBeTruthy();
     expect(screen.getByText('HK$500 feeds 250 rescued animals')).toBeTruthy();
   });
+
+  it('renders "Group Run" tag when the adoption is on a group run route', () => {
+    const groupRunRoute: PortalRoute = {
+      ...route,
+      slug: 'group-run-route',
+      isGroupRun: true,
+      groupRunDateTime: '2026-03-14T07:30:00+08:00',
+    };
+    const groupRecord: ConfirmationRecord = {
+      ...record,
+      routeSlug: 'group-run-route',
+      targetDate: '2026-03-14',
+      targetTime: '07:30am',
+    };
+
+    const { container } = render(
+      <ConfirmationView
+        adopterId={ADOPTER_ID}
+        record={groupRecord}
+        routes={[groupRunRoute]}
+        charity={charity}
+        pageUrl={`https://adoptarun.org/signup/confirmed/${ADOPTER_ID}`}
+      />
+    );
+
+    const groupRunSpan = container.querySelector('.text-route-group-run');
+    expect(groupRunSpan).not.toBeNull();
+    expect(groupRunSpan?.textContent).toBe('Group Run');
+  });
+
+  it('omits "Group Run" tag for solo route in confirmation', () => {
+    const { container } = renderView();
+
+    expect(container.querySelector('.text-route-group-run')).toBeNull();
+  });
 });
