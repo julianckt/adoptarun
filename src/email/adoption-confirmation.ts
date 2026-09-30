@@ -128,69 +128,115 @@ export function buildAdoptionConfirmationEmail(
   if (context.targetTime) details.push(['meetup time', context.targetTime]);
   if (targetHkd) details.push(['fundraising goal', targetHkd]);
 
+  // Brand palette as literals (see the waiver above); mirrors DESIGN.md.
+  const INK = '#181311';
+  const PAPER = '#fffbf9';
+  const ORANGE = '#f5ae66';
+  const MUTED = '#6b5f58';
+  const HAIRLINE = '#e9dfd8';
+  const BACKDROP = '#efe6df';
+  const FONT = "'Helvetica Neue',Helvetica,Arial,sans-serif";
+  const stripes = ['#f5ae66', '#5bbe49', '#ff8484', '#42bee0'];
+
+  // Hairline-divided rows: quiet label over a confident value. Colour is saved
+  // for the hero, the ID panel and the button so it means something.
   const detailRows = details
     .map(
-      ([label, value]) => `
+      ([label, value], i) => `
             <tr>
-              <td style="padding:6px 0;font-size:13px;color:#6b6b6b;width:40%;">${escapeHtml(label)}</td>
-              <td style="padding:6px 0;font-size:15px;color:#141414;font-weight:600;">${escapeHtml(value)}</td>
+              <td style="padding:16px 0;${i === 0 ? '' : `border-top:1px solid ${HAIRLINE};`}font-family:${FONT};">
+                <div style="font-size:11px;line-height:14px;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED};">${escapeHtml(label)}</div>
+                <div style="padding-top:4px;font-size:18px;line-height:24px;font-weight:600;color:${INK};">${escapeHtml(value)}</div>
+              </td>
             </tr>`
     )
     .join('');
+  const stripeCells = stripes
+    .map((c) => `<td width="25%" height="6" bgcolor="${c}" style="font-size:0;line-height:0;">&nbsp;</td>`)
+    .join('');
+
+  // Images need absolute URLs; derive the origin so previews and prod both work.
+  const origin = new URL(context.confirmationUrl).origin;
+  const heroUrl = `${origin}/email/hero.jpg`;
 
   const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
 <title>${escapeHtml(slot(copy, 'subject'))}</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f2ee;">
+<body style="margin:0;padding:0;background:${BACKDROP};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(slot(copy, 'preheader'))}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f2ee;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${BACKDROP}">
   <tr>
-    <td align="center" style="padding:32px 16px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#ffffff;">
+    <td align="center" style="padding:32px 16px 40px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;" bgcolor="${PAPER}">
         <tr>
-          <td style="padding:32px 32px 8px 32px;font-family:Helvetica,Arial,sans-serif;">
-            <p style="margin:0 0 16px 0;font-size:16px;color:#141414;">${escapeHtml(slot(copy, 'greeting'))}</p>
-            <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#3d3d3d;">${escapeHtml(slot(copy, 'intro'))}</p>
+          <td bgcolor="${ORANGE}" style="padding:0;font-size:0;line-height:0;">
+            <img src="${escapeHtml(heroUrl)}" width="600" alt="adopt a run" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:${FONT};font-size:32px;line-height:36px;font-weight:700;color:${INK};">
           </td>
         </tr>
         <tr>
-          <td style="padding:0 32px;font-family:Helvetica,Arial,sans-serif;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f2ee;">
+          <td style="padding:48px 40px 0 40px;font-family:${FONT};">
+            <h1 style="margin:0 0 20px 0;font-size:44px;line-height:46px;font-weight:700;letter-spacing:-0.03em;color:${INK};">you adopted a run.</h1>
+            <p style="margin:0;font-size:17px;line-height:26px;color:${MUTED};"><strong style="color:${INK};">${escapeHtml(slot(copy, 'greeting'))}.</strong> ${escapeHtml(slot(copy, 'intro'))}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 40px 0 40px;font-family:${FONT};">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${INK}">
               <tr>
-                <td align="center" style="padding:24px 16px;">
-                  <p style="margin:0 0 8px 0;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#6b6b6b;">${escapeHtml(slot(copy, 'adopterIdLabel'))}</p>
-                  <p style="margin:0;font-size:32px;font-weight:700;letter-spacing:0.04em;color:#141414;">${escapeHtml(context.adopterId)}</p>
+                <td align="center" style="padding:32px 16px;font-family:${FONT};">
+                  <div style="font-size:11px;line-height:14px;letter-spacing:0.18em;text-transform:uppercase;color:${ORANGE};">${escapeHtml(slot(copy, 'adopterIdLabel'))}</div>
+                  <div style="padding-top:12px;font-size:40px;line-height:44px;font-weight:700;letter-spacing:0.06em;color:${PAPER};">${escapeHtml(context.adopterId)}</div>
                 </td>
               </tr>
             </table>
-            <p style="margin:12px 0 24px 0;font-size:13px;line-height:1.6;color:#6b6b6b;">${escapeHtml(slot(copy, 'adopterIdNote'))}</p>
+            <p style="margin:14px 0 0 0;font-size:14px;line-height:21px;color:${MUTED};">${escapeHtml(slot(copy, 'adopterIdNote'))}</p>
           </td>
         </tr>
         <tr>
-          <td style="padding:0 32px;font-family:Helvetica,Arial,sans-serif;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${detailRows}
+          <td style="padding:36px 40px 0 40px;font-family:${FONT};">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${INK};border-bottom:1px solid ${HAIRLINE};">${detailRows}
             </table>
           </td>
         </tr>
         <tr>
-          <td style="padding:28px 32px;font-family:Helvetica,Arial,sans-serif;">
-            <p style="margin:0 0 16px 0;font-size:15px;color:#3d3d3d;">${escapeHtml(slot(copy, 'ctaIntro'))}</p>
-            <a href="${escapeHtml(context.confirmationUrl)}" style="display:inline-block;padding:14px 28px;background:#141414;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;">${escapeHtml(slot(copy, 'ctaLabel'))}</a>
-            <p style="margin:16px 0 0 0;font-size:12px;color:#6b6b6b;word-break:break-all;">${escapeHtml(context.confirmationUrl)}</p>
+          <td style="padding:40px 40px 0 40px;font-family:${FONT};">
+            <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:${MUTED};">${escapeHtml(slot(copy, 'ctaIntro'))}</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" bgcolor="${INK}">
+                  <a href="${escapeHtml(context.confirmationUrl)}" style="display:block;padding:20px 24px;font-family:${FONT};font-size:16px;line-height:20px;font-weight:700;letter-spacing:0.02em;color:${PAPER};text-decoration:none;">${escapeHtml(slot(copy, 'ctaLabel'))} &rarr;</a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:14px 0 0 0;font-size:12px;line-height:18px;color:${MUTED};word-break:break-all;">${escapeHtml(context.confirmationUrl)}</p>
           </td>
         </tr>
         <tr>
-          <td style="padding:0 32px 32px 32px;font-family:Helvetica,Arial,sans-serif;">
-            <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#3d3d3d;">${escapeHtml(slot(copy, 'closing'))}</p>
-            <p style="margin:0;font-size:15px;color:#141414;">${escapeHtml(slot(copy, 'signoff'))}</p>
+          <td style="padding:44px 40px 48px 40px;font-family:${FONT};">
+            <p style="margin:0 0 20px 0;font-size:17px;line-height:26px;color:${INK};">${escapeHtml(slot(copy, 'closing'))}</p>
+            <p style="margin:0;font-size:15px;line-height:20px;font-weight:700;color:${INK};">${escapeHtml(slot(copy, 'signoff'))}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0;font-size:0;line-height:0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>${stripeCells}</tr></table>
           </td>
         </tr>
       </table>
-      <p style="max-width:560px;margin:16px auto 0 auto;font-family:Helvetica,Arial,sans-serif;font-size:11px;line-height:1.6;color:#8a8a8a;text-align:center;">${escapeHtml(slot(copy, 'footerNote'))}</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">
+        <tr>
+          <td align="center" style="padding:28px 24px 0 24px;font-family:${FONT};">
+            <p style="margin:0 0 8px 0;font-size:13px;line-height:18px;font-weight:600;color:${INK};">${escapeHtml(context.charityName)} &middot; <a href="${escapeHtml(origin)}" style="color:${INK};text-decoration:underline;">${escapeHtml(new URL(origin).host)}</a></p>
+            <p style="margin:0;font-size:12px;line-height:18px;color:${MUTED};">${escapeHtml(slot(copy, 'footerNote'))}</p>
+          </td>
+        </tr>
+      </table>
     </td>
   </tr>
 </table>
