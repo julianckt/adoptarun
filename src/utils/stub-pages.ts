@@ -11,11 +11,6 @@ export interface StubPage {
 
 export const STUB_PAGES: readonly StubPage[] = [
   {
-    slug: 'donate',
-    title: 'donate',
-    description: 'we are working with fundraising platforms to make donating seamless.',
-  },
-  {
     slug: 'log',
     title: 'log a run',
     description: 'the run logging system and the digital certificate system are opening soon. ',
