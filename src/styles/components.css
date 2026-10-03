@@ -3105,7 +3105,9 @@
     display: none;
   }
 
+  /* Positioned so the content paints above the absolutely-placed veil. */
   .signup-rail-inner {
+    position: relative;
     padding: var(--space-06);
   }
 
@@ -3189,20 +3191,8 @@
     line-height: var(--leading-body);
   }
 
-  .signup-rail-value:has(.signup-rail-meta) .signup-rail-primary {
-    flex: 1 1 100%;
-  }
-
   .signup-rail-primary--numeric {
     font-variant-numeric: tabular-nums;
-  }
-
-  .signup-rail-meta {
-    color: var(--color-text-secondary);
-    font-family: var(--font-body);
-    font-size: var(--font-size-micro);
-    font-variant-numeric: tabular-nums;
-    line-height: var(--leading-body);
   }
 
   .signup-rail-value .signup-change {
@@ -3650,12 +3640,23 @@
       border-bottom: none;
     }
 
+    .signup-rail-value {
+      flex: 1 1 auto;
+      flex-wrap: nowrap;
+      min-width: 0;
+    }
+
     .signup-rail-primary {
       flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
       font-size: var(--font-size-label);
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .signup-rail-value .signup-change {
+      flex: 0 0 auto;
       margin-left: auto;
     }
 

@@ -1,5 +1,4 @@
 import { formatTargetDate } from '@/utils/signup-commitment';
-import { formatRouteDistance, formatRouteElevation } from '@/utils/formatters';
 import RouteThumbnail from './RouteThumbnail';
 import type { PanelId } from '@/utils/signup-flow';
 import type { PortalCharity, PortalRoute } from './types';
@@ -65,12 +64,6 @@ export default function SummaryRail({
                 <dt className="signup-rail-label">route</dt>
                 <dd className="signup-rail-value">
                   <span className="signup-rail-primary">{route?.title ?? '—'}</span>
-                  {route && (
-                    <span className="signup-rail-meta">
-                      {formatRouteDistance(route.distanceKm ?? 0)} · elev.{' '}
-                      {formatRouteElevation(route.elevationGain ?? 0)}
-                    </span>
-                  )}
                   {route && (
                     <button type="button" className="signup-change" onClick={() => onChange('route')}>
                       change<span className="visually-hidden"> route</span>

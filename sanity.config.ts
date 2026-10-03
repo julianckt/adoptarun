@@ -3,6 +3,7 @@ import { structureTool } from 'sanity/structure';
 import { presentationTool, defineLocations } from 'sanity/presentation';
 import { schemaTypes } from './src/sanity/schemaTypes';
 import { structure } from './src/sanity/structure';
+import { deployTool } from './src/sanity/tools/deployTool';
 
 const projectId =
   (typeof process !== 'undefined' ? process.env?.PUBLIC_SANITY_PROJECT_ID : undefined) ||
@@ -104,6 +105,11 @@ export default defineConfig({
       },
     }),
   ],
+  tools: (prev) => [...prev, deployTool()],
+  document: {
+    // deployRequest documents are created by the Deploy tool, never by hand.
+    newDocumentOptions: (prev) => prev.filter((item) => item.templateId !== 'deployRequest'),
+  },
   schema: {
     types: schemaTypes,
   },
