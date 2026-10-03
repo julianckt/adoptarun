@@ -639,4 +639,43 @@ describe('GPX Parser & Telemetry Module', () => {
       expect(result.miniMapSvg).toContain('<g class="route-basemap">');
     });
   });
+
+  describe('2D Planar Rotation Support', () => {
+    it('generates rotated miniMapSvg with data-rotation-deg and center coordinates in parseGpxWithBasemap', async () => {
+      const xml = readFileSync(resolve(FIXTURES_DIR, 'garmin-sample.gpx'), 'utf-8');
+      const result = await parseGpxWithBasemap(xml, { rotationAngle: 45 });
+
+      expect(result.rotationAngle).toBe(45);
+      expect(result.miniMapSvg).toContain('data-rotation-deg="45"');
+      expect(result.miniMapSvg).toContain('data-center-lat=');
+      expect(result.miniMapSvg).toContain('data-center-lng=');
+      expect(result.miniMapSvg).toContain('class="route-trace"');
+    });
+
+    it('expands bounding box for basemap queries when rotated to avoid corner clipping', () => {
+      const coordinates: [number, number][] = [
+        [22.28, 114.15],
+        [22.29, 114.16],
+      ];
+      const unrotated = calculateAspectBoundingBox(coordinates, 356 / 216, 0.1, 0);
+      const rotated45 = calculateAspectBoundingBox(coordinates, 356 / 216, 0.1, 45);
+
+      // Rotated bounding box for queries must encompass the full diagonal radius
+      expect(rotated45.minLat).toBeLessThanOrEqual(unrotated.minLat);
+      expect(rotated45.maxLat).toBeGreaterThanOrEqual(unrotated.maxLat);
+      expect(rotated45.minLng).toBeLessThanOrEqual(unrotated.minLng);
+      expect(rotated45.maxLng).toBeGreaterThanOrEqual(unrotated.maxLng);
+    });
+
+    it('supports rotation in fallback generateMiniMapSvg', () => {
+      const coordinates: [number, number][] = [
+        [22.28, 114.15],
+        [22.29, 114.16],
+      ];
+      const svg = generateMiniMapSvg(coordinates, 90);
+      expect(svg).toContain('data-rotation-deg="90"');
+      expect(svg).toContain('<path d="M');
+    });
+  });
 });
+

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useContext } from 'react';
 import { type FileInputProps, set, unset, PatchEvent, useClient } from 'sanity';
 import { DocumentPaneContext, DocumentIdContext } from 'sanity/_singletons';
-import { Card, Stack, Flex, Text, Badge, Box, Button, Spinner } from '@sanity/ui';
+import { Card, Stack, Flex, Text, Badge, Box, Button, Spinner, TextInput } from '@sanity/ui';
 import { parseGpxWithBasemap, type ParsedGpxResult } from '../../geo/gpx-parser';
 
 export interface GpxUploadInputProps extends Partial<FileInputProps> {
@@ -13,6 +13,8 @@ export interface GpxUploadInputProps extends Partial<FileInputProps> {
 
 export function GpxUploadInput(props: GpxUploadInputProps) {
   const [parsed, setParsed] = useState<ParsedGpxResult | null>(null);
+  const [rawGpxContent, setRawGpxContent] = useState<string | null>(null);
+  const [rotationAngle, setRotationAngle] = useState<number>(0);
   const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -81,6 +83,45 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     ]
   );
 
+  const dispatchMiniMapPatch = useCallback(
+    async (miniMapSvg: string) => {
+      const patch = set(miniMapSvg, ['miniMapSvg']);
+
+      if (props.documentOnChange) {
+        props.documentOnChange(PatchEvent.from([patch]));
+      }
+
+      if (documentPane?.onChange) {
+        documentPane.onChange(PatchEvent.from([patch]));
+      }
+
+      const targetId =
+        props.documentId ||
+        documentPane?.displayed?._id ||
+        documentPane?.documentId ||
+        documentIdContext?.id;
+
+      if (activeClient && targetId && typeof activeClient.patch === 'function') {
+        try {
+          await activeClient
+            .patch(targetId)
+            .set({ miniMapSvg })
+            .commit({ autoGenerateArrayKeys: true });
+        } catch (patchErr: any) {
+          console.warn('Direct minimap patch fallback warning:', patchErr);
+        }
+      }
+    },
+    [
+      activeClient,
+      documentIdContext?.id,
+      documentPane?.displayed?._id,
+      documentPane?.documentId,
+      documentPane?.onChange,
+      props,
+    ]
+  );
+
   const processGpxFile = useCallback(
     async (file: File) => {
       setIsProcessing(true);
@@ -105,7 +146,8 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
           throw new Error('Unable to read GPX file contents');
         }
 
-        const result = await parseGpxWithBasemap(content);
+        setRawGpxContent(content);
+        const result = await parseGpxWithBasemap(content, { rotationAngle });
         setParsed(result);
 
         // Dispatch patches to root document fields to auto-populate metrics
@@ -143,12 +185,13 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
         }
       } catch (err: any) {
         setParsed(null);
+        setRawGpxContent(null);
         setError(err.message || 'Failed to parse GPX file');
       } finally {
         setIsProcessing(false);
       }
     },
-    [activeClient, dispatchRootPatches, props]
+    [activeClient, dispatchRootPatches, props, rotationAngle]
   );
 
   const handleReparseExistingAsset = useCallback(async () => {
@@ -186,7 +229,8 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
       }
 
       const content = await response.text();
-      const result = await parseGpxWithBasemap(content);
+      setRawGpxContent(content);
+      const result = await parseGpxWithBasemap(content, { rotationAngle });
       setParsed(result);
       setFileName(assetDoc.originalFilename || 'Existing GPX Asset');
 
@@ -200,13 +244,37 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     } finally {
       setIsProcessing(false);
     }
-  }, [activeClient, dispatchRootPatches, props]);
+  }, [activeClient, dispatchRootPatches, props, rotationAngle]);
+
+  const handleRotationChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = Number(e.target.value);
+      if (Number.isNaN(val)) return;
+      const clamped = Math.max(-180, Math.min(180, val));
+      setRotationAngle(clamped);
+
+      if (rawGpxContent) {
+        try {
+          const updated = await parseGpxWithBasemap(rawGpxContent, { rotationAngle: clamped });
+          setParsed(updated);
+          await dispatchMiniMapPatch(updated.miniMapSvg);
+          if (props.onParsed) {
+            props.onParsed(updated);
+          }
+        } catch (err: any) {
+          console.warn('Failed to re-render rotated minimap:', err);
+        }
+      }
+    },
+    [dispatchMiniMapPatch, props, rawGpxContent]
+  );
 
   const handleRemove = useCallback(() => {
     if (props.onChange) {
       props.onChange(PatchEvent.from(unset()));
     }
     setParsed(null);
+    setRawGpxContent(null);
     setFileName(null);
     setError(null);
   }, [props]);
@@ -412,26 +480,43 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
                   </Box>
                 </Flex>
 
-                {parsed.miniMapSvg && (
-                  <Box>
+                <Flex gap={4} align="flex-start" wrap="wrap">
+                  {parsed.miniMapSvg && (
+                    <Box>
+                      <Text size={0} muted style={{ marginBottom: 4 }}>
+                        Mini-Map Trace Preview:
+                      </Text>
+                      <div
+                        data-testid="gpx-minimap-preview"
+                        style={{
+                          width: '237px',
+                          height: '144px',
+                          backgroundColor: 'rgb(24, 19, 17)',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        dangerouslySetInnerHTML={{ __html: parsed.miniMapSvg }}
+                      />
+                    </Box>
+                  )}
+
+                  <Box style={{ minWidth: '140px', maxWidth: '180px' }}>
                     <Text size={0} muted style={{ marginBottom: 4 }}>
-                      Mini-Map Trace Preview:
+                      Rotation Angle (-180° to 180°)
                     </Text>
-                    <div
-                      data-testid="gpx-minimap-preview"
-                      style={{
-                        width: '237px',
-                        height: '144px',
-                        backgroundColor: 'rgb(24, 19, 17)',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                      dangerouslySetInnerHTML={{ __html: parsed.miniMapSvg }}
+                    <TextInput
+                      type="number"
+                      min={-180}
+                      max={180}
+                      step={1}
+                      value={rotationAngle}
+                      onChange={handleRotationChange}
+                      data-testid="gpx-rotation-input"
                     />
                   </Box>
-                )}
+                </Flex>
               </Stack>
             </Card>
           )}
@@ -442,3 +527,4 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
 }
 
 export default GpxUploadInput;
+

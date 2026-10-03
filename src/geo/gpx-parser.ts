@@ -25,6 +25,7 @@ export interface ParsedGpxResult {
   startTime: string | null;
   endTime: string | null;
   basemapSource?: 'local-hk' | 'overpass' | 'none';
+  rotationAngle?: number;
 }
 
 /**
@@ -306,17 +307,50 @@ export function queryHkBasemapFromDataset(
   return { roads, water };
 }
 
+export interface RotatedAspectBoundingBox {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+  centerLat: number;
+  centerLng: number;
+  cosLat: number;
+  rotationAngle: number;
+  minBoxX: number;
+  maxBoxX: number;
+  minBoxY: number;
+  maxBoxY: number;
+  finalW: number;
+  finalH: number;
+}
+
 /**
  * Calculates a bounding box expanded to match a target aspect ratio (e.g. 356:216 for RouteCard)
- * with geographic metric projection scaling (cos(meanLat)) and padding.
+ * with geographic metric projection scaling (cos(meanLat)), padding, and optional 2D planar rotation.
  */
 export function calculateAspectBoundingBox(
   coordinates: [number, number][],
   targetAspectRatio = 356 / 216,
-  paddingRatio = 0.1
-): GeoBoundingBox {
+  paddingRatio = 0.1,
+  rotationAngle = 0
+): RotatedAspectBoundingBox {
   if (!coordinates || coordinates.length === 0) {
-    return { minLat: 0, maxLat: 0.01, minLng: 0, maxLng: 0.01 * targetAspectRatio };
+    return {
+      minLat: 0,
+      maxLat: 0.01,
+      minLng: 0,
+      maxLng: 0.01 * targetAspectRatio,
+      centerLat: 0.005,
+      centerLng: (0.01 * targetAspectRatio) / 2,
+      cosLat: 1,
+      rotationAngle: 0,
+      minBoxX: 0,
+      maxBoxX: 0.01 * targetAspectRatio,
+      minBoxY: 0,
+      maxBoxY: 0.01,
+      finalW: 0.01 * targetAspectRatio,
+      finalH: 0.01,
+    };
   }
 
   let minLat = Infinity;
@@ -331,8 +365,6 @@ export function calculateAspectBoundingBox(
     if (lng > maxLng) maxLng = lng;
   }
 
-  const rawLatSpan = Math.max(maxLat - minLat, 0.0005);
-  const rawLngSpan = Math.max(maxLng - minLng, 0.0005);
   const centerLat = (minLat + maxLat) / 2;
   const centerLng = (minLng + maxLng) / 2;
 
@@ -340,8 +372,32 @@ export function calculateAspectBoundingBox(
   const radLat = (centerLat * Math.PI) / 180;
   const cosLat = Math.max(0.1, Math.cos(radLat));
 
-  const rawMetricW = rawLngSpan * cosLat;
-  const rawMetricH = rawLatSpan;
+  const radAngle = (rotationAngle * Math.PI) / 180;
+  const cosTheta = Math.cos(radAngle);
+  const sinTheta = Math.sin(radAngle);
+
+  // Project and rotate all points around route center to determine rotated metric bounds
+  let minRotX = Infinity;
+  let maxRotX = -Infinity;
+  let minRotY = Infinity;
+  let maxRotY = -Infinity;
+
+  for (const [lat, lng] of coordinates) {
+    const dx = (lng - centerLng) * cosLat;
+    const dy = lat - centerLat;
+    const rotX = dx * cosTheta - dy * sinTheta;
+    const rotY = dx * sinTheta + dy * cosTheta;
+
+    if (rotX < minRotX) minRotX = rotX;
+    if (rotX > maxRotX) maxRotX = rotX;
+    if (rotY < minRotY) minRotY = rotY;
+    if (rotY > maxRotY) maxRotY = rotY;
+  }
+
+  const rawMetricW = Math.max(maxRotX - minRotX, 0.0005);
+  const rawMetricH = Math.max(maxRotY - minRotY, 0.0005);
+  const centerRotX = (minRotX + maxRotX) / 2;
+  const centerRotY = (minRotY + maxRotY) / 2;
 
   // Add padding
   const paddedW = rawMetricW * (1 + 2 * paddingRatio);
@@ -360,14 +416,46 @@ export function calculateAspectBoundingBox(
     targetMetricH = paddedW / targetAspectRatio;
   }
 
-  const finalLngSpan = targetMetricW / cosLat;
-  const finalLatSpan = targetMetricH;
+  const minBoxX = centerRotX - targetMetricW / 2;
+  const maxBoxX = centerRotX + targetMetricW / 2;
+  const minBoxY = centerRotY - targetMetricH / 2;
+  const maxBoxY = centerRotY + targetMetricH / 2;
+
+  // Compute geographic bounding box for basemap queries
+  let finalMinLat: number;
+  let finalMaxLat: number;
+  let finalMinLng: number;
+  let finalMaxLng: number;
+
+  if (rotationAngle === 0) {
+    finalMinLat = centerLat - targetMetricH / 2;
+    finalMaxLat = centerLat + targetMetricH / 2;
+    finalMinLng = centerLng - targetMetricW / (2 * cosLat);
+    finalMaxLng = centerLng + targetMetricW / (2 * cosLat);
+  } else {
+    // When rotated, expand bounds by the half diagonal so no features in the rotated frame are clipped
+    const halfDiag = Math.sqrt((targetMetricW / 2) ** 2 + (targetMetricH / 2) ** 2);
+    finalMinLat = centerLat - halfDiag;
+    finalMaxLat = centerLat + halfDiag;
+    finalMinLng = centerLng - halfDiag / cosLat;
+    finalMaxLng = centerLng + halfDiag / cosLat;
+  }
 
   return {
-    minLat: centerLat - finalLatSpan / 2,
-    maxLat: centerLat + finalLatSpan / 2,
-    minLng: centerLng - finalLngSpan / 2,
-    maxLng: centerLng + finalLngSpan / 2,
+    minLat: finalMinLat,
+    maxLat: finalMaxLat,
+    minLng: finalMinLng,
+    maxLng: finalMaxLng,
+    centerLat,
+    centerLng,
+    cosLat,
+    rotationAngle,
+    minBoxX,
+    maxBoxX,
+    minBoxY,
+    maxBoxY,
+    finalW: targetMetricW,
+    finalH: targetMetricH,
   };
 }
 
@@ -380,10 +468,27 @@ export function calculateAspectBoundingBox(
 export function projectLatLngToSvg(
   lat: number,
   lng: number,
-  bbox: GeoBoundingBox,
+  bbox: GeoBoundingBox | RotatedAspectBoundingBox,
   width = 356,
   height = 216
 ): [number, number] {
+  if ('minBoxX' in bbox && typeof bbox.minBoxX === 'number' && 'cosLat' in bbox) {
+    const rotBbox = bbox as RotatedAspectBoundingBox;
+    const dx = (lng - rotBbox.centerLng) * rotBbox.cosLat;
+    const dy = lat - rotBbox.centerLat;
+
+    const radAngle = ((rotBbox.rotationAngle || 0) * Math.PI) / 180;
+    const cosTheta = Math.cos(radAngle);
+    const sinTheta = Math.sin(radAngle);
+
+    const rotX = dx * cosTheta - dy * sinTheta;
+    const rotY = dx * sinTheta + dy * cosTheta;
+
+    const x = Number((((rotX - rotBbox.minBoxX) / rotBbox.finalW) * width).toFixed(1));
+    const y = Number(((1 - (rotY - rotBbox.minBoxY) / rotBbox.finalH) * height).toFixed(1));
+    return [x, y];
+  }
+
   const lngSpan = bbox.maxLng - bbox.minLng;
   const latSpan = bbox.maxLat - bbox.minLat;
   const x = Number((((lng - bbox.minLng) / lngSpan) * width).toFixed(1));
@@ -393,7 +498,7 @@ export function projectLatLngToSvg(
 
 function coordinatesToPathD(
   coords: [number, number][],
-  bbox: GeoBoundingBox,
+  bbox: GeoBoundingBox | RotatedAspectBoundingBox,
   width = 356,
   height = 216
 ): string {
@@ -408,19 +513,20 @@ function coordinatesToPathD(
 
 /**
  * Generates full-bleed SVG markup (viewBox="0 0 356 216") embedding OpenStreetMap
- * simplified road and water ways behind a pure-line route trace.
+ * simplified road and water ways behind a pure-line route trace with optional 2D rotation.
  */
 export function generateMiniMapWithBasemapSvg(
   coordinates: [number, number][],
   basemap?: BasemapData,
   width = 356,
-  height = 216
+  height = 216,
+  rotationAngle = 0
 ): string {
   if (!coordinates || coordinates.length === 0) {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" fill="none"><path d=""/></svg>`;
   }
 
-  const bbox = calculateAspectBoundingBox(coordinates, width / height, 0.12);
+  const bbox = calculateAspectBoundingBox(coordinates, width / height, 0.12, rotationAngle);
 
   let waterPaths = '';
   if (basemap?.water && basemap.water.length > 0) {
@@ -439,9 +545,11 @@ export function generateMiniMapWithBasemapSvg(
   }
 
   const traceD = coordinatesToPathD(coordinates, bbox, width, height);
+  const rotationAttr = rotationAngle !== 0 ? ` data-rotation-deg="${rotationAngle}"` : '';
+  const centerAttrs = ` data-center-lat="${bbox.centerLat.toFixed(6)}" data-center-lng="${bbox.centerLng.toFixed(6)}"`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" fill="none">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" fill="none"${rotationAttr}${centerAttrs}>`,
     `  <style>`,
     `    .route-basemap path { stroke: rgba(255, 251, 249, 0.14); stroke-width: 0.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }`,
     `    .route-water path { stroke: rgba(255, 251, 249, 0.22); fill: rgba(255, 251, 249, 0.05); }`,
@@ -567,7 +675,10 @@ export async function fetchOsmBasemap(
 /**
  * Generates a legacy 100x100 square SVG path markup from coordinate pairs.
  */
-export function generateMiniMapSvg(coordinates: [number, number][]): string {
+export function generateMiniMapSvg(
+  coordinates: [number, number][],
+  rotationAngle = 0
+): string {
   if (!coordinates || coordinates.length === 0) {
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><path d=""/></svg>';
   }
@@ -584,28 +695,49 @@ export function generateMiniMapSvg(coordinates: [number, number][]): string {
     if (lng > maxLng) maxLng = lng;
   }
 
-  const latSpan = maxLat - minLat;
-  const lngSpan = maxLng - minLng;
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLng = (minLng + maxLng) / 2;
+  const cosLat = Math.max(0.1, Math.cos((centerLat * Math.PI) / 180));
+  const radAngle = (rotationAngle * Math.PI) / 180;
+  const cosTheta = Math.cos(radAngle);
+  const sinTheta = Math.sin(radAngle);
 
-  // If track is a single point or flat line, provide a default span
-  const safeLatSpan = latSpan > 0.000001 ? latSpan : 0.001;
-  const safeLngSpan = lngSpan > 0.000001 ? lngSpan : 0.001;
+  let minRotX = Infinity;
+  let maxRotX = -Infinity;
+  let minRotY = Infinity;
+  let maxRotY = -Infinity;
 
-  // Aspect ratio scaling centered in a 10-90 box (80x80 usable space)
-  const maxSpan = Math.max(safeLatSpan, safeLngSpan);
+  for (const [lat, lng] of coordinates) {
+    const dx = (lng - centerLng) * cosLat;
+    const dy = lat - centerLat;
+    const rotX = dx * cosTheta - dy * sinTheta;
+    const rotY = dx * sinTheta + dy * cosTheta;
+
+    if (rotX < minRotX) minRotX = rotX;
+    if (rotX > maxRotX) maxRotX = rotX;
+    if (rotY < minRotY) minRotY = rotY;
+    if (rotY > maxRotY) maxRotY = rotY;
+  }
+
+  const rotSpanX = Math.max(maxRotX - minRotX, 0.000001);
+  const rotSpanY = Math.max(maxRotY - minRotY, 0.000001);
+  const maxSpan = Math.max(rotSpanX, rotSpanY);
   const padding = 10;
   const usable = 80;
 
-  const latOffset = (maxSpan - safeLatSpan) / 2;
-  const lngOffset = (maxSpan - safeLngSpan) / 2;
+  const offsetX = (maxSpan - rotSpanX) / 2;
+  const offsetY = (maxSpan - rotSpanY) / 2;
 
   let pathD = '';
   for (let i = 0; i < coordinates.length; i++) {
     const [lat, lng] = coordinates[i];
-    // Map lng to x (10 to 90)
-    const normX = ((lng - minLng + lngOffset) / maxSpan) * usable + padding;
-    // Map lat to y (in SVG, y increases downwards, whereas lat increases northwards)
-    const normY = (1 - (lat - minLat + latOffset) / maxSpan) * usable + padding;
+    const dx = (lng - centerLng) * cosLat;
+    const dy = lat - centerLat;
+    const rotX = dx * cosTheta - dy * sinTheta;
+    const rotY = dx * sinTheta + dy * cosTheta;
+
+    const normX = ((rotX - minRotX + offsetX) / maxSpan) * usable + padding;
+    const normY = (1 - (rotY - minRotY + offsetY) / maxSpan) * usable + padding;
 
     const x = Number(normX.toFixed(1));
     const y = Number(normY.toFixed(1));
@@ -617,13 +749,16 @@ export function generateMiniMapSvg(coordinates: [number, number][]): string {
     }
   }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="${pathD}"/></svg>`;
+  const rotationAttr = rotationAngle !== 0 ? ` data-rotation-deg="${rotationAngle}"` : '';
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"${rotationAttr} stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="${pathD}"/></svg>`;
 }
 
 export interface ParseGpxWithBasemapOptions extends ParseGpxOptions, FetchOsmBasemapOptions {
   preferLocalHkBasemap?: boolean;
   hkDataset?: HkBasemapDataset;
   datasetUrl?: string;
+  rotationAngle?: number;
 }
 
 /**
@@ -636,7 +771,8 @@ export async function parseGpxWithBasemap(
   options: ParseGpxWithBasemapOptions = {}
 ): Promise<ParsedGpxResult> {
   const baseResult = parseGpx(gpxXml, options);
-  const bbox = calculateAspectBoundingBox(baseResult.coordinates, 356 / 216, 0.12);
+  const rotationAngle = options.rotationAngle || 0;
+  const bbox = calculateAspectBoundingBox(baseResult.coordinates, 356 / 216, 0.12, rotationAngle);
 
   let basemap: BasemapData | null = null;
   let basemapSource: 'local-hk' | 'overpass' | 'none' = 'none';
@@ -666,13 +802,14 @@ export async function parseGpxWithBasemap(
 
   // 3. Render vector basemap SVG (or fallback to clean route-only SVG)
   const miniMapSvg = basemap
-    ? generateMiniMapWithBasemapSvg(baseResult.coordinates, basemap)
-    : generateMiniMapSvg(baseResult.coordinates);
+    ? generateMiniMapWithBasemapSvg(baseResult.coordinates, basemap, 356, 216, rotationAngle)
+    : generateMiniMapSvg(baseResult.coordinates, rotationAngle);
 
   return {
     ...baseResult,
     miniMapSvg,
     basemapSource,
+    rotationAngle,
   };
 }
 

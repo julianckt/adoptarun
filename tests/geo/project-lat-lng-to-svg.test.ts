@@ -65,4 +65,59 @@ describe('projectLatLngToSvg', () => {
 
     expect(rebuilt).toBe(traceD);
   });
+
+  it('agrees with generateMiniMapWithBasemapSvg trace path at rotated angles (45, 90, -90, 180)', () => {
+    const coordinates: [number, number][] = [
+      [22.280742, 114.17684],
+      [22.282329, 114.178282],
+      [22.279605, 114.172414],
+    ];
+
+    const testAngles = [45, 90, -90, 180, -45];
+
+    for (const angle of testAngles) {
+      const svg = generateMiniMapWithBasemapSvg(coordinates, undefined, MINI_MAP_WIDTH, MINI_MAP_HEIGHT, angle);
+      expect(svg).toContain(`data-rotation-deg="${angle}"`);
+      const traceD = svg.match(/class="route-trace" d="([^"]+)"/)?.[1];
+      expect(traceD).toBeTruthy();
+
+      const rotBbox = calculateAspectBoundingBox(
+        coordinates,
+        MINI_MAP_WIDTH / MINI_MAP_HEIGHT,
+        0.12,
+        angle
+      );
+
+      const rebuilt = coordinates
+        .map(([lat, lng], index) => {
+          const [x, y] = projectLatLngToSvg(lat, lng, rotBbox, MINI_MAP_WIDTH, MINI_MAP_HEIGHT);
+          return `${index === 0 ? 'M' : 'L'}${x} ${y}`;
+        })
+        .join(' ');
+
+      expect(rebuilt).toBe(traceD);
+    }
+  });
+
+  it('maps center coordinate to the center of the viewBox regardless of rotation angle', () => {
+    const coordinates: [number, number][] = [
+      [22.20, 114.10],
+      [22.40, 114.30],
+    ];
+
+    const centerLat = 22.30;
+    const centerLng = 114.20;
+
+    for (const angle of [0, 30, 45, 90, 135, 180, -90, -180]) {
+      const rotBbox = calculateAspectBoundingBox(
+        coordinates,
+        MINI_MAP_WIDTH / MINI_MAP_HEIGHT,
+        0.1,
+        angle
+      );
+      const [x, y] = projectLatLngToSvg(centerLat, centerLng, rotBbox, MINI_MAP_WIDTH, MINI_MAP_HEIGHT);
+      expect(x).toBe(178);
+      expect(y).toBe(108);
+    }
+  });
 });

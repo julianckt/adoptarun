@@ -111,9 +111,11 @@ const profile = buildElevationProfile(elevationProfile, {
 });
 
 const coordinates = routePolyline ? decodePolyline(routePolyline) : [];
+const rotationAngleMatch = miniMapSvg ? miniMapSvg.match(/data-rotation-deg="(-?\d+(?:\.\d+)?)"/) : null;
+const rotationAngle = rotationAngleMatch ? Number(rotationAngleMatch[1]) : 0;
 const minimapBbox =
   coordinates.length > 0
-    ? calculateAspectBoundingBox(coordinates, MINIMAP_WIDTH / MINIMAP_HEIGHT, 0.12)
+    ? calculateAspectBoundingBox(coordinates, MINIMAP_WIDTH / MINIMAP_HEIGHT, 0.12, rotationAngle)
     : null;
 
 /** Per-sample payload shared by both map modes; read by the hover handler. */

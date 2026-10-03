@@ -468,4 +468,36 @@ describe('GpxUploadInput Sanity Studio Component', () => {
       expect(documentOnChange).toHaveBeenCalled();
     });
   });
+
+  it('updates rotation angle via numeric input, re-renders minimap preview with data-rotation-deg, and patches miniMapSvg', async () => {
+    const documentOnChange = vi.fn();
+    renderWithTheme(<GpxUploadInput documentOnChange={documentOnChange} />);
+
+    const file = new File([sampleGpx], 'test-route.gpx', { type: 'application/gpx+xml' });
+    const fileInput = screen.getByTestId('gpx-file-input');
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gpx-rotation-input')).toBeDefined();
+    });
+
+    // Initial patch on upload
+    expect(documentOnChange).toHaveBeenCalledTimes(1);
+
+    const rotationInput = screen.getByTestId('gpx-rotation-input');
+    fireEvent.change(rotationInput, { target: { value: '45' } });
+
+    await waitFor(() => {
+      expect(documentOnChange).toHaveBeenCalledTimes(2);
+    });
+
+    const secondPatchEvent = documentOnChange.mock.calls[1][0];
+    expect(secondPatchEvent.patches).toHaveLength(1);
+    expect(secondPatchEvent.patches[0].path[0]).toBe('miniMapSvg');
+    expect(secondPatchEvent.patches[0].value).toContain('data-rotation-deg="45"');
+
+    const preview = screen.getByTestId('gpx-minimap-preview');
+    expect(preview.innerHTML).toContain('data-rotation-deg="45"');
+  });
 });
