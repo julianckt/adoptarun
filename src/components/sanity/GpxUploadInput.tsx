@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useContext } from 'react';
+import React, { useState, useCallback, useRef, useContext, useEffect } from 'react';
 import { type FileInputProps, set, unset, PatchEvent, useClient } from 'sanity';
 import { DocumentPaneContext, DocumentIdContext } from 'sanity/_singletons';
 import { Card, Stack, Flex, Text, Badge, Box, Button, Spinner, TextInput } from '@sanity/ui';
@@ -27,6 +27,31 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
   const documentIdContext = useContext(DocumentIdContext);
 
   const activeClient = props.client || sanityClient;
+  const assetRef = props.value?.asset?._ref || (props.value as any)?._ref;
+  const hasAttachedAsset = Boolean(assetRef);
+
+  const displayedDoc = (documentPane?.displayed as any) || {};
+  const currentMiniMapSvg = parsed?.miniMapSvg || displayedDoc?.miniMapSvg;
+  const currentDistanceKm = parsed?.distanceKm ?? displayedDoc?.distanceKm;
+  const currentElevationGain = parsed?.elevationGain ?? displayedDoc?.elevationGain;
+  const currentDurationMin = parsed?.estimatedDurationMin ?? displayedDoc?.estimatedDurationMin;
+  const currentAvgPace = parsed?.avgPaceMinPerKm;
+  const currentMovingTime = parsed?.movingTimeSeconds;
+  const currentTrackpoints = parsed?.trackpointCount;
+
+  // Initialize rotationAngle from existing SVG metadata
+  useEffect(() => {
+    if (currentMiniMapSvg && !rawGpxContent) {
+      const match = currentMiniMapSvg.match(/data-rotation-deg="(-?\d+(?:\.\d+)?)"/);
+      if (match) {
+        const parsedAngle = Number(match[1]);
+        if (!Number.isNaN(parsedAngle)) {
+          setRotationAngle(parsedAngle);
+        }
+      }
+    }
+  }, [currentMiniMapSvg, rawGpxContent]);
+
   const dispatchRootPatches = useCallback(
     async (result: ParsedGpxResult) => {
       const patches = [
@@ -122,6 +147,36 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     ]
   );
 
+  const getOrFetchGpxContent = useCallback(async (): Promise<string | null> => {
+    if (rawGpxContent) return rawGpxContent;
+
+    const ref = props.value?.asset?._ref || (props.value as any)?._ref;
+    if (!ref || !activeClient) return null;
+
+    try {
+      let assetDoc = await activeClient.getDocument(ref);
+      if (!assetDoc && typeof activeClient.fetch === 'function') {
+        assetDoc = await activeClient.fetch('*[_id == $id][0]', { id: ref });
+      }
+
+      const fileUrl =
+        assetDoc?.url ||
+        (assetDoc?.path ? `https://cdn.sanity.io/${assetDoc.path}` : null);
+
+      if (!fileUrl) return null;
+
+      const response = await fetch(fileUrl);
+      if (!response.ok) return null;
+
+      const content = await response.text();
+      setRawGpxContent(content);
+      return content;
+    } catch (err) {
+      console.warn('Could not fetch GPX content from asset:', err);
+      return null;
+    }
+  }, [activeClient, props.value, rawGpxContent]);
+
   const processGpxFile = useCallback(
     async (file: File) => {
       setIsProcessing(true);
@@ -195,7 +250,6 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
   );
 
   const handleReparseExistingAsset = useCallback(async () => {
-    const assetRef = props.value?.asset?._ref || (props.value as any)?._ref;
     if (!assetRef || !activeClient) return;
 
     setIsProcessing(true);
@@ -244,7 +298,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     } finally {
       setIsProcessing(false);
     }
-  }, [activeClient, dispatchRootPatches, props, rotationAngle]);
+  }, [activeClient, assetRef, dispatchRootPatches, props, rotationAngle]);
 
   const handleRotationChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -253,20 +307,27 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
       const clamped = Math.max(-180, Math.min(180, val));
       setRotationAngle(clamped);
 
-      if (rawGpxContent) {
-        try {
-          const updated = await parseGpxWithBasemap(rawGpxContent, { rotationAngle: clamped });
+      setIsProcessing(true);
+      try {
+        let content = rawGpxContent;
+        if (!content) {
+          content = await getOrFetchGpxContent();
+        }
+        if (content) {
+          const updated = await parseGpxWithBasemap(content, { rotationAngle: clamped });
           setParsed(updated);
           await dispatchMiniMapPatch(updated.miniMapSvg);
           if (props.onParsed) {
             props.onParsed(updated);
           }
-        } catch (err: any) {
-          console.warn('Failed to re-render rotated minimap:', err);
         }
+      } catch (err: any) {
+        console.warn('Failed to re-render rotated minimap:', err);
+      } finally {
+        setIsProcessing(false);
       }
     },
-    [dispatchMiniMapPatch, props, rawGpxContent]
+    [dispatchMiniMapPatch, getOrFetchGpxContent, props, rawGpxContent]
   );
 
   const handleRemove = useCallback(() => {
@@ -308,9 +369,8 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     fileInputRef.current?.click();
   };
 
-  const assetRef = props.value?.asset?._ref || (props.value as any)?._ref;
-  const hasAttachedAsset = Boolean(assetRef);
   const displayLabel = fileName || (hasAttachedAsset ? `Asset: ${assetRef}` : null);
+  const showPreview = Boolean(parsed || currentMiniMapSvg || currentDistanceKm != null || hasAttachedAsset);
 
   return (
     <Stack gap={3}>
@@ -340,7 +400,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
                   Uploading to CDN...
                 </Badge>
               )}
-              {parsed && (
+              {(parsed || currentDistanceKm != null) && (
                 <Badge tone="positive">
                   Fields Populated
                 </Badge>
@@ -375,7 +435,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
             <Button
               text={
                 isProcessing
-                  ? 'Generating Basemap...'
+                  ? 'Processing GPX...'
                   : hasAttachedAsset || parsed
                   ? 'Replace GPX File'
                   : 'Select GPX File to Parse'
@@ -424,64 +484,76 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
             </Card>
           )}
 
-          {parsed && (
+          {showPreview && (
             <Card padding={3} radius={2} tone="default" border data-testid="gpx-telemetry-preview">
               <Stack gap={3}>
                 <Flex gap={4} wrap="wrap">
-                  <Box>
-                    <Text size={0} muted>
-                      Distance
-                    </Text>
-                    <Text size={2} weight="bold">
-                      {parsed.distanceKm} km
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text size={0} muted>
-                      Elevation Gain
-                    </Text>
-                    <Text size={2} weight="bold">
-                      +{parsed.elevationGain} m
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text size={0} muted>
-                      Est. Duration
-                    </Text>
-                    <Text size={2} weight="bold">
-                      {parsed.estimatedDurationMin} min
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text size={0} muted>
-                      Avg Pace
-                    </Text>
-                    <Text size={2} weight="bold">
-                      {parsed.avgPaceMinPerKm > 0 ? `${parsed.avgPaceMinPerKm} min/km` : 'N/A'}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text size={0} muted>
-                      Moving Time
-                    </Text>
-                    <Text size={2} weight="bold">
-                      {parsed.movingTimeSeconds > 0
-                        ? `${Math.floor(parsed.movingTimeSeconds / 60)}m ${parsed.movingTimeSeconds % 60}s (${parsed.movingTimeSeconds}s)`
-                        : '0s'}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text size={0} muted>
-                      Trackpoints
-                    </Text>
-                    <Text size={2} weight="bold">
-                      {parsed.trackpointCount}
-                    </Text>
-                  </Box>
+                  {currentDistanceKm != null && (
+                    <Box>
+                      <Text size={0} muted>
+                        Distance
+                      </Text>
+                      <Text size={2} weight="bold">
+                        {currentDistanceKm} km
+                      </Text>
+                    </Box>
+                  )}
+                  {currentElevationGain != null && (
+                    <Box>
+                      <Text size={0} muted>
+                        Elevation Gain
+                      </Text>
+                      <Text size={2} weight="bold">
+                        +{currentElevationGain} m
+                      </Text>
+                    </Box>
+                  )}
+                  {currentDurationMin != null && (
+                    <Box>
+                      <Text size={0} muted>
+                        Est. Duration
+                      </Text>
+                      <Text size={2} weight="bold">
+                        {currentDurationMin} min
+                      </Text>
+                    </Box>
+                  )}
+                  {currentAvgPace != null && (
+                    <Box>
+                      <Text size={0} muted>
+                        Avg Pace
+                      </Text>
+                      <Text size={2} weight="bold">
+                        {currentAvgPace > 0 ? `${currentAvgPace} min/km` : 'N/A'}
+                      </Text>
+                    </Box>
+                  )}
+                  {currentMovingTime != null && (
+                    <Box>
+                      <Text size={0} muted>
+                        Moving Time
+                      </Text>
+                      <Text size={2} weight="bold">
+                        {currentMovingTime > 0
+                          ? `${Math.floor(currentMovingTime / 60)}m ${currentMovingTime % 60}s (${currentMovingTime}s)`
+                          : '0s'}
+                      </Text>
+                    </Box>
+                  )}
+                  {currentTrackpoints != null && (
+                    <Box>
+                      <Text size={0} muted>
+                        Trackpoints
+                      </Text>
+                      <Text size={2} weight="bold">
+                        {currentTrackpoints}
+                      </Text>
+                    </Box>
+                  )}
                 </Flex>
 
                 <Flex gap={4} align="flex-start" wrap="wrap">
-                  {parsed.miniMapSvg && (
+                  {currentMiniMapSvg && (
                     <Box>
                       <Text size={0} muted style={{ marginBottom: 4 }}>
                         Mini-Map Trace Preview:
@@ -497,7 +569,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}
-                        dangerouslySetInnerHTML={{ __html: parsed.miniMapSvg }}
+                        dangerouslySetInnerHTML={{ __html: currentMiniMapSvg }}
                       />
                     </Box>
                   )}

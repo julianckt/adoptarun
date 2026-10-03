@@ -500,4 +500,57 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     const preview = screen.getByTestId('gpx-minimap-preview');
     expect(preview.innerHTML).toContain('data-rotation-deg="45"');
   });
+
+  it('renders rotation angle input on existing documents and fetches GPX asset on rotation change', async () => {
+    const mockGetDocument = vi.fn().mockResolvedValue({
+      _id: 'file-asset-existing',
+      url: 'https://cdn.sanity.io/files/project/dataset/existing.gpx',
+      originalFilename: 'existing.gpx',
+    });
+    const mockClient = {
+      getDocument: mockGetDocument,
+    };
+    const paneOnChange = vi.fn();
+
+    renderWithTheme(
+      <DocumentPaneContext.Provider
+        value={{
+          onChange: paneOnChange,
+          displayed: {
+            _id: 'route-doc-1',
+            distanceKm: 5.2,
+            elevationGain: 120,
+            estimatedDurationMin: 32,
+            miniMapSvg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 356 216" data-rotation-deg="30"><path class="route-trace" d="M10 10 L50 50"/></svg>',
+          },
+        } as any}
+      >
+        <GpxUploadInput
+          value={{
+            _type: 'file',
+            asset: { _type: 'reference', _ref: 'file-asset-existing' },
+          } as any}
+          client={mockClient}
+        />
+      </DocumentPaneContext.Provider>
+    );
+
+    // Rotation input is immediately visible with existing rotation angle 30
+    const rotationInput = await screen.findByTestId('gpx-rotation-input');
+    expect(rotationInput).toBeDefined();
+    expect((rotationInput as HTMLInputElement).value).toBe('30');
+    expect(screen.getByText('5.2 km')).toBeDefined();
+
+    // Change rotation to 90 degrees
+    fireEvent.change(rotationInput, { target: { value: '90' } });
+
+    await waitFor(() => {
+      expect(mockGetDocument).toHaveBeenCalledWith('file-asset-existing');
+      expect(paneOnChange).toHaveBeenCalled();
+    });
+
+    const patchEvent = paneOnChange.mock.calls[0][0];
+    expect(patchEvent.patches[0].path[0]).toBe('miniMapSvg');
+    expect(patchEvent.patches[0].value).toContain('data-rotation-deg="90"');
+  });
 });
