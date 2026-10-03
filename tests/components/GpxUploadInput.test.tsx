@@ -469,7 +469,7 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     });
   });
 
-  it('updates rotation angle via numeric input, re-renders minimap preview with data-rotation-deg, and patches miniMapSvg', async () => {
+  it('updates rotation angle via numeric input and re-parses only when clicking re-parse button', async () => {
     const documentOnChange = vi.fn();
     renderWithTheme(<GpxUploadInput documentOnChange={documentOnChange} />);
 
@@ -488,20 +488,27 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     const rotationInput = screen.getByTestId('gpx-rotation-input');
     fireEvent.change(rotationInput, { target: { value: '45' } });
 
+    // Should NOT automatically re-parse or dispatch patches on input change
+    expect(documentOnChange).toHaveBeenCalledTimes(1);
+
+    // Click Re-parse & Sync Telemetry
+    const reparseBtn = screen.getByTestId('gpx-reparse-button');
+    fireEvent.click(reparseBtn);
+
     await waitFor(() => {
       expect(documentOnChange).toHaveBeenCalledTimes(2);
     });
 
     const secondPatchEvent = documentOnChange.mock.calls[1][0];
-    expect(secondPatchEvent.patches).toHaveLength(1);
-    expect(secondPatchEvent.patches[0].path[0]).toBe('miniMapSvg');
-    expect(secondPatchEvent.patches[0].value).toContain('data-rotation-deg="45"');
+    const miniMapPatch = secondPatchEvent.patches.find((p: any) => p.path[0] === 'miniMapSvg');
+    expect(miniMapPatch).toBeDefined();
+    expect(miniMapPatch.value).toContain('data-rotation-deg="45"');
 
     const preview = screen.getByTestId('gpx-minimap-preview');
     expect(preview.innerHTML).toContain('data-rotation-deg="45"');
   });
 
-  it('renders rotation angle input on existing documents and fetches GPX asset on rotation change', async () => {
+  it('renders rotation angle input on existing documents and fetches GPX asset when clicking reparse button', async () => {
     const mockGetDocument = vi.fn().mockResolvedValue({
       _id: 'file-asset-existing',
       url: 'https://cdn.sanity.io/files/project/dataset/existing.gpx',
@@ -544,13 +551,22 @@ describe('GpxUploadInput Sanity Studio Component', () => {
     // Change rotation to 90 degrees
     fireEvent.change(rotationInput, { target: { value: '90' } });
 
+    // Should NOT fetch or patch yet
+    expect(mockGetDocument).not.toHaveBeenCalled();
+    expect(paneOnChange).not.toHaveBeenCalled();
+
+    // Click Re-parse & Sync Telemetry button
+    const reparseBtn = screen.getByTestId('gpx-reparse-button');
+    fireEvent.click(reparseBtn);
+
     await waitFor(() => {
       expect(mockGetDocument).toHaveBeenCalledWith('file-asset-existing');
       expect(paneOnChange).toHaveBeenCalled();
     });
 
     const patchEvent = paneOnChange.mock.calls[0][0];
-    expect(patchEvent.patches[0].path[0]).toBe('miniMapSvg');
-    expect(patchEvent.patches[0].value).toContain('data-rotation-deg="90"');
+    const miniMapPatch = patchEvent.patches.find((p: any) => p.path[0] === 'miniMapSvg');
+    expect(miniMapPatch).toBeDefined();
+    expect(miniMapPatch.value).toContain('data-rotation-deg="90"');
   });
 });

@@ -108,75 +108,6 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     ]
   );
 
-  const dispatchMiniMapPatch = useCallback(
-    async (miniMapSvg: string) => {
-      const patch = set(miniMapSvg, ['miniMapSvg']);
-
-      if (props.documentOnChange) {
-        props.documentOnChange(PatchEvent.from([patch]));
-      }
-
-      if (documentPane?.onChange) {
-        documentPane.onChange(PatchEvent.from([patch]));
-      }
-
-      const targetId =
-        props.documentId ||
-        documentPane?.displayed?._id ||
-        documentPane?.documentId ||
-        documentIdContext?.id;
-
-      if (activeClient && targetId && typeof activeClient.patch === 'function') {
-        try {
-          await activeClient
-            .patch(targetId)
-            .set({ miniMapSvg })
-            .commit({ autoGenerateArrayKeys: true });
-        } catch (patchErr: any) {
-          console.warn('Direct minimap patch fallback warning:', patchErr);
-        }
-      }
-    },
-    [
-      activeClient,
-      documentIdContext?.id,
-      documentPane?.displayed?._id,
-      documentPane?.documentId,
-      documentPane?.onChange,
-      props,
-    ]
-  );
-
-  const getOrFetchGpxContent = useCallback(async (): Promise<string | null> => {
-    if (rawGpxContent) return rawGpxContent;
-
-    const ref = props.value?.asset?._ref || (props.value as any)?._ref;
-    if (!ref || !activeClient) return null;
-
-    try {
-      let assetDoc = await activeClient.getDocument(ref);
-      if (!assetDoc && typeof activeClient.fetch === 'function') {
-        assetDoc = await activeClient.fetch('*[_id == $id][0]', { id: ref });
-      }
-
-      const fileUrl =
-        assetDoc?.url ||
-        (assetDoc?.path ? `https://cdn.sanity.io/${assetDoc.path}` : null);
-
-      if (!fileUrl) return null;
-
-      const response = await fetch(fileUrl);
-      if (!response.ok) return null;
-
-      const content = await response.text();
-      setRawGpxContent(content);
-      return content;
-    } catch (err) {
-      console.warn('Could not fetch GPX content from asset:', err);
-      return null;
-    }
-  }, [activeClient, props.value, rawGpxContent]);
-
   const processGpxFile = useCallback(
     async (file: File) => {
       setIsProcessing(true);
@@ -250,43 +181,54 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
   );
 
   const handleReparseExistingAsset = useCallback(async () => {
-    if (!assetRef || !activeClient) return;
-
     setIsProcessing(true);
     setError(null);
 
     try {
-      let assetDoc = await activeClient.getDocument(assetRef);
-      if (!assetDoc && typeof activeClient.fetch === 'function') {
-        assetDoc = await activeClient.fetch('*[_id == $id][0]', { id: assetRef });
+      let content = rawGpxContent;
+      let originalFilename = fileName;
+
+      if (!content) {
+        if (!assetRef || !activeClient) {
+          throw new Error('No GPX asset attached to re-parse');
+        }
+
+        let assetDoc = await activeClient.getDocument(assetRef);
+        if (!assetDoc && typeof activeClient.fetch === 'function') {
+          assetDoc = await activeClient.fetch('*[_id == $id][0]', { id: assetRef });
+        }
+
+        const fileUrl =
+          assetDoc?.url ||
+          (assetDoc?.path ? `https://cdn.sanity.io/${assetDoc.path}` : null);
+
+        if (!fileUrl) {
+          throw new Error('Unable to resolve GPX asset URL from Sanity CDN');
+        }
+
+        let response: Response;
+        try {
+          response = await fetch(fileUrl);
+        } catch (fetchErr: any) {
+          throw new Error(
+            `Failed to load GPX file from Sanity CDN (${fileUrl}): ${fetchErr?.message || fetchErr}`
+          );
+        }
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch GPX asset (${response.status} ${response.statusText})`);
+        }
+
+        content = await response.text();
+        setRawGpxContent(content);
+        originalFilename = assetDoc.originalFilename || 'Existing GPX Asset';
       }
 
-      const fileUrl =
-        assetDoc?.url ||
-        (assetDoc?.path ? `https://cdn.sanity.io/${assetDoc.path}` : null);
-
-      if (!fileUrl) {
-        throw new Error('Unable to resolve GPX asset URL from Sanity CDN');
-      }
-
-      let response: Response;
-      try {
-        response = await fetch(fileUrl);
-      } catch (fetchErr: any) {
-        throw new Error(
-          `Failed to load GPX file from Sanity CDN (${fileUrl}): ${fetchErr?.message || fetchErr}`
-        );
-      }
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch GPX asset (${response.status} ${response.statusText})`);
-      }
-
-      const content = await response.text();
-      setRawGpxContent(content);
       const result = await parseGpxWithBasemap(content, { rotationAngle });
       setParsed(result);
-      setFileName(assetDoc.originalFilename || 'Existing GPX Asset');
+      if (originalFilename) {
+        setFileName(originalFilename);
+      }
 
       await dispatchRootPatches(result);
 
@@ -298,36 +240,16 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
     } finally {
       setIsProcessing(false);
     }
-  }, [activeClient, assetRef, dispatchRootPatches, props, rotationAngle]);
+  }, [activeClient, assetRef, dispatchRootPatches, fileName, props, rawGpxContent, rotationAngle]);
 
   const handleRotationChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = Number(e.target.value);
       if (Number.isNaN(val)) return;
       const clamped = Math.max(-180, Math.min(180, val));
       setRotationAngle(clamped);
-
-      setIsProcessing(true);
-      try {
-        let content = rawGpxContent;
-        if (!content) {
-          content = await getOrFetchGpxContent();
-        }
-        if (content) {
-          const updated = await parseGpxWithBasemap(content, { rotationAngle: clamped });
-          setParsed(updated);
-          await dispatchMiniMapPatch(updated.miniMapSvg);
-          if (props.onParsed) {
-            props.onParsed(updated);
-          }
-        }
-      } catch (err: any) {
-        console.warn('Failed to re-render rotated minimap:', err);
-      } finally {
-        setIsProcessing(false);
-      }
     },
-    [dispatchMiniMapPatch, getOrFetchGpxContent, props, rawGpxContent]
+    []
   );
 
   const handleRemove = useCallback(() => {
@@ -447,7 +369,7 @@ export function GpxUploadInput(props: GpxUploadInputProps) {
               data-testid="gpx-select-button"
             />
 
-            {hasAttachedAsset && activeClient && (
+            {(hasAttachedAsset || rawGpxContent || parsed) && activeClient && (
               <Button
                 text="Re-parse & Sync Telemetry"
                 tone="default"
